@@ -3,6 +3,7 @@
 #include "HC_frequency_map.h"
 #include "HC_Struct.h"
 #include "HC_Error.h"
+#include "stdlib.h"
 
 /*
  * _comp_char: Compare Data one and two, the value should be a single char and
@@ -14,7 +15,7 @@ int _comp_char(void *v1, void *v2)
 	d1 = (Data*) v1;
 	d2 = (Data*) v2;
 
-	return (char)*d1->str - (char)*d2->str;
+	return (int)d1->str[0] - (int)d2->str[0];
 }
 
 /*
@@ -114,6 +115,7 @@ HC_HuffmanTree **build_huffman_tree(HC_HuffmanTree **list)
 {
 	HC_HuffmanTree *new, *one, *two;
 	Data data;
+	data.num = 0, data.str[0] = '\0';
 
 	while ((*list)->next)
 	{
@@ -129,24 +131,19 @@ HC_HuffmanTree **build_huffman_tree(HC_HuffmanTree **list)
 		if ((new = HC_HuffmanTree_new_node(data)) == NULL)
 			HC_Error_print();
 		new->left = one, new->right = two;
-		new->left->data.num = 0, new->right->data.num = 1;
+		new->left->bit = '0', new->right->bit = '1';
 
 		/* Insert new node into priority cue */
 		if (*list) {
+			//if (HC_HuffmanTree_insert_huffman_node(list, new) == NULL)
 			if (HC_HuffmanTree_insert_ordered(list, new, _comp_freq) == NULL)
 				HC_Error_print();
 		} else 
 			*list = new;
+		//HC_ListSort(list, _comp_freq);
 	}
 
 	return list;
-}
-
-/*
- * create_char_map: Create char map from Huffman tree.
- */
-HC_CharMap **create_char_map(HC_CharMap **map, HC_HuffmanTree **huffman_tree)
-{
 }
 
 /*

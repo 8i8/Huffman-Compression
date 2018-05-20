@@ -3,6 +3,7 @@ SRC = huffman.c \
 	  HC_frequency_map.c \
 	  HC_HuffmanTree.c \
 	  HC_ListSort.c \
+	  HC_CharMap.c \
 	  HC_Error.c \
 	  HC_Message.c \
 	  hc_msg.c
@@ -34,7 +35,7 @@ $(OBJ): \
 	Makefile \
 	HC_frequency_map.h \
 	HC_HuffmanTree.h \
-	HC_HuffmanTree.h \
+	HC_CharMap.h \
 	HC_Error.h \
 	HC_Message.h \
 	hc_msg.h

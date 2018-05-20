@@ -4,3 +4,4 @@ open
 *.o
 compression
 test_file
+scratch*

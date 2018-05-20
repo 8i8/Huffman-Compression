@@ -16,12 +16,13 @@
  *
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include "HC_frequency_map.h"
 
 int main(int argc, char *argv[])
 {
 	FILE *fp;
-	HC_HuffmanTree *list = NULL;
+	HC_HuffmanTree *tree = NULL;
 	HC_CharMap *map = NULL;
 
 	while (--argc)
@@ -29,13 +30,13 @@ int main(int argc, char *argv[])
 		if ((fp = fopen(*++argv, "r")) == NULL)
 			printf("Can not open '%s'.\n", argv[argc+1]);
 
-		/* Make priority cue of Huffman nodes */
-		create_priority_cue(&list, fp);
-		print_frequency(&list);
-		build_huffman_tree(&list);
-		create_char_map(&map, &list);
+		create_priority_cue(&tree, fp);
+		print_frequency(&tree);
+		build_huffman_tree(&tree);
+		map = create_char_map(map, &tree);
 
-		//HC_HuffmanTree_clear(&list);
+		HC_HuffmanTree_free(&tree);
+		free(map);
 	}
 
 	return 0;

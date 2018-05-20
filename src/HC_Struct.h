@@ -1,8 +1,4 @@
 /*
- * This Data struct is the default data type used in the data structure test
- * suit, the idea here is that it can be overridden when in standard uses and
- * any struct be passed through the code, but is required when running tests on
- * the suite.
  */
 #include <stdio.h>
 
@@ -12,5 +8,32 @@ typedef struct Data {
 	char str[3];
 	size_t num;
 } Data;
+#endif
+
+#ifndef _hc_dlinkedlist_
+#define _hc_dlinkedlist_
+typedef struct _hc_dlinkedlist {
+	Data data;
+	char bit;
+	struct _hc_dlinkedlist *prev;
+	struct _hc_dlinkedlist *next;
+	struct _hc_dlinkedlist *right;
+	struct _hc_dlinkedlist *left;
+} HC_HuffmanTree;
+#endif
+
+#ifndef _string_
+#define _string_
+typedef struct _string {
+	char *str;
+	size_t len;
+} String;
+#endif
+
+#ifndef _char_map_
+#define _char_map_
+typedef struct _char_map {
+	char binary[255];
+} HC_CharMap;
 #endif
 
