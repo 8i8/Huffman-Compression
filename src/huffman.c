@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "HC_frequency_map.h"
+#include "HC_CharMap.h"
 
 int main(int argc, char *argv[])
 {
@@ -31,9 +32,10 @@ int main(int argc, char *argv[])
 			printf("Can not open '%s'.\n", argv[argc+1]);
 
 		create_priority_cue(&tree, fp);
-		print_frequency(&tree);
+		//print_frequency(&tree);
 		build_huffman_tree(&tree);
 		map = create_char_map(map, &tree);
+		print_char_map(map);
 
 		HC_HuffmanTree_free(&tree);
 		free(map);

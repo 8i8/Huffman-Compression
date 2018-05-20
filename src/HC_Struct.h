@@ -1,4 +1,7 @@
 /*
+ * TODO remove hard coded binary data size, write a function to deal with this
+ * else integrate the String function to work with this also. Note that the
+ * String and the Data structs are almost identical.
  */
 #include <stdio.h>
 
@@ -6,6 +9,7 @@
 #define _data_
 typedef struct Data {
 	char str[3];
+	char binary[256];
 	size_t num;
 } Data;
 #endif
@@ -33,7 +37,7 @@ typedef struct _string {
 #ifndef _char_map_
 #define _char_map_
 typedef struct _char_map {
-	char binary[255];
+	char binary[256];
 } HC_CharMap;
 #endif
 

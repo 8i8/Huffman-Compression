@@ -4,17 +4,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-int _copy_data_to_map(void* ma, void* st)
+#define MAP_LEN 257	/* Standard charset plus EOF character */
+
+int _copy_data_to_map(void* ma, void* tr)
 {
 	HC_CharMap *map = ma;
-	String *string = st;
+	HC_HuffmanTree *tree = tr;
 
-	if (strcmp(string->str, "EOF") == 0)
-		sprintf(map[(int)string->str[256]].binary, string->str);
+	if (strcmp(tree->data.str, "EOF") == 0)
+		sprintf(map[256].binary, tree->data.binary);
 	else
-		sprintf(map[(int)string->str[0]].binary, string->str);
+		sprintf(map[(int)tree->data.str[0]].binary, tree->data.binary);
 
 	return 0;
+}
+
+HC_CharMap *_populate_map(HC_CharMap *map, size_t len)
+{
+	size_t i;
+	for (i = 0; i < len; i++)
+		map[i].binary[0] = '\0';
+	return map;
 }
 
 /*
@@ -38,7 +48,7 @@ char *_expand_string(String *string, size_t len)
  * _add_to_string: Tracks the binary data that is bing created within the 'trie'
  * structure amongst the Huffman nodes.
  */
-char *_add_to_string(HC_HuffmanTree **tree, String *string, size_t len)
+String *_add_to_string(HC_HuffmanTree **tree, String *string, size_t len)
 {
 	if (len >= string->len) {
 		if (len > SIZE_MAX/2) {
@@ -53,7 +63,7 @@ char *_add_to_string(HC_HuffmanTree **tree, String *string, size_t len)
 	strcat(string->str, c);
 	string->len++;
 
-	return string->str;
+	return string;
 }
 
 /*
@@ -66,7 +76,7 @@ HC_CharMap *_huffman_tree_walk(
 				int(*func)(void*, void*),
 				String* string, int len)
 {
-	if (_add_to_string(tree, string, len) == NULL)
+	if ((string = _add_to_string(tree, string, len)) == NULL)
 		return NULL;
 
 	if ((*tree)->left) {
@@ -75,8 +85,10 @@ HC_CharMap *_huffman_tree_walk(
 	} if ((*tree)->right) {
 		_huffman_tree_walk(&(*tree)->right, map, func, string, ++len);
 		string->str[--len] = '\0';
-	} else
-		func(map, string);
+	} else {
+		memcpy((*tree)->data.binary, string->str, string->len);
+		func(map, *tree);
+	}
 
 	return map;
 }
@@ -86,12 +98,20 @@ HC_CharMap *_huffman_tree_walk(
  */
 HC_CharMap *create_char_map(HC_CharMap *map, HC_HuffmanTree **tree)
 {
-	map = malloc(sizeof(HC_CharMap)*257);
 	String string;
 	string.str = calloc(33, 1), string.len = 32;
+	map = malloc(sizeof(HC_CharMap) * MAP_LEN);
+	map = _populate_map(map, MAP_LEN);
 	map = _huffman_tree_walk(tree, map, _copy_data_to_map, &string, 1);
 	free(string.str);
 	return map;
-	return map;
+}
+
+void print_char_map(HC_CharMap *map)
+{
+	size_t i;
+	for (i = 0; i < 257; i++)
+		if (map[i].binary[0] != '\0')
+			printf("%s\n", map[i].binary);
 }
 
