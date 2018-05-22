@@ -4,6 +4,7 @@ SRC = huffman.c \
 	  HC_HuffmanTree.c \
 	  HC_ListSort.c \
 	  HC_CharMap.c \
+	  HC_utf8.c \
 	  HC_Error.c \
 	  HC_Message.c \
 	  hc_msg.c
@@ -36,6 +37,7 @@ $(OBJ): \
 	HC_frequency_map.h \
 	HC_HuffmanTree.h \
 	HC_CharMap.h \
+	HC_utf8.h \
 	HC_Error.h \
 	HC_Message.h \
 	hc_msg.h

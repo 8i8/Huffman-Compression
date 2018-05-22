@@ -5,16 +5,17 @@
 #include <string.h>
 
 #define MAP_LEN 257	/* Standard charset plus EOF character */
+#define BUF_LEN 256
 
 int _copy_data_to_map(void* ma, void* tr)
 {
 	HC_CharMap *map = ma;
-	HC_HuffmanTree *tree = tr;
+	HC_HuffmanTree *node = tr;
 
-	if (strcmp(tree->data.str, "EOF") == 0)
-		sprintf(map[256].binary, tree->data.binary);
+	if (node->data.str[1] == '\0')
+		memcpy(map[ (int)node->data.str[0] ].binary, node->data.binary, node->data.num+1);
 	else
-		sprintf(map[(int)tree->data.str[0]].binary, tree->data.binary);
+		memcpy(map[256].binary, node->data.binary, node->data.num+1);
 
 	return 0;
 }
@@ -35,12 +36,12 @@ char *_expand_string(String *string, size_t len)
 {
 	char *new;
 	/* Same as len * 2 */
-	len <<= len;
+	len <<= 1;
 	new = malloc(len+1);
-	memcpy(new, string->str, string->len);
+	memcpy(new, string->str, len);
 	free(string->str);
 	string->str = new;
-	string->len = len;
+	string->lim = len;
 	return new;
 }
 
@@ -50,7 +51,7 @@ char *_expand_string(String *string, size_t len)
  */
 String *_add_to_string(HC_HuffmanTree **tree, String *string, size_t len)
 {
-	if (len >= string->len) {
+	if (len >= string->lim) {
 		if (len > SIZE_MAX/2) {
 			HC_Error_set("%s: memory allocation failed.", __func__);
 			return NULL;
@@ -61,7 +62,6 @@ String *_add_to_string(HC_HuffmanTree **tree, String *string, size_t len)
 	char c[2] = {'\0'};
 	c[0] = (*tree)->bit;
 	strcat(string->str, c);
-	string->len++;
 
 	return string;
 }
@@ -82,11 +82,17 @@ HC_CharMap *_huffman_tree_walk(
 	if ((*tree)->left) {
 		_huffman_tree_walk(&(*tree)->left, map, func, string, ++len);
 		string->str[--len] = '\0';
-	} if ((*tree)->right) {
+	}
+
+	if ((*tree)->right) {
 		_huffman_tree_walk(&(*tree)->right, map, func, string, ++len);
 		string->str[--len] = '\0';
-	} else {
-		memcpy((*tree)->data.binary, string->str, string->len);
+	}
+
+	if ((*tree)->data.str[0] != '\0') {
+		// TODO problem here in the code.
+		memcpy((*tree)->data.binary, string->str, len);
+		(*tree)->data.num = len;
 		func(map, *tree);
 	}
 
@@ -99,7 +105,7 @@ HC_CharMap *_huffman_tree_walk(
 HC_CharMap *create_char_map(HC_CharMap *map, HC_HuffmanTree **tree)
 {
 	String string;
-	string.str = calloc(33, 1), string.len = 32;
+	string.str = calloc(BUF_LEN, 1), string.lim = BUF_LEN-1;
 	map = malloc(sizeof(HC_CharMap) * MAP_LEN);
 	map = _populate_map(map, MAP_LEN);
 	map = _huffman_tree_walk(tree, map, _copy_data_to_map, &string, 1);
@@ -112,6 +118,6 @@ void print_char_map(HC_CharMap *map)
 	size_t i;
 	for (i = 0; i < 257; i++)
 		if (map[i].binary[0] != '\0')
-			printf("%s\n", map[i].binary);
+			printf("%c %s\n", (char)i, map[i].binary);
 }
 

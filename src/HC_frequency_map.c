@@ -1,9 +1,13 @@
 #include "HC_HuffmanTree.h"
 #include "HC_ListSort.h"
 #include "HC_frequency_map.h"
+#include "HC_utf8.h"
 #include "HC_Struct.h"
 #include "HC_Error.h"
 #include "stdlib.h"
+
+#define CHAR_LEN 5	/* max length of a char, 5 here is for UTF-8 four
+			   characters and a null terminator */
 
 /*
  * _comp_char: Compare Data one and two, the value should be a single char and
@@ -15,7 +19,7 @@ int _comp_char(void *v1, void *v2)
 	d1 = (Data*) v1;
 	d2 = (Data*) v2;
 
-	return (int)d1->str[0] - (int)d2->str[0];
+	return strcmp((char*)d1->str, (char*)d2->str);
 }
 
 /*
@@ -79,17 +83,20 @@ HC_HuffmanTree **_insert_or_count(HC_HuffmanTree **list, Data data,
  */
 HC_HuffmanTree **_compile_frequency_list(HC_HuffmanTree **list, FILE *fp)
 {
-	char c;
+	char c[CHAR_LEN];
 	Data data;
+	int num;
 
 	/* Scan document */
-	while ((c = getc(fp)) != EOF) {
-		data.str[0] = c, data.str[1] = '\0', data.num = 1;
+	while ((*c = fgetc(fp)) != EOF) {
+		num = utf8_test(c[0]);
+		memcpy(data.str, c, num+1);
+		data.num = 1;
 		_insert_or_count(list, data, _comp_char);
 	}
 
 	/* Add EOF char */
-	strcpy(data.str, "EOF"), data.num = 0;
+	memcpy(data.str, "EOF", 4), data.num = 0;
 	_insert_or_count(list, data, _comp_char);
 
 	return list;
