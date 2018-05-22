@@ -39,16 +39,17 @@ unsigned utf8_test_count(unsigned char c)
 {
 	static short unsigned count;
 
-	if (count) {
+	if (count)
+	{
 		if(--count) 
-			return 0;
-		else
-			return 1;
-	} else if (c >> 7) {
+			return count;
+	}
+	else if (c >> 7)
+	{
 		count = _utf8_bytes(c);
 		if (count)
-			return 0;
+			return count;
 	}
-	return 1;
+	return 0;
 }
 

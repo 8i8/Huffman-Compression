@@ -6,9 +6,6 @@
 #include "HC_Error.h"
 #include "stdlib.h"
 
-#define CHAR_LEN 5	/* max length of a char, 5 here is for UTF-8 four
-			   characters and a null terminator */
-
 /*
  * _comp_char: Compare Data one and two, the value should be a single char and
  * the result alphabetical order as per the ASCII char numbering system.
@@ -19,7 +16,8 @@ int _comp_char(void *v1, void *v2)
 	d1 = (Data*) v1;
 	d2 = (Data*) v2;
 
-	return strcmp((char*)d1->str, (char*)d2->str);
+	//return d1->str[0] - d2->str[0];
+	return strcmp(d1->str, d2->str);
 }
 
 /*
@@ -51,7 +49,7 @@ HC_HuffmanTree **_insert_or_count(HC_HuffmanTree **list, Data data,
 		HC_Error_set("%s: NULL pointer.", __func__);
 		return NULL;
 	} else if (*list == NULL) {
-		HC_HuffmanTree_add(list, data);
+		list = HC_HuffmanTree_add(list, data);
 		return list;
 	}
 
@@ -83,14 +81,18 @@ HC_HuffmanTree **_insert_or_count(HC_HuffmanTree **list, Data data,
  */
 HC_HuffmanTree **_compile_frequency_list(HC_HuffmanTree **list, FILE *fp)
 {
-	char c[CHAR_LEN];
+	char c, *ptr;
 	Data data;
-	int num;
 
 	/* Scan document */
-	while ((*c = fgetc(fp)) != EOF) {
-		num = utf8_test(c[0]);
-		memcpy(data.str, c, num+1);
+	while ((c = fgetc(fp)) != EOF)
+	{
+		ptr = data.str;
+		/* Keep getting char for the lenght of the multi-byte character */
+		while (utf8_test_count(c) && (*ptr++ = c))
+			c = fgetc(fp);
+		*ptr = c;
+		ptr[1] = '\0';
 		data.num = 1;
 		_insert_or_count(list, data, _comp_char);
 	}
