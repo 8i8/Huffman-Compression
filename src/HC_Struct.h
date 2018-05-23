@@ -10,6 +10,7 @@
 typedef struct Data {
 	char str[5];
 	char binary[256];
+	size_t len;
 	size_t num;
 } Data;
 #endif
@@ -32,13 +33,5 @@ typedef struct _string {
 	char *str;
 	size_t lim;
 } String;
-#endif
-
-#ifndef _char_map_
-#define _char_map_
-typedef struct _char_map {
-	char binary[256];
-	int len;
-} HC_CharMap;
 #endif
 

@@ -155,6 +155,29 @@ HC_HuffmanTree **build_huffman_tree(HC_HuffmanTree **list)
 	return list;
 }
 
+void _print_huffman_tree(HC_HuffmanTree *tree, int depth)
+{
+	int i;
+	if (tree->left)
+		_print_huffman_tree(tree->left, ++depth);
+
+	for (i = 0; i < --depth; i++)
+		putchar(' ');
+	printf("%s\n", tree->data.str);
+
+	if (tree->right)
+		_print_huffman_tree(tree->right, ++depth);
+}
+
+/*
+ * print_huffman_tree: Print out huffman tree.
+ */
+void print_huffman_tree(HC_HuffmanTree *tree)
+{
+	_print_huffman_tree(tree, 0);
+	putchar('\n');
+}
+
 /*
  * print_frequency: Output the frequency map.
  */

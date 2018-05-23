@@ -25,7 +25,7 @@ HC_HuffmanTree **HC_HuffmanTree_insert_ordered(HC_HuffmanTree **list, HC_Huffman
 HC_HuffmanTree *HC_HuffmanTree_pop(HC_HuffmanTree *list);
 
 /* HC_HuffmanTree_walk: Walk tree and perform (*func) on every node */
-HC_CharMap *HC_HuffmanTree_walk(HC_HuffmanTree **tree, void* store, int(*func)(void*, void*));
+Data *HC_HuffmanTree_walk(HC_HuffmanTree **tree, void* store, int(*func)(void*, void*));
 
 /* HC_HuffmanTree_free: Free huffman tree memory */
 void HC_HuffmanTree_free(HC_HuffmanTree **tree);
