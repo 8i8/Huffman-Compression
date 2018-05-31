@@ -1,8 +1,3 @@
-#include <stdarg.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdint.h>
-
 /* HC_Error_set: Erase any existing message and set a new message in its
  * place */
 void HC_Error_set(char *input, ...);

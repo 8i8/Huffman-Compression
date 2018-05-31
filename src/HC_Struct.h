@@ -1,8 +1,3 @@
-/*
- * TODO remove hard coded binary data size, write a function to deal with this
- * else integrate the String function to work with this also. Note that the
- * String, CharMap and the Data structs are almost identical.
- */
 #include <stdio.h>
 
 #ifndef _data_
@@ -24,7 +19,7 @@ typedef struct _hc_dlinkedlist {
 	struct _hc_dlinkedlist *next;
 	struct _hc_dlinkedlist *right;
 	struct _hc_dlinkedlist *left;
-} HC_HuffmanTree;
+} HC_HuffmanNode;
 #endif
 
 #ifndef _string_

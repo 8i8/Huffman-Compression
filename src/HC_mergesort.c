@@ -1,13 +1,8 @@
-/*
- * Two slightly differing versions of merge sort for linked lists, one uses the
- * null terminator and cuts up the given list, the other one use a count method
- * to find the sub lists ends.
- */
-#include "HC_ListSort.h"
+#include "HC_mergesort.h"
 
-HC_HuffmanTree *_advance_and_cut(HC_HuffmanTree *list, size_t len)
+HC_HuffmanNode* _advance_and_cut(HC_HuffmanNode *list, size_t len)
 {
-	HC_HuffmanTree *fin;
+	HC_HuffmanNode *fin;
 
 	for (; len && list; len--) {
 		if (len == 1)
@@ -25,13 +20,13 @@ HC_HuffmanTree *_advance_and_cut(HC_HuffmanTree *list, size_t len)
  * _merge: Merge together two linked lists whist sorting them by the given
  * function.
  */
-HC_HuffmanTree *_merge(
-				HC_HuffmanTree **list,
-				HC_HuffmanTree **left, HC_HuffmanTree **right,
-				HC_HuffmanTree **end,  HC_HuffmanTree **tail,
+HC_HuffmanNode* _merge(
+				HC_HuffmanNode **list,
+				HC_HuffmanNode **left, HC_HuffmanNode **right,
+				HC_HuffmanNode **end,  HC_HuffmanNode **tail,
 				int(*comp)(void*, void*))
 {
-	HC_HuffmanTree *new = NULL;
+	HC_HuffmanNode *new = NULL;
 
 	while (*left || *right)
 	{
@@ -71,10 +66,10 @@ HC_HuffmanTree *_merge(
  * count to signal the end of a segmented list, the lists are cut and the NULL
  * terminator is used to signal the end of a list.
  */
-HC_HuffmanTree **_listsort_cut(HC_HuffmanTree **list, size_t m_len, int(*comp)(void*, void*))
+HC_HuffmanNode **_listsort_cut(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*, void*))
 {
 	size_t count;
-	HC_HuffmanTree *left, *right, *tail, *end;
+	HC_HuffmanNode *left, *right, *tail, *end;
 
 	/* Set the merge count to 0, this value will effect the recursion of
 	 * this function, when only one merge occurs it was the final merge. */
@@ -114,13 +109,13 @@ HC_HuffmanTree **_listsort_cut(HC_HuffmanTree **list, size_t m_len, int(*comp)(v
 }
 
 /*
- * HC_ListSort: Merge sort for linked lists, long function using count to keep
+ * HC_mergesort: Merge sort for linked lists, long function using count to keep
  * track of lists.
  */
-HC_HuffmanTree **_listsort(HC_HuffmanTree **list, size_t m_len, int(*comp)(void*, void*))
+HC_HuffmanNode **_listsort(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*, void*))
 {
 	size_t i, count, l_len, r_len;
-	HC_HuffmanTree *left, *right, *new, *tail;
+	HC_HuffmanNode *left, *right, *new, *tail;
 
 	/* Set the merge count to 0, this value will effect the recursion of
 	 * this function */
@@ -193,7 +188,7 @@ HC_HuffmanTree **_listsort(HC_HuffmanTree **list, size_t m_len, int(*comp)(void*
 	return list;
 }
 
-HC_HuffmanTree **HC_ListSort(HC_HuffmanTree **list, int(*comp)(void*, void*))
+HC_HuffmanNode **HC_mergesort(HC_HuffmanNode **list, int(*comp)(void*, void*))
 {
 	/* Doh! Nothing to see here, please move along. */
 	if (list == NULL || *list == NULL || (*list)->next == NULL)
@@ -203,7 +198,7 @@ HC_HuffmanTree **HC_ListSort(HC_HuffmanTree **list, int(*comp)(void*, void*))
 	return _listsort(list, 1, comp);
 }
 
-HC_HuffmanTree **HC_ListSort_cut(HC_HuffmanTree **list, int(*comp)(void*, void*))
+HC_HuffmanNode **HC_mergesort_cut(HC_HuffmanNode **list, int(*comp)(void*, void*))
 {
 	/* Doh! Nothing to see here, please move along. */
 	if (list == NULL || *list == NULL || (*list)->next == NULL)
