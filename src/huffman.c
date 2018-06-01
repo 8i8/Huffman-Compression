@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 		create_priority_cue(&tree, in);
 		print_frequency(&tree);
 		build_huffman_tree(&tree);
-		print_huffman_tree(tree);
+		//print_huffman_tree(tree);
 		map = create_char_map(map, &tree);
 		print_char_map(map);
 		rewind(in);

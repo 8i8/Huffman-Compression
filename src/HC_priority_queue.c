@@ -205,11 +205,9 @@ HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *fp)
 	{
 		ptr = data.str;
 		/* Get char for the lenght of the multi-byte character */
-		if (utf8_test(c))
-			while (utf8_test_count(c) && (*ptr++ = c))
-				c = fgetc(fp);
-		else
-			*ptr++ = c;
+		while (utf8_test_count(c) && (*ptr++ = c))
+			c = fgetc(fp);
+		*ptr++ = c;
 		*ptr = '\0';
 		data.num = 1;
 		_insert_or_count(list, data, _comp_char);

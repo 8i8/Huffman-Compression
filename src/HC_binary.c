@@ -38,12 +38,11 @@ int write_to_file(Data *map, FILE *in, FILE *out)
 	while ((c = fgetc(in)) != EOF) {
 
 		/* Get char for the lenght of the multi-byte character */
-		if (utf8_test(c))
-			while (utf8_test_count(c) && (*ptr++ = c))
+		while (utf8_test_count(c) && (*ptr++ = c))
 				c = fgetc(in);
-		else
-			*ptr++ = c;
+		*ptr++ = c;
 		*ptr = '\0';
+
 		bin = map_to_binary(map, str);
 		len = map_binary_len(map, str);
 		for (i = 0; i < len; i++, bin++)
