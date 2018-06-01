@@ -81,6 +81,7 @@ String *_add_to_string(HC_HuffmanNode**tree, String *string, size_t len)
 
 	char c[2] = {'\0'};
 	c[0] = (*tree)->bit;
+	c[1] = '\0';
 	strcat(string->str, c);
 
 	return string;

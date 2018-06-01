@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 	int read, write;
 	HC_HuffmanNode *tree = NULL;
 	Data *map = NULL;
+	in = out = NULL;
 	read = write = 0;
 
 	while ((c = getopt(argc, argv, "c:")) != -1)
@@ -57,10 +58,10 @@ int main(int argc, char *argv[])
 				break;
 		}
 
-	if ((in = fopen(argv[optind], "r")) == NULL) {
+	if (optind != argc && ((in = fopen(argv[optind], "r")) == NULL)) {
 		printf("file read error: %s\n", argv[optind]);
 		return 1;
-	} else
+	} else if (in != NULL)
 		read++;
 
 	if (read) {
