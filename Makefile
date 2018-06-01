@@ -7,7 +7,8 @@ SRC = huffman.c \
 	HC_mergesort.c \
 	HC_print_output.c \
 	HC_priority_queue.c \
-	HC_utf8.c
+	HC_utf8.c \
+	HC_binary.c
 OBJ = $(SRC:.c=.o)
 CC  = gcc
 
@@ -41,4 +42,5 @@ $(OBJ): \
 	HC_mergesort.h \
 	HC_priority_queue.h \
 	HC_Struct.h \
-	HC_utf8.h
+	HC_utf8.h \
+	HC_binary.h

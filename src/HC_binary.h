@@ -1,3 +1,6 @@
 #include <stdio.h>
+#include "HC_Struct.h"
 
-int write_to_file(FILE *in, char *file_out);
+/* write_to_file: Write compressed file */
+int write_to_file(Data *map, FILE *in, FILE *out);
+

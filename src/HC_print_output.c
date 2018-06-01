@@ -26,9 +26,9 @@ void print_huffman_tree(HC_HuffmanNode *tree)
 }
 
 /*
- * print_frequeuency: Output the frequency map.
+ * print_frequency: Output the frequency map.
  */
-void print_frequeuency(HC_HuffmanNode **list)
+void print_frequency(HC_HuffmanNode **list)
 {
 	while (*list != NULL) {
 		printf("%s ", (*list)->data.str);

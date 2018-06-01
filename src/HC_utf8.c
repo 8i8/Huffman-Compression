@@ -27,7 +27,7 @@ unsigned utf8_test(unsigned char c)
 	if (c >> 7)
 		return _utf8_bytes(c) + 1;
 	else
-		return 1;
+		return 0;
 }
 
 /*
@@ -39,13 +39,11 @@ unsigned utf8_test_count(unsigned char c)
 {
 	static short unsigned count;
 
-	if (count)
-	{
+	if (count) {
 		if(--count) 
 			return count;
 	}
-	else if (c >> 7)
-	{
+	else if (c >> 7) {
 		count = _utf8_bytes(c);
 		if (count)
 			return count;

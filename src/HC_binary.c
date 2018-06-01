@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "HC_Struct.h"
 #include "HC_char_map.h"
+#include "HC_utf8.h"
 
 /* how many bits in current byte */
 int bit_counter;
@@ -10,7 +11,7 @@ unsigned char cur_byte;
 /* write 1 or 0 bit */
 void _write_bit(FILE *out, unsigned char bit)
 {
-	if(++bit_counter == 8) {
+	if (++bit_counter == 8) {
 		fwrite(&cur_byte, 1, 1, out);
 		bit_counter = 0;
 		cur_byte = 0;
@@ -25,26 +26,43 @@ void _write_bit(FILE *out, unsigned char bit)
 /*
  * write_to_file: Write compressed file.
  */
-int write_to_file(Data *map, FILE *in, char *file_out)
+int write_to_file(Data *map, FILE *in, FILE *out)
 {
-	FILE* out;
-	int c;
-
-	out = fopen(file_out, "w");
+	char c, *ptr, str[5], *bin;
+	size_t len, i;
+	ptr = str;
 
 	cur_byte = 0;
 	bit_counter = 0;
 
-	while ((c = fgetc(in)) != EOF)
-		_write_bit(out, map_to_binary(map, c);
+	while ((c = fgetc(in)) != EOF) {
+
+		/* Get char for the lenght of the multi-byte character */
+		if (utf8_test(c))
+			while (utf8_test_count(c) && (*ptr++ = c))
+				c = fgetc(in);
+		else
+			*ptr++ = c;
+		*ptr = '\0';
+		bin = map_to_binary(map, str);
+		len = map_binary_len(map, str);
+		for (i = 0; i < len; i++, bin++)
+			_write_bit(out, bin[0]);
+
+		ptr = str;
+	}
+
+	/* Add EOF char */
+	bin = map_to_binary(map, "EOF");
+	len = map_binary_len(map, str);
+	for (i = 0; i < len; i++, bin++)
+		_write_bit(out, bin[0]);
 
 	if(bit_counter > 0) {
 		 /* pad the last byte with zeroes */
 		 cur_byte <<= 8 - bit_counter;
 		 fwrite(&cur_byte, 1, 1, out);
 	}
-
-	fclose(out);
 
 	return 0;
 }

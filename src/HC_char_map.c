@@ -111,6 +111,7 @@ Data *_huffman_tree_walk(
 
 	if ((*tree)->data.str[0] != '\0') {
 		memcpy((*tree)->data.binary, string->str, len);
+		//TODO is this value redundant?
 		(*tree)->data.len = len;
 		func(map, *tree);
 	}
@@ -132,8 +133,19 @@ Data *create_char_map(Data *map, HC_HuffmanNode **tree)
 	return map;
 }
 
+/*
+ * map_to_binary: Returns binary value for char from the given map.
+ */
 char *map_to_binary(Data *map, char *c)
 {
 	return map[hash(c)].binary;
+}
+
+/*
+ * map_binary_len: Returns the length of the binary value for the given char.
+ */
+size_t map_binary_len(Data *map, char *c)
+{
+	return map[hash(c)].len;
 }
 
