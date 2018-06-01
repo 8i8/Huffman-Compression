@@ -46,9 +46,9 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 }
 
 /*
- * HC_HuffmanTree_free: Free huffman tree memory.
+ * HC_Huffman_tree_free: Free huffman tree memory.
  */
-int HC_HuffmanTree_free(HC_HuffmanNode **tree)
+int HC_Huffman_tree_free(HC_HuffmanNode **tree)
 {
 	if ((*tree)->next != NULL) {
 		HC_Error_set("%s(): Priority queue nodes still exist.");
@@ -56,9 +56,9 @@ int HC_HuffmanTree_free(HC_HuffmanNode **tree)
 	}
 
 	if ((*tree)->left)
-		HC_HuffmanTree_free(&(*tree)->left);
+		HC_Huffman_tree_free(&(*tree)->left);
 	if ((*tree)->right)
-		HC_HuffmanTree_free(&(*tree)->right);
+		HC_Huffman_tree_free(&(*tree)->right);
 
 	free(*tree);
 

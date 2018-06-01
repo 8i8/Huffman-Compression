@@ -9,6 +9,7 @@ void _print_huffman_tree(HC_HuffmanNode *tree, int depth)
 
 	for (i = 0; i < --depth; i++)
 		putchar(' ');
+
 	printf("%s\n", tree->data.str);
 
 	if (tree->right)

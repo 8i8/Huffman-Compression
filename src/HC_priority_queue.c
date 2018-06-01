@@ -73,6 +73,22 @@ HC_HuffmanNode **HC_priority_queue_insert(HC_HuffmanNode** list, Data data)
 }
 
 /*
+ * HC_priority_queue_insert_node: Insert a new node at current location.
+ */
+HC_HuffmanNode **HC_priority_queue_insert_node(HC_HuffmanNode **list, HC_HuffmanNode *new_node)
+{
+	if (list == NULL || *list == NULL || new_node == NULL) {
+		HC_Error_set("%s: NULL pointer.", __func__);
+		return NULL;
+	}
+
+	new_node->next = *list;
+	*list = new_node;
+
+	return list;
+}
+
+/*
  * HC_priority_queue_insert_ordered: Insert a new node conditionaly.
  */
 HC_HuffmanNode **HC_priority_queue_insert_ordered(

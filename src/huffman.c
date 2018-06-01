@@ -39,11 +39,11 @@ int main(int argc, char *argv[])
 		print_frequeuency(&tree);
 		build_huffman_tree(&tree);
 		print_huffman_tree(tree);
-		map = create_char_map(map, &tree);
-		print_char_map(map);
+		//map = create_char_map(map, &tree);
+		//print_char_map(map);
 		rewind(fp);
 
-		HC_HuffmanTree_free(&tree);
+		HC_Huffman_tree_free(&tree);
 		free(map);
 	}
 
