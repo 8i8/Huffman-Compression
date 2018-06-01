@@ -31,7 +31,8 @@ int _copy_data_to_map(void* ma, void* tr)
 	Data *map = ma;
 	HC_HuffmanNode*node = tr;
 
-	*(map+hash(node->data.str)) = node->data;
+	//*(map+hash(node->data.str)) = node->data;
+	map[hash(node->data.str)] = node->data;
 
 	return 0;
 }
@@ -109,7 +110,6 @@ Data *_huffman_tree_walk(
 	}
 
 	if ((*tree)->data.str[0] != '\0') {
-		// TODO problem here in the code.
 		memcpy((*tree)->data.binary, string->str, len);
 		(*tree)->data.len = len;
 		func(map, *tree);
@@ -121,7 +121,7 @@ Data *_huffman_tree_walk(
 /*
  * create_char_map: Create char map from Huffman tree.
  */
-Data *create_char_map(Data *map, HC_HuffmanNode**tree)
+Data *create_char_map(Data *map, HC_HuffmanNode **tree)
 {
 	String string;
 	string.str = calloc(BUF_LEN, 1), string.lim = BUF_LEN-1;
@@ -130,5 +130,10 @@ Data *create_char_map(Data *map, HC_HuffmanNode**tree)
 	map = _huffman_tree_walk(tree, map, _copy_data_to_map, &string, 1);
 	free(string.str);
 	return map;
+}
+
+char *map_to_binary(Data *map, char *c)
+{
+	return map[hash(c)].binary;
 }
 

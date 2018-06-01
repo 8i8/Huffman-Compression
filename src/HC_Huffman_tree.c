@@ -36,7 +36,7 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 
 		/* Insert new node into priority cue */
 		if (*list) {
-			if (HC_priority_queue_insert_ordered(list, new, _comp_char) == NULL)
+			if (HC_priority_queue_insert_ordered(list, new, _comp_freq) == NULL)
 				HC_Error_print();
 		} else 
 			*list = new;
@@ -51,7 +51,7 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 int HC_Huffman_tree_free(HC_HuffmanNode **tree)
 {
 	if ((*tree)->next != NULL) {
-		HC_Error_set("%s(): Priority queue nodes still exist.");
+		fprintf(stderr, "%s(): Priority queue nodes still exist.", __func__);
 		return 1;
 	}
 

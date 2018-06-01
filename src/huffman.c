@@ -16,36 +16,59 @@
  *
  */
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "HC_Huffman_tree.h"
 #include "HC_priority_queue.h"
 #include "HC_char_map.h"
 #include "HC_print_output.h"
 
+short COMPRESS = 0;
+short READ = 0;
+
 int main(int argc, char *argv[])
 {
-	FILE *fp;
-	HC_HuffmanNode*tree = NULL;
+	FILE *in, *out;
+	char c;
+	HC_HuffmanNode *tree = NULL;
 	Data *map = NULL;
 
-	while (--argc)
-	{
-		if ((fp = fopen(*++argv, "r")) == NULL) {
-			printf("Failed to open '%s'.\n", argv[argc+1]);
-			return 1;
+	while ((c = getopt(argc, argv, "c:")) != -1)
+		switch (c)
+		{
+			case 'c':
+				if ((out = fopen(optarg, "w")) == NULL) {
+					printf("file read error: %s\n", optarg);
+					return 1;
+				}
+			case '?':
+				if (optopt == 'c')
+					fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+				else if (isprint (optopt))
+					fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+				else
+					fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
+				return 1;
 		}
 
-		create_priority_cue(&tree, fp);
+	if ((in = fopen(argv[optind], "r")) == NULL && COMPRESS++) {
+		printf("file read error: %s\n", argv[optind]);
+		return 1;
+	}
+
+	if (COMPRESS) {
+		create_priority_cue(&tree, in);
 		print_frequeuency(&tree);
 		build_huffman_tree(&tree);
 		print_huffman_tree(tree);
-		//map = create_char_map(map, &tree);
-		//print_char_map(map);
-		rewind(fp);
-
-		HC_Huffman_tree_free(&tree);
-		free(map);
+		map = create_char_map(map, &tree);
+		print_char_map(map);
+		rewind(in);
 	}
+
+	HC_Huffman_tree_free(&tree);
+	free(map);
 
 	return 0;
 }
