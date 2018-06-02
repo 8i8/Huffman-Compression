@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 		switch (c)
 		{
 			case 'c':
-				if ((out = fopen(optarg, "wb")) == NULL) {
+				if ((out = fopen(optarg, "w+")) == NULL) {
 					printf("file read error: %s\n", optarg);
 					return 1;
 				}
