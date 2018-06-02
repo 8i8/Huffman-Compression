@@ -1,9 +1,9 @@
-#include "HC_Error.h"
+#include "HC_error.h"
 #include "HC_mergesort.h"
 #include <stdlib.h>
 #include <string.h>
 #include "HC_utf8.h"
-#include "HC_comp_functions.h"
+#include "HC_func_comp.h"
 
 /*
  * HC_priority_queue_new_node: Internal function for creating new list nodes.
@@ -12,7 +12,7 @@ HC_HuffmanNode *HC_priority_queue_new_node(Data data)
 {
 	HC_HuffmanNode *new_node = NULL;
 	if ((new_node = malloc(sizeof(HC_HuffmanNode))) == NULL) {
-		HC_Error_set("%s: memory allocation failed.", __func__);
+		HC_error_set("%s: memory allocation failed.", __func__);
 		return NULL;
 	}
 	new_node->next = NULL;
@@ -37,7 +37,7 @@ HC_HuffmanNode **HC_priority_queue_add(HC_HuffmanNode **list, Data data)
 			list = &(*list)->next;
 
 		if (((*list)->next = HC_priority_queue_new_node(data)) == NULL) {
-			HC_Error_append("%s: ", __func__);
+			HC_error_append("%s: ", __func__);
 			return NULL;
 		}
 
@@ -58,11 +58,11 @@ HC_HuffmanNode **HC_priority_queue_insert(HC_HuffmanNode** list, Data data)
 	HC_HuffmanNode *new;
 
 	if (list == NULL || *list == NULL) {
-		HC_Error_set("%s: NULL pointer.", __func__);
+		HC_error_set("%s: NULL pointer.", __func__);
 		return NULL;
 	}
 	if ((new = HC_priority_queue_new_node(data)) == NULL) {
-		HC_Error_append("%s: ", __func__);
+		HC_error_append("%s: ", __func__);
 		return NULL;
 	}
 
@@ -78,7 +78,7 @@ HC_HuffmanNode **HC_priority_queue_insert(HC_HuffmanNode** list, Data data)
 HC_HuffmanNode **HC_priority_queue_insert_node(HC_HuffmanNode **list, HC_HuffmanNode *new_node)
 {
 	if (list == NULL || *list == NULL || new_node == NULL) {
-		HC_Error_set("%s: NULL pointer.", __func__);
+		HC_error_set("%s: NULL pointer.", __func__);
 		return NULL;
 	}
 
@@ -97,7 +97,7 @@ HC_HuffmanNode **HC_priority_queue_insert_ordered(
 						int(*freq)(void*, void*))
 {
 	if (newList == NULL) {
-		HC_Error_set("%s: NULL pointer.", __func__);
+		HC_error_set("%s: NULL pointer.", __func__);
 		return NULL;
 	}
 
@@ -127,7 +127,7 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
 	HC_HuffmanNode *popped;
 
 	if (list == NULL) {
-		HC_Error_set("%s: Null pointer.", __func__);
+		HC_error_set("%s: Null pointer.", __func__);
 		return NULL;
 	}
 
@@ -162,7 +162,7 @@ HC_HuffmanNode **_insert_or_count(HC_HuffmanNode **list, Data data,
 	int test;
 
 	if (list == NULL) {
-		HC_Error_set("%s: NULL pointer.", __func__);
+		HC_error_set("%s: NULL pointer.", __func__);
 		return NULL;
 	} else if (*list == NULL) {
 		list = HC_priority_queue_add(list, data);
@@ -173,7 +173,7 @@ HC_HuffmanNode **_insert_or_count(HC_HuffmanNode **list, Data data,
 	{
 		if ((test = (*func)((void*)&data, (void*)&(*list)->data)) < 0) {
 			if ((HC_priority_queue_insert(list, data)) == NULL) {
-				HC_Error_append("%s: ", __func__);
+				HC_error_append("%s: ", __func__);
 				return NULL;
 			}
 			break;

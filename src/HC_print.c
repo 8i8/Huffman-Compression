@@ -1,5 +1,5 @@
 #include "HC_priority_queue.h"
-#include "HC_char_map.h"
+#include "HC_map_char.h"
 
 void _print_huffman_tree(HC_HuffmanNode *tree, int depth)
 {

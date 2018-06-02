@@ -1,6 +1,6 @@
-#include "HC_char_map.h"
-#include "HC_Error.h"
-#include "HC_Struct.h"
+#include "HC_map_char.h"
+#include "HC_error.h"
+#include "HC_struct.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +31,6 @@ int _copy_data_to_map(void* ma, void* tr)
 	Data *map = ma;
 	HC_HuffmanNode*node = tr;
 
-	//*(map+hash(node->data.str)) = node->data;
 	map[hash(node->data.str)] = node->data;
 
 	return 0;
@@ -73,7 +72,7 @@ String *_add_to_string(HC_HuffmanNode**tree, String *string, size_t len)
 {
 	if (len >= string->lim) {
 		if (len > SIZE_MAX/2) {
-			HC_Error_set("%s: memory allocation failed.", __func__);
+			HC_error_set("%s: memory allocation failed.", __func__);
 			return NULL;
 		}
 		_expand_string(string, len);
@@ -121,9 +120,9 @@ Data *_huffman_tree_walk(
 }
 
 /*
- * create_char_map: Create char map from Huffman tree.
+ * map_create: Create char map from Huffman tree.
  */
-Data *create_char_map(Data *map, HC_HuffmanNode **tree)
+Data *map_create(Data *map, HC_HuffmanNode **tree)
 {
 	String string;
 	string.str = calloc(BUF_LEN, 1), string.lim = BUF_LEN-1;
@@ -135,17 +134,17 @@ Data *create_char_map(Data *map, HC_HuffmanNode **tree)
 }
 
 /*
- * map_to_binary: Returns binary value for char from the given map.
+ * map_read_char_to_binary: Returns binary value for char from the given map.
  */
-char *map_to_binary(Data *map, char *c)
+char *map_read_char_to_binary(Data *map, char *c)
 {
 	return map[hash(c)].binary;
 }
 
 /*
- * map_binary_len: Returns the length of the binary value for the given char.
+ * map_read_char_to_binary_len: Returns the length of the binary value for the given char.
  */
-size_t map_binary_len(Data *map, char *c)
+size_t map_read_char_to_binary_len(Data *map, char *c)
 {
 	return map[hash(c)].len;
 }

@@ -1,14 +1,14 @@
 EXE = compression
 SRC = huffman.c \
-	HC_char_map.c \
-	HC_comp_functions.c \
-	HC_Error.c \
-	HC_Huffman_tree.c \
+	HC_map_char.c \
+	HC_func_comp.c \
+	HC_error.c \
+	HC_huffman_tree.c \
 	HC_mergesort.c \
-	HC_print_output.c \
+	HC_print.c \
 	HC_priority_queue.c \
 	HC_utf8.c \
-	HC_binary.c
+	HC_read_write.c
 OBJ = $(SRC:.c=.o)
 CC  = gcc
 
@@ -35,12 +35,12 @@ distclean: clean
 
 $(OBJ): \
 	Makefile \
-	HC_char_map.h \
-	HC_comp_functions.h \
-	HC_Error.h \
-	HC_Huffman_tree.h \
+	HC_map_char.h \
+	HC_func_comp.h \
+	HC_error.h \
+	HC_huffman_tree.h \
 	HC_mergesort.h \
 	HC_priority_queue.h \
-	HC_Struct.h \
+	HC_struct.h \
 	HC_utf8.h \
-	HC_binary.h
+	HC_read_write.h

@@ -11,18 +11,18 @@ static char send[MAX_LENGTH + 1];
 static int state = 0;
 
 /*
- * HC_Error_state: Returns the status of the message service, 0 as all clear, 1
+ * HC_error_state: Returns the status of the message service, 0 as all clear, 1
  * if an message is pending.
  */
-int HC_Error_state(void)
+int HC_error_state(void)
 {
 	return state;
 }
 
 /*
- * HC_Error_reset: Set to empty, with no message.
+ * HC_error_reset: Set to empty, with no message.
  */
-void HC_Error_reset(void)
+void HC_error_reset(void)
 {
 	store[0] = '\0';
 	state = 0;
@@ -119,10 +119,10 @@ int _ds_message_set(char *message, char *input, va_list *va)
 }
 
 /*
- * HC_Error_set: Erase any existing message and set a new message in its
+ * HC_error_set: Erase any existing message and set a new message in its
  * place.
  */
-void HC_Error_set(char *input, ...)
+void HC_error_set(char *input, ...)
 {
 	store[0] = '\0';
 	va_list va;
@@ -135,9 +135,9 @@ void HC_Error_set(char *input, ...)
 }
 
 /*
- * HC_Error_append: Append to the current message.
+ * HC_error_append: Append to the current message.
  */
-void HC_Error_append(char *input, ...)
+void HC_error_append(char *input, ...)
 {
 	va_list va;
 	va_start(va, input);
@@ -150,9 +150,9 @@ void HC_Error_append(char *input, ...)
 }
 
 /*
- * HC_Error_insert: Insert at the beginning of the current message.
+ * HC_error_insert: Insert at the beginning of the current message.
  */
-void HC_Error_insert(char *input, ...)
+void HC_error_insert(char *input, ...)
 {
 	va_list va;
 	va_start(va, input);
@@ -165,9 +165,9 @@ void HC_Error_insert(char *input, ...)
 }
 
 /*
- * HC_Error_get: Return message and reset to empty.
+ * HC_error_get: Return message and reset to empty.
  */
-char *HC_Error_get(void)
+char *HC_error_get(void)
 {
 	strcpy(send, store);
 	store[0] = '\0';
@@ -177,9 +177,9 @@ char *HC_Error_get(void)
 }
 
 /*
- * HC_Error_print: Write message to terminal and reset.
+ * HC_error_print: Write message to terminal and reset.
  */
-void HC_Error_print(void)
+void HC_error_print(void)
 {
 	_ds_write_to_string(1, store, "error: ");
 	strcpy(send, store);

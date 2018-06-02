@@ -1,4 +1,4 @@
-#include "HC_Struct.h"
+#include "HC_struct.h"
 
 /* _comp_char: Compare Data one and two, the value should be a single char and
  * the result alphabetical order as per the ASCII char numbering system */

@@ -1,7 +1,7 @@
 #include "HC_priority_queue.h"
 #include "HC_mergesort.h"
-#include "HC_comp_functions.h"
-#include "HC_Error.h"
+#include "HC_func_comp.h"
+#include "HC_error.h"
 #include <stdlib.h>
 
 
@@ -30,14 +30,14 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 
 		/* Add leaves to new node and give a binary value */
 		if ((new = HC_priority_queue_new_node(data)) == NULL)
-			HC_Error_print();
+			HC_error_print();
 		new->left = one, new->right = two;
 		new->left->bit = '0', new->right->bit = '1';
 
 		/* Insert new node into priority cue */
 		if (*list) {
 			if (HC_priority_queue_insert_ordered(list, new, _comp_freq) == NULL)
-				HC_Error_print();
+				HC_error_print();
 		} else 
 			*list = new;
 	}
@@ -46,9 +46,9 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 }
 
 /*
- * HC_Huffman_tree_free: Free huffman tree memory.
+ * HC_huffman_tree_free: Free huffman tree memory.
  */
-int HC_Huffman_tree_free(HC_HuffmanNode **tree)
+int HC_huffman_tree_free(HC_HuffmanNode **tree)
 {
 	if ((*tree)->next != NULL) {
 		fprintf(stderr, "%s(): Priority queue nodes still exist.", __func__);
@@ -56,9 +56,9 @@ int HC_Huffman_tree_free(HC_HuffmanNode **tree)
 	}
 
 	if ((*tree)->left)
-		HC_Huffman_tree_free(&(*tree)->left);
+		HC_huffman_tree_free(&(*tree)->left);
 	if ((*tree)->right)
-		HC_Huffman_tree_free(&(*tree)->right);
+		HC_huffman_tree_free(&(*tree)->right);
 
 	free(*tree);
 

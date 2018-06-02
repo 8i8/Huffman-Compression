@@ -19,11 +19,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "HC_Huffman_tree.h"
-#include "HC_priority_queue.h"
-#include "HC_char_map.h"
-#include "HC_binary.h"
-#include "HC_print_output.h"
+#include "HC_huffman_tree.h"
+#include "HC_map_char.h"
+#include "HC_read_write.h"
+#include "HC_print.h"
 
 int main(int argc, char *argv[])
 {
@@ -66,20 +65,20 @@ int main(int argc, char *argv[])
 
 	if (read) {
 		create_priority_cue(&tree, in);
-		print_frequency(&tree);
+		//print_frequency(&tree);
 		build_huffman_tree(&tree);
 		//print_huffman_tree(tree);
-		map = create_char_map(map, &tree);
-		print_char_map(map);
+		map = map_create(map, &tree);
+		//print_char_map(map);
 		rewind(in);
 	}
 
 	if (read && write) {
-		write_to_file(map, in, out);
+		write_binary_to_file(map, in, out);
 	}
 	
 	if (read) {
-		HC_Huffman_tree_free(&tree);
+		HC_huffman_tree_free(&tree);
 		free(map);
 		fclose(in);
 	}

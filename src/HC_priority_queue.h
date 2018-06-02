@@ -1,4 +1,4 @@
-#include "HC_Struct.h"
+#include "HC_struct.h"
 
 /* HC_priority_queue_new_node: Internal function for creating new list nodes */
 HC_HuffmanNode *HC_priority_queue_new_node(Data data);

@@ -1,4 +1,4 @@
-#include "HC_Struct.h"
+#include "HC_struct.h"
 #include <string.h>
 
 /*
