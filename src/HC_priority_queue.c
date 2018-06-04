@@ -178,7 +178,7 @@ HC_HuffmanNode **_insert_or_count(HC_HuffmanNode **list, Data data,
 			}
 			break;
 		} else if (test == 0) {
-			(*list)->data.num++;
+			(*list)->data.frq++;
 			break;
 		} else if (test > 0)
 			list = &(*list)->next;
@@ -209,12 +209,12 @@ HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *fp)
 			c = fgetc(fp);
 		*ptr++ = c;
 		*ptr = '\0';
-		data.num = 1;
+		data.frq = 1;
 		_insert_or_count(list, data, _comp_char);
 	}
 
 	/* Add EOF char */
-	memcpy(data.multi_byte_char, "EOF", 4), data.num = 0;
+	memcpy(data.multi_byte_char, "EOF", 4), data.frq = 0;
 	_insert_or_count(list, data, _comp_char);
 
 	return list;
@@ -241,7 +241,7 @@ void print_frequency(HC_HuffmanNode **list)
 {
 	while (*list != NULL) {
 		printf("%s ", (*list)->data.multi_byte_char);
-		printf("%lu\n", (*list)->data.num);
+		printf("%lu\n", (*list)->data.frq);
 		list = &(*list)->next;
 	}
 }

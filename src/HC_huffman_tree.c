@@ -16,7 +16,7 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 {
 	HC_HuffmanNode *new, *one, *two;
 	Data data;
-	data.num = 0, data.multi_byte_char[0] = '\0';
+	data.frq = 0, data.multi_byte_char[0] = '\0';
 
 	while ((*list)->next)
 	{
@@ -25,7 +25,7 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 		two = *list;
 		*list = HC_priority_queue_pop(*list);
 
-		data.num = one->data.num + two->data.num;
+		data.frq = one->data.frq + two->data.frq;
 		data.multi_byte_char[0] = '\0';
 
 		/* Add leaves to new node and give a binary value */

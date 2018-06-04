@@ -26,6 +26,6 @@ int _comp_freq(void *v1, void *v2)
 	d1 = (Data*) v1;
 	d2 = (Data*) v2;
 
-	return (int)d1->num - (int)d2->num;
+	return (int)d1->frq - (int)d2->frq;
 }
 

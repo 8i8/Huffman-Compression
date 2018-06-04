@@ -48,6 +48,5 @@ $(OBJ): \
 	HC_state.h \
 	HC_map_char.h \
 	HC_error.h \
-	HC_framework.h \
 	HC_prologue.h \
 	HC_epilogue.h

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #define BUF_LEN 32
 #define MAP_LEN 2097153		/* 2^21 max number of Unicode char + 1 to stop
@@ -35,6 +36,7 @@ int _copy_data_to_map(void* ma, void* tr)
 	Data *map = ma;
 	HC_HuffmanNode*node = tr;
 
+	assert((map[hash(node->data.multi_byte_char)].len) == 0);
 	map[hash(node->data.multi_byte_char)] = node->data;
 
 	return 0;
@@ -46,8 +48,12 @@ int _copy_data_to_map(void* ma, void* tr)
 Data *_populate_map(Data *map, size_t len)
 {
 	size_t i;
-	for (i = 0; i < len; i++)
+	for (i = 0; i < len; i++) {
+		map[i].multi_byte_char[0] = '\0';
 		map[i].string[0] = '\0';
+		map[i].len = 0;
+		map[i].frq = 0;
+	}
 	//memcpy(map[MAP_LEN - 1].string, "END", 4);
 	return map;
 }
