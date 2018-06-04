@@ -4,7 +4,6 @@ SRC = huffman.c \
 	HC_read_write.c \
 	HC_map_char.c \
 	HC_func_comp.c \
-	HC_print.c \
 	HC_huffman_tree.c \
 	HC_mergesort.c \
 	HC_priority_queue.c \
@@ -49,7 +48,6 @@ $(OBJ): \
 	HC_state.h \
 	HC_map_char.h \
 	HC_error.h \
-	HC_print.h \
 	HC_framework.h \
 	HC_prologue.h \
 	HC_epilogue.h

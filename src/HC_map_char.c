@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define BUF_LEN 32
+#define MAP_LEN 2097153		/* 2^21 max number of Unicode char + 1 to stop
+				   a while loop */
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Char map
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -31,7 +35,7 @@ int _copy_data_to_map(void* ma, void* tr)
 	Data *map = ma;
 	HC_HuffmanNode*node = tr;
 
-	map[hash(node->data.str)] = node->data;
+	map[hash(node->data.multi_byte_char)] = node->data;
 
 	return 0;
 }
@@ -43,7 +47,8 @@ Data *_populate_map(Data *map, size_t len)
 {
 	size_t i;
 	for (i = 0; i < len; i++)
-		map[i].binary[0] = '\0';
+		map[i].string[0] = '\0';
+	//memcpy(map[MAP_LEN - 1].string, "END", 4);
 	return map;
 }
 
@@ -68,7 +73,7 @@ char *_expand_string(String *string, size_t len)
  * _add_to_string: Tracks the binary data that is bing created within the 'trie'
  * structure amongst the Huffman nodes.
  */
-String *_add_to_string(HC_HuffmanNode**tree, String *string, size_t len)
+String *_add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
 {
 	if (len >= string->lim) {
 		if (len > SIZE_MAX/2) {
@@ -91,7 +96,7 @@ String *_add_to_string(HC_HuffmanNode**tree, String *string, size_t len)
  * every node.
  */
 Data *_huffman_tree_walk(
-				HC_HuffmanNode**tree,
+				HC_HuffmanNode **tree,
 				void* map,
 				int(*func)(void*, void*),
 				String* string, int len)
@@ -109,8 +114,8 @@ Data *_huffman_tree_walk(
 		string->str[--len] = '\0';
 	}
 
-	if ((*tree)->data.str[0] != '\0') {
-		memcpy((*tree)->data.binary, string->str, len);
+	if ((*tree)->data.multi_byte_char[0] != '\0') {
+		memcpy((*tree)->data.string, string->str, len);
 		//TODO is this value redundant?
 		(*tree)->data.len = len;
 		func(map, *tree);
@@ -138,7 +143,7 @@ Data *map_create(Data *map, HC_HuffmanNode **tree)
  */
 char *map_read_char_to_binary(Data *map, char *c)
 {
-	return map[hash(c)].binary;
+	return map[hash(c)].string;
 }
 
 /*
@@ -147,5 +152,16 @@ char *map_read_char_to_binary(Data *map, char *c)
 size_t map_read_char_to_binary_len(Data *map, char *c)
 {
 	return map[hash(c)].len;
+}
+
+/*
+ * print_char_map: Print out the char map made by the Huffman tree.
+ */
+void print_char_map(Data *map)
+{
+	size_t i;
+	for (i = 0; i < MAP_LEN; i++, map++)
+		if (*(map->string) != '\0')
+			printf("%s %s\n", map->multi_byte_char, map->string);
 }
 

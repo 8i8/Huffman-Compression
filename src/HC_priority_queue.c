@@ -203,7 +203,7 @@ HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *fp)
 	/* Scan document */
 	while ((c = fgetc(fp)) != EOF)
 	{
-		ptr = data.str;
+		ptr = data.multi_byte_char;
 		/* Get char for the lenght of the multi-byte character */
 		while (utf8_test_count(c) && (*ptr++ = c))
 			c = fgetc(fp);
@@ -214,7 +214,7 @@ HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *fp)
 	}
 
 	/* Add EOF char */
-	memcpy(data.str, "EOF", 4), data.num = 0;
+	memcpy(data.multi_byte_char, "EOF", 4), data.num = 0;
 	_insert_or_count(list, data, _comp_char);
 
 	return list;
@@ -232,5 +232,17 @@ HC_HuffmanNode **create_priority_cue(HC_HuffmanNode **list, FILE *fp)
 	list = HC_mergesort(list, _comp_freq);
 
 	return list;
+}
+
+/*
+ * print_frequency: Output the frequency map.
+ */
+void print_frequency(HC_HuffmanNode **list)
+{
+	while (*list != NULL) {
+		printf("%s ", (*list)->data.multi_byte_char);
+		printf("%lu\n", (*list)->data.num);
+		list = &(*list)->next;
+	}
 }
 

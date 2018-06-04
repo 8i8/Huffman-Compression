@@ -3,6 +3,10 @@
 #include "HC_map_char.h"
 #include "HC_utf8.h"
 
+//void _write_map(Data *map, FILE *out)
+//{
+//}
+
 /*
  * _write_bit: Set all of the bits in a byte, then write that byte to the given
  * file.
@@ -41,7 +45,7 @@ int compress_file(Data *map, FILE *in, FILE *out)
 		/* Get char for the lenght of what is possibly a multi-byte
 		 * character */
 		while (utf8_test_count(c) && (*ptr++ = c))
-				c = fgetc(in);
+			c = fgetc(in);
 		*ptr++ = c;
 		*ptr = '\0';
 
@@ -71,7 +75,7 @@ int compress_file(Data *map, FILE *in, FILE *out)
 /*
  * decompress_file: Read compressed file.
  */
-int decompress_file(Data *map, FILE *in, FILE *out)
-{
-}
+//int decompress_file(Data *map, FILE *in, FILE *out)
+//{
+//}
 

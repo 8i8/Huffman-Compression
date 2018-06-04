@@ -1,13 +1,13 @@
 #include <stdio.h>
 
-// TODO merge the struscts data and string, there is no need for both in the
+// TODO merge the structs data and string, there is no need for both in the
 // code. 
 
 #ifndef _data_
 #define _data_
 typedef struct _data {
-	char str[5];
-	char binary[256];
+	char multi_byte_char[5];
+	char string[128];
 	size_t len;
 	size_t num;
 } Data;

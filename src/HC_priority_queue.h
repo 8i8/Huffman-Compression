@@ -22,3 +22,7 @@ Data *HC_HuffmanTree_walk(HC_HuffmanNode **tree, void* store, int(*func)(void*, 
 
 /* create_priority_cue: Call the ListSort function and set the sort parameter */
 HC_HuffmanNode **create_priority_cue(HC_HuffmanNode **list, FILE *fp);
+
+/* print_frequency: Output the frequency map */
+void print_frequency(HC_HuffmanNode **list);
+

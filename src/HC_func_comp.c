@@ -11,7 +11,7 @@ int _comp_char(void *v1, void *v2)
 	d1 = (Data*) v1;
 	d2 = (Data*) v2;
 
-	return strcmp(d1->str, d2->str);
+	return strcmp(d1->multi_byte_char, d2->multi_byte_char);
 }
 
 /*
