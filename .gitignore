@@ -6,3 +6,4 @@ compression
 test_file
 scratch*
 test*
+*.swp

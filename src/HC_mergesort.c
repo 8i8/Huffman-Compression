@@ -62,11 +62,11 @@ HC_HuffmanNode* _merge(
 }
 
 /*
- * _listsort_cut: Merge sort for linked lists, this version does not use a
+ * _mergesort_cut: Merge sort for linked lists, this version does not use a
  * count to signal the end of a segmented list, the lists are cut and the NULL
  * terminator is used to signal the end of a list.
  */
-HC_HuffmanNode **_listsort_cut(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*, void*))
+HC_HuffmanNode **_mergesort_cut(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*, void*))
 {
 	size_t count;
 	HC_HuffmanNode *left, *right, *tail, *end;
@@ -103,7 +103,7 @@ HC_HuffmanNode **_listsort_cut(HC_HuffmanNode **list, size_t m_len, int(*comp)(v
 	/* If more than one merge has been made, continue. If only one merge or
 	 * fewer have been counted; The sort is finished */
 	if (count > 1)
-		list = _listsort_cut(list, m_len * 2, comp);
+		list = _mergesort_cut(list, m_len * 2, comp);
 
 	return list;
 }
@@ -112,7 +112,7 @@ HC_HuffmanNode **_listsort_cut(HC_HuffmanNode **list, size_t m_len, int(*comp)(v
  * HC_mergesort: Merge sort for linked lists, long function using count to keep
  * track of lists.
  */
-HC_HuffmanNode **_listsort(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*, void*))
+HC_HuffmanNode **_mergesort(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*, void*))
 {
 	size_t i, count, l_len, r_len;
 	HC_HuffmanNode *left, *right, *new, *tail;
@@ -183,7 +183,7 @@ HC_HuffmanNode **_listsort(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*
 	/* If more than one merge has been made, continue. If only one merge or
 	 * fewer have been counted, then the sort is finished */
 	if (count > 1)
-		list = _listsort(list, m_len * 2, comp);
+		list = _mergesort(list, m_len * 2, comp);
 
 	return list;
 }
@@ -195,7 +195,7 @@ HC_HuffmanNode **HC_mergesort(HC_HuffmanNode **list, int(*comp)(void*, void*))
 		return NULL;
 
 	/* Set the ball rolling with a merge length of one node */
-	return _listsort(list, 1, comp);
+	return _mergesort(list, 1, comp);
 }
 
 HC_HuffmanNode **HC_mergesort_cut(HC_HuffmanNode **list, int(*comp)(void*, void*))
@@ -205,6 +205,6 @@ HC_HuffmanNode **HC_mergesort_cut(HC_HuffmanNode **list, int(*comp)(void*, void*
 		return NULL;
 
 	/* Set the ball rolling with a merge length of one node */
-	return _listsort_cut(list, 1, comp);
+	return _mergesort_cut(list, 1, comp);
 }
 
