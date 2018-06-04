@@ -29,7 +29,7 @@ void HC_error_reset(void)
 }
 
 /*
- * _place_at_front: helper function, put the input string at the beginning of
+ * _place_at_front: helper function, put the prologue string at the beginning of
  * the message.
  */
 void _place_at_front(char *store, char *message, int len_store, int len_message)
@@ -42,7 +42,7 @@ void _place_at_front(char *store, char *message, int len_store, int len_message)
 }
 
 /*
- * _write_to_string: Write the input string to the stored message.
+ * _write_to_string: Write the prologue string to the stored message.
  */
 char *_ds_write_to_string(int reverse, char *store, char *message)
 {
@@ -67,7 +67,7 @@ char *_ds_write_to_string(int reverse, char *store, char *message)
 /*
  * HC_Message_set: Compile a message and store it for further handling.
  */
-int _ds_message_set(char *message, char *input, va_list *va)
+int _ds_message_set(char *message, char *prologue, va_list *va)
 {
 	char *head, *va_str;
 	int va_num;
@@ -76,13 +76,13 @@ int _ds_message_set(char *message, char *input, va_list *va)
 	size_t va_size_t;
 	head = message;
 
-	while (*input)
+	while (*prologue)
 	{
-		if (*input != '%') {
-			*message++ = *input++;
+		if (*prologue != '%') {
+			*message++ = *prologue++;
 			continue;
 		}
-		switch (*++input)
+		switch (*++prologue)
 		{
 			case 's':
 				for (va_str = va_arg(*va, char *); *va_str; va_str++)
@@ -101,17 +101,17 @@ int _ds_message_set(char *message, char *input, va_list *va)
 				message += sprintf(message, "%u", va_unum);
 				break;
 			case 'l':
-				if (*(input+1) == 'u') {
-					input++;
+				if (*(prologue+1) == 'u') {
+					prologue++;
 					va_size_t = va_arg(*va, size_t);
 					message += sprintf(message, "%lu", va_size_t);
-				} else if (!isspace(*(input+1)))
-					input++;
+				} else if (!isspace(*(prologue+1)))
+					prologue++;
 				break;
 			default:
 				break;
 		}
-		input++;
+		prologue++;
 	}
 	*message = '\0';
 
@@ -122,12 +122,12 @@ int _ds_message_set(char *message, char *input, va_list *va)
  * HC_error_set: Erase any existing message and set a new message in its
  * place.
  */
-void HC_error_set(char *input, ...)
+void HC_error_set(char *prologue, ...)
 {
 	store[0] = '\0';
 	va_list va;
-	va_start(va, input);
-	if(_ds_message_set(error, input, &va))
+	va_start(va, prologue);
+	if(_ds_message_set(error, prologue, &va))
 		state = 1;
 	va_end(va);
 
@@ -137,11 +137,11 @@ void HC_error_set(char *input, ...)
 /*
  * HC_error_append: Append to the current message.
  */
-void HC_error_append(char *input, ...)
+void HC_error_append(char *prologue, ...)
 {
 	va_list va;
-	va_start(va, input);
-	_ds_message_set(error, input, &va);
+	va_start(va, prologue);
+	_ds_message_set(error, prologue, &va);
 	va_end(va);
 
 	_ds_write_to_string(0, store, " ");
@@ -152,11 +152,11 @@ void HC_error_append(char *input, ...)
 /*
  * HC_error_insert: Insert at the beginning of the current message.
  */
-void HC_error_insert(char *input, ...)
+void HC_error_insert(char *prologue, ...)
 {
 	va_list va;
-	va_start(va, input);
-	_ds_message_set(error, input, &va);
+	va_start(va, prologue);
+	_ds_message_set(error, prologue, &va);
 	va_end(va);
 
 	_ds_write_to_string(1, store, " ");

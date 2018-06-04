@@ -1,12 +1,12 @@
 /* HC_error_set: Erase any existing message and set a new message in its
  * place */
-void HC_error_set(char *input, ...);
+void HC_error_set(char *prologue, ...);
 
 /* HC_error_append: Append to the current message */
-void HC_error_append(char *input, ...);
+void HC_error_append(char *prologue, ...);
 
 /* HC_error_insert: Insert at the beginning of the current message */
-void HC_error_insert(char *input, ...);
+void HC_error_insert(char *prologue, ...);
 
 /* HC_error_get: Return message and reset to empty  */
 char *HC_error_get(void);

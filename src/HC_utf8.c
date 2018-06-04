@@ -2,6 +2,8 @@
 #define THREE_BYTES	14
 #define TWO_BYTES	6
 
+#define MULTIBYTE (c >> 7)
+
 /*
  * _utf8_bytes:	Return multi-char length (-1) in bytes, read from the initial
  * UTF-8 char.
@@ -24,7 +26,7 @@ unsigned _utf8_bytes(unsigned char c)
  */
 unsigned utf8_test(unsigned char c)
 {
-	if (c >> 7)
+	if (MULTIBYTE)
 		return _utf8_bytes(c) + 1;
 	else
 		return 0;
@@ -43,7 +45,7 @@ unsigned utf8_test_count(unsigned char c)
 		if(--count) 
 			return count;
 	}
-	else if (c >> 7) {
+	else if (MULTIBYTE) {
 		count = _utf8_bytes(c);
 		if (count)
 			return count;

@@ -6,3 +6,4 @@ unsigned utf8_test(unsigned char c);
  * encountered; Return 0 whilst in the process of counting a multibyte char,
  * having first established its length. */
 unsigned utf8_test_count(unsigned char c);
+

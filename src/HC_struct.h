@@ -1,8 +1,11 @@
 #include <stdio.h>
 
+// TODO merge the struscts data and string, there is no need for both in the
+// code. 
+
 #ifndef _data_
 #define _data_
-typedef struct Data {
+typedef struct _data {
 	char str[5];
 	char binary[256];
 	size_t len;
@@ -28,5 +31,14 @@ typedef struct _string {
 	char *str;
 	size_t lim;
 } String;
+#endif
+
+#ifndef _main_
+#define _main_
+typedef struct _main {
+	FILE *in, *out;
+	HC_HuffmanNode *tree;
+	Data *map;
+} Main;
 #endif
 

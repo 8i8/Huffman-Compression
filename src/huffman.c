@@ -15,77 +15,19 @@
  * 5) Encode the file.
  *
  */
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include "HC_huffman_tree.h"
-#include "HC_map_char.h"
-#include "HC_read_write.h"
-#include "HC_print.h"
+#include "HC_state.h"
+#include "HC_prologue.h"
+#include "HC_compression.h"
+#include "HC_epilogue.h"
 
 int main(int argc, char *argv[])
 {
-	FILE *in, *out;
-	char c;
-	int read, write;
-	HC_HuffmanNode *tree = NULL;
-	Data *map = NULL;
-	in = out = NULL;
-	read = write = 0;
+	Main v, *var;
+	var = &v;
 
-	while ((c = getopt(argc, argv, "c:")) != -1)
-		switch (c)
-		{
-			case 'c':
-				if ((out = fopen(optarg, "w+")) == NULL) {
-					printf("file read error: %s\n", optarg);
-					return 1;
-				}
-				write++;
-				break;
-			case '?':
-				if (optopt == 'c')
-					fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-				else if (isprint (optopt))
-					fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-				else
-					fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
-				return 1;
-				break;
-			default :
-				break;
-		}
-
-	if (optind != argc && ((in = fopen(argv[optind], "r")) == NULL)) {
-		printf("file read error: %s\n", argv[optind]);
-		return 1;
-	} else if (in != NULL)
-		read++;
-
-	if (read) {
-		create_priority_cue(&tree, in);
-		//print_frequency(&tree);
-		build_huffman_tree(&tree);
-		//print_huffman_tree(tree);
-		map = map_create(map, &tree);
-		//print_char_map(map);
-		rewind(in);
-	}
-
-	if (read && write) {
-		write_binary_to_file(map, in, out);
-	}
-	
-	if (read) {
-		HC_huffman_tree_free(&tree);
-		free(map);
-		fclose(in);
-	}
-
-	if (write) {
-		fclose(out);
-	}
+	prologue(argc, argv, var);
+	compress(var);
+	epilogue(var);
 
 	return 0;
 }
