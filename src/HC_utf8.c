@@ -8,7 +8,7 @@
  * _utf8_bytes:	Return multi-char length (-1) in bytes, read from the initial
  * UTF-8 char.
  */
-unsigned _utf8_bytes(unsigned char c)
+static unsigned _utf8_bytes(unsigned char c)
 {
 	if	(c >> 3 == FOUR_BYTES)
 		return 3;

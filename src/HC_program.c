@@ -1,5 +1,6 @@
 #include "HC_struct.h"
 #include "HC_state.h"
+#include "HC_error.h"
 #include "HC_huffman_tree.h"
 #include "HC_map_char.h"
 #include "HC_priority_queue.h"
@@ -8,14 +9,14 @@
 extern int state;
 
 /*
- * compress: Compress input and write file out if specified.
+ * program: Compress input and write file out if specified.
  */
-int compress(Main *var)
+int program(Main *var)
 {
 	if (state & READ)
 		create_priority_cue(&var->tree, var->in);
 
-	if (state & PRINT)
+	if (state & (PRINT & READ))
 		print_frequency(&var->tree);
 
 	if (state & READ) {
@@ -24,7 +25,7 @@ int compress(Main *var)
 		rewind(var->in);
 	}
 
-	if (state & PRINT) {
+	if (state & (PRINT & READ)) {
 		print_huffman_tree(var->tree);
 		print_char_map(var->map);
 	}
@@ -35,8 +36,10 @@ int compress(Main *var)
 	if (state & DECOMP)
 		;//decompress_file(var->map, var->in, var->out);
 
-	if (state & ERROR)
+	if (state & ERROR) {
+		HC_error_print();
 		return 1;
+	}
 
 	return 0;
 }

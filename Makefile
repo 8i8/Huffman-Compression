@@ -10,7 +10,7 @@ SRC = huffman.c \
 	HC_state.c \
 	HC_utf8.c \
 	HC_prologue.c \
-	HC_compression.c \
+	HC_program.c \
 	HC_epilogue.c
 OBJ = $(SRC:.c=.o)
 CC  = gcc

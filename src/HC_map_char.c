@@ -7,8 +7,7 @@
 #include <assert.h>
 
 #define BUF_LEN 32
-#define MAP_LEN 2097153		/* 2^21 max number of Unicode char + 1 to stop
-				   a while loop */
+#define MAP_LEN 2097152		/* 2^21 max number of Unicode char */
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Char map
@@ -17,7 +16,7 @@
 /*
  * hash: Hash value for string s
  */
-unsigned long hash(char *s)
+static unsigned long _hash(char *s)
 {
 	unsigned long hashval;
 
@@ -31,13 +30,15 @@ unsigned long hash(char *s)
  * _copy_data_to_map: Copy over the binary values from the Huffman tree into
  * the character map.
  */
-int _copy_data_to_map(void* ma, void* tr)
+static int _copy_data_to_map(void* ma, void* tr)
 {
 	Data *map = ma;
 	HC_HuffmanNode*node = tr;
 
-	assert((map[hash(node->data.multi_byte_char)].len) == 0);
-	map[hash(node->data.multi_byte_char)] = node->data;
+	/* If assert fails, there has been a hash collision */
+	assert((map[_hash(node->data.multi_byte_char)].len) == 0);
+	//map[_hash(node->data.multi_byte_char)] = node->data;
+	memcpy(&map[_hash(node->data.multi_byte_char)], &node->data, sizeof(Data));
 
 	return 0;
 }
@@ -45,7 +46,7 @@ int _copy_data_to_map(void* ma, void* tr)
 /*
  * _populate_map: Set all string in the map array to '\0'.
  */
-Data *_populate_map(Data *map, size_t len)
+static Data *_populate_map(Data *map, size_t len)
 {
 	size_t i;
 	for (i = 0; i < len; i++) {
@@ -54,7 +55,6 @@ Data *_populate_map(Data *map, size_t len)
 		map[i].len = 0;
 		map[i].frq = 0;
 	}
-	//memcpy(map[MAP_LEN - 1].string, "END", 4);
 	return map;
 }
 
@@ -62,8 +62,13 @@ Data *_populate_map(Data *map, size_t len)
  * _expand_string: If the string that stores the binary data becomes to long,
  * enlarge it.
  */
-char *_expand_string(String *string, size_t len)
+static char *_expand_string(String *string, size_t len)
 {
+	if (len > SIZE_MAX/2) {
+		fprintf(stderr, "%s: memory allocation failed.", __func__);
+		return string->str;
+	}
+
 	char *new;
 	/* Same as len * 2 */
 	len <<= 1;
@@ -79,13 +84,9 @@ char *_expand_string(String *string, size_t len)
  * _add_to_string: Tracks the binary data that is bing created within the 'trie'
  * structure amongst the Huffman nodes.
  */
-String *_add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
+static String *_add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
 {
 	if (len >= string->lim) {
-		if (len > SIZE_MAX/2) {
-			HC_error_set("%s: memory allocation failed.", __func__);
-			return NULL;
-		}
 		_expand_string(string, len);
 	}
 
@@ -101,7 +102,7 @@ String *_add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
  * _huffman_tree_walk: Recursive function to walk tree and perform (*func) on
  * every node.
  */
-Data *_huffman_tree_walk(
+static Data *_huffman_tree_walk(
 				HC_HuffmanNode **tree,
 				void* map,
 				int(*func)(void*, void*),
@@ -149,7 +150,7 @@ Data *map_create(Data *map, HC_HuffmanNode **tree)
  */
 char *map_read_char_to_binary(Data *map, char *c)
 {
-	return map[hash(c)].string;
+	return map[_hash(c)].string;
 }
 
 /*
@@ -157,7 +158,7 @@ char *map_read_char_to_binary(Data *map, char *c)
  */
 size_t map_read_char_to_binary_len(Data *map, char *c)
 {
-	return map[hash(c)].len;
+	return map[_hash(c)].len;
 }
 
 /*

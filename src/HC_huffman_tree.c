@@ -36,7 +36,7 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 
 		/* Insert new node into priority cue */
 		if (*list) {
-			if (HC_priority_queue_insert_ordered(list, new, _comp_freq) == NULL)
+			if (HC_priority_queue_insert_ordered(list, new, FN_data_frqcmp) == NULL)
 				HC_error_print();
 		} else 
 			*list = new;
@@ -65,7 +65,7 @@ int HC_huffman_tree_free(HC_HuffmanNode **tree)
 	return 0;
 }
 
-void _print_huffman_tree(HC_HuffmanNode *tree, int depth)
+static void _print_huffman_tree(HC_HuffmanNode *tree, int depth)
 {
 	int i;
 	if (tree->left)

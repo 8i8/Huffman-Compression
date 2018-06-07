@@ -75,7 +75,9 @@ HC_HuffmanNode **HC_priority_queue_insert(HC_HuffmanNode** list, Data data)
 /*
  * HC_priority_queue_insert_node: Insert a new node at current location.
  */
-HC_HuffmanNode **HC_priority_queue_insert_node(HC_HuffmanNode **list, HC_HuffmanNode *new_node)
+HC_HuffmanNode **HC_priority_queue_insert_node(
+						HC_HuffmanNode **list,
+						HC_HuffmanNode *new_node)
 {
 	if (list == NULL || *list == NULL || new_node == NULL) {
 		HC_error_set("%s: NULL pointer.", __func__);
@@ -156,8 +158,10 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
  * insert it in alphabetical order. If it exists already, add one to the count
  * for that character.
  */
-HC_HuffmanNode **_insert_or_count(HC_HuffmanNode **list, Data data,
-						int(*func)(void*, void*))
+static HC_HuffmanNode **_insert_or_count(
+					HC_HuffmanNode **list,
+					Data data,
+					int(*func)(void*, void*))
 {
 	int test;
 
@@ -192,10 +196,10 @@ HC_HuffmanNode **_insert_or_count(HC_HuffmanNode **list, Data data,
 }
 
 /*
- * _compile_frequeuency_list: Sort alphabetically and count occurrences of each character in
- * the document.
+ * _compile_frequeuency_list: Sort alphabetically and keep count of the
+ * occurrences of each character.
  */
-HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *fp)
+static HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *fp)
 {
 	char c, *ptr;
 	Data data;
@@ -210,12 +214,12 @@ HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *fp)
 		*ptr++ = c;
 		*ptr = '\0';
 		data.frq = 1;
-		_insert_or_count(list, data, _comp_char);
+		_insert_or_count(list, data, FN_data_strcmp);
 	}
 
 	/* Add EOF char */
 	memcpy(data.multi_byte_char, "EOF", 4), data.frq = 0;
-	_insert_or_count(list, data, _comp_char);
+	_insert_or_count(list, data, FN_data_strcmp);
 
 	return list;
 }
@@ -229,7 +233,7 @@ HC_HuffmanNode **create_priority_cue(HC_HuffmanNode **list, FILE *fp)
 	list = _compile_frequeuency_list(list, fp);
 
 	/* Sort by frequeuency */
-	list = HC_mergesort(list, _comp_freq);
+	list = HC_mergesort(list, FN_data_frqcmp);
 
 	return list;
 }

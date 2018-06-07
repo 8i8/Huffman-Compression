@@ -1,10 +1,11 @@
 #include "HC_struct.h"
 #include "HC_state.h"
+#include "HC_error.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
 
-Main *_var_init(Main *var)
+static Main *_var_init(Main *var)
 {
 	var->tree = NULL;
 	var-> map = NULL;
@@ -28,14 +29,14 @@ int prologue(int argc, char *argv[], Main *var)
 		{
 			case 'c':
 				if ((var->out = fopen(optarg, "w+")) == NULL) {
-					fprintf(stderr, "file read error: %s\n", optarg);
+					HC_error_set("file read error: %s\n", optarg);
 					return state_set(ERROR);
 				}
 				state_set(WRITE);
 				break;
 			case 'x':
 				if ((var->out = fopen(optarg, "r")) == NULL) {
-					fprintf(stderr, "file read error: %s\n", optarg);
+					HC_error_set("file read error: %s\n", optarg);
 					return state_set(ERROR);
 				}
 				state_set(DECOMP);

@@ -1,17 +1,32 @@
 #include <stdio.h>
+#include <string.h>
 #include "HC_struct.h"
 #include "HC_map_char.h"
 #include "HC_utf8.h"
 
-//void _write_map(Data *map, FILE *out)
-//{
-//}
+static void _write_frq_map(Data *map, FILE *out)
+{
+	char buf[4000];
+	char temp[4000];
+
+	memcpy(buf, "<in>\0", 5);
+
+	while (map++) {
+		sprintf(temp, "%s~%lu~", map->multi_byte_char, map->frq);
+		strcat(buf, temp);
+	}
+
+	sprintf(temp, "<out>");
+	strcat(buf, temp);
+
+	fwrite(buf, 1, strlen(buf), out);
+}
 
 /*
  * _write_bit: Set all of the bits in a byte, then write that byte to the given
  * file.
  */
-void _write_bit(FILE *out, unsigned char bit, unsigned char *byte, int *count)
+static void _write_bit(FILE *out, unsigned char bit, unsigned char *byte, int *count)
 {
 	if (++(*count) == 8) {
 		fwrite(byte, 1, 1, out);
@@ -21,7 +36,7 @@ void _write_bit(FILE *out, unsigned char bit, unsigned char *byte, int *count)
 
 	/* Shift left ready for the next bit */
 	*byte <<= 1;
-	/* Set first bit to 1 or 0 */
+	/* Set bit to 1 or 0 */
 	*byte |= bit;
 }
 
@@ -33,12 +48,14 @@ int compress_file(Data *map, FILE *in, FILE *out)
 	int count;
 	unsigned char byte;
 
-	char c, *ptr, str[5], *bin;
+	char c, *ptr, multi_byte_char[5], *bin;
 	size_t len, i;
-	ptr = str;
+	ptr = multi_byte_char;
 
 	byte = 0;
 	count = 0;
+
+	//_write_frq_map(map, out);
 
 	while ((c = fgetc(in)) != EOF)
 	{
@@ -49,17 +66,17 @@ int compress_file(Data *map, FILE *in, FILE *out)
 		*ptr++ = c;
 		*ptr = '\0';
 
-		bin = map_read_char_to_binary(map, str);
-		len = map_read_char_to_binary_len(map, str);
+		bin = map_read_char_to_binary(map, multi_byte_char);
+		len = map_read_char_to_binary_len(map, multi_byte_char);
 		for (i = 0; i < len; i++, bin++)
 			_write_bit(out, bin[0], &byte, &count);
 
-		ptr = str;
+		ptr = multi_byte_char;
 	}
 
 	/* Add EOF char */
 	bin = map_read_char_to_binary(map, "EOF");
-	len = map_read_char_to_binary_len(map, str);
+	len = map_read_char_to_binary_len(map, multi_byte_char);
 	for (i = 0; i < len; i++, bin++)
 		_write_bit(out, bin[0], &byte, &count);
 

@@ -11,28 +11,10 @@ static char send[MAX_LENGTH + 1];
 static int state = 0;
 
 /*
- * HC_error_state: Returns the status of the message service, 0 as all clear, 1
- * if an message is pending.
- */
-int HC_error_state(void)
-{
-	return state;
-}
-
-/*
- * HC_error_reset: Set to empty, with no message.
- */
-void HC_error_reset(void)
-{
-	store[0] = '\0';
-	state = 0;
-}
-
-/*
  * _place_at_front: helper function, put the prologue string at the beginning of
  * the message.
  */
-void _place_at_front(char *store, char *message, int len_store, int len_message)
+static void _place_at_front(char *store, char *message, int len_store, int len_message)
 {
 	char transfer[MAX_LENGTH];
 
@@ -44,7 +26,7 @@ void _place_at_front(char *store, char *message, int len_store, int len_message)
 /*
  * _write_to_string: Write the prologue string to the stored message.
  */
-char *_ds_write_to_string(int reverse, char *store, char *message)
+static char *_ds_write_to_string(int reverse, char *store, char *message)
 {
 	int len_store, len_message;
 
@@ -67,7 +49,7 @@ char *_ds_write_to_string(int reverse, char *store, char *message)
 /*
  * HC_Message_set: Compile a message and store it for further handling.
  */
-int _ds_message_set(char *message, char *prologue, va_list *va)
+static int _ds_message_set(char *message, char *prologue, va_list *va)
 {
 	char *head, *va_str;
 	int va_num;
@@ -116,6 +98,24 @@ int _ds_message_set(char *message, char *prologue, va_list *va)
 	*message = '\0';
 
 	return message - head;
+}
+
+/*
+ * HC_error_state: Returns the status of the message service, 0 as all clear, 1
+ * if an message is pending.
+ */
+int HC_error_state(void)
+{
+	return state;
+}
+
+/*
+ * HC_error_reset: Set to empty, with no message.
+ */
+void HC_error_reset(void)
+{
+	store[0] = '\0';
+	state = 0;
 }
 
 /*
@@ -186,10 +186,10 @@ void HC_error_print(void)
 	store[0] = '\0';
 	state = 0;
 #ifdef _unix_
-	write(1, send, strlen(send));
+	write(stderr, send, strlen(send));
 #endif
 #ifndef _unix_
-	printf("%s", send);
+	fprintf(stderr, "%s", send);
 #endif
 }
 

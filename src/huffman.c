@@ -17,7 +17,7 @@
  */
 #include "HC_state.h"
 #include "HC_prologue.h"
-#include "HC_compression.h"
+#include "HC_program.h"
 #include "HC_epilogue.h"
 
 int main(int argc, char *argv[])
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 	var = &v;
 
 	prologue(argc, argv, var);
-	compress(var);
+	program(var);
 	epilogue(var);
 
 	return 0;
