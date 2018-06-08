@@ -4,22 +4,67 @@
 #include "HC_map_char.h"
 #include "HC_utf8.h"
 
+/*
+ * Reverse the array.
+ */
+static void _reverse(char *s)
+{
+	size_t i, j;
+	int c;
+
+	for (i = 0, j = strlen(s) - 1; i < j; i++, j--) {
+		c = s[j];
+		s[j] = s[i];
+		s[i] = c;
+	}
+}
+
+/*
+ * Transform a value of the int type into a string.
+ */ 
+static char *_itoa(size_t n, char *s)
+{
+	char *s_in;
+	s_in = s;
+
+	do {
+		/* make n positive and generate digits in reverse order */
+		*s++ = (char)(n % 10) + '0';
+	}
+	while ((n /= 10) != 0);
+
+	*(s+1) = '\0';
+	
+	_reverse(s_in);
+
+	return s;
+}
+
 static void _write_frq_map(Data *map, FILE *out)
 {
-	char buf[4000];
-	char temp[4000];
+	char *ptr, buf[2048] = {'\0'};
+	size_t i, len;
+	ptr = buf;
 
-	memcpy(buf, "<in>\0", 5);
+	memcpy(buf, "<in>\n", 5);
+	ptr += 5;
 
-	while (map++) {
-		sprintf(temp, "%s~%lu~", map->multi_byte_char, map->frq);
-		strcat(buf, temp);
-	}
+	for (i = 0; i < MAP_LEN; i++, map++)
+		if (map->frq) {
+			memcpy(ptr++, "\t", 1);
+			len = utf8_len(map->utf8_char);
+			memcpy(ptr, map->utf8_char, len);
+			ptr += len;
+			memcpy(ptr++, "~", 1);
+			ptr = _itoa(map->frq, ptr);
+			memcpy(ptr++, "\n", 1);
+		}
 
-	sprintf(temp, "<out>");
-	strcat(buf, temp);
+	memcpy(ptr, "<out>\n", 6);
+	ptr += 6;
+	*(ptr+1) = '\0';
 
-	fwrite(buf, 1, strlen(buf), out);
+	fwrite(buf, 1, ptr - buf, out);
 }
 
 /*
@@ -48,35 +93,35 @@ int compress_file(Data *map, FILE *in, FILE *out)
 	int count;
 	unsigned char byte;
 
-	char c, *ptr, multi_byte_char[5], *bin;
+	char c, *ptr, utf8_char[5], *bin;
 	size_t len, i;
-	ptr = multi_byte_char;
+	ptr = utf8_char;
 
 	byte = 0;
 	count = 0;
 
-	//_write_frq_map(map, out);
+	_write_frq_map(map, out);
 
 	while ((c = fgetc(in)) != EOF)
 	{
 		/* Get char for the lenght of what is possibly a multi-byte
 		 * character */
-		while (utf8_test_count(c) && (*ptr++ = c))
+		while (utf8_count(c) && (*ptr++ = c))
 			c = fgetc(in);
 		*ptr++ = c;
 		*ptr = '\0';
 
-		bin = map_read_char_to_binary(map, multi_byte_char);
-		len = map_read_char_to_binary_len(map, multi_byte_char);
+		bin = map_read_char_to_binary(map, utf8_char);
+		len = map_read_char_to_binary_len(map, utf8_char);
 		for (i = 0; i < len; i++, bin++)
 			_write_bit(out, bin[0], &byte, &count);
 
-		ptr = multi_byte_char;
+		ptr = utf8_char;
 	}
 
 	/* Add EOF char */
 	bin = map_read_char_to_binary(map, "EOF");
-	len = map_read_char_to_binary_len(map, multi_byte_char);
+	len = map_read_char_to_binary_len(map, utf8_char);
 	for (i = 0; i < len; i++, bin++)
 		_write_bit(out, bin[0], &byte, &count);
 

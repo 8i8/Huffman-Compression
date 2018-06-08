@@ -1,5 +1,7 @@
 #include "HC_struct.h"
 
+#define MAP_LEN 2097152		/* 2^21 max number of Unicode char */
+
 /* map_create: Create char map from Huffman tree */
 Data *map_create(Data *map, HC_HuffmanNode**tree);
 

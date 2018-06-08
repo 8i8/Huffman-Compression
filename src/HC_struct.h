@@ -6,7 +6,7 @@
 #ifndef _data_
 #define _data_
 typedef struct _data {
-	char multi_byte_char[5];
+	char utf8_char[5];
 	char string[128];
 	size_t len;
 	size_t frq;

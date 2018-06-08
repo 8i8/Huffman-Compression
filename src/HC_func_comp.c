@@ -11,7 +11,7 @@ int FN_data_strcmp(void *v1, void *v2)
 	d1 = (Data*) v1;
 	d2 = (Data*) v2;
 
-	return strcmp(d1->multi_byte_char, d2->multi_byte_char);
+	return strcmp(d1->utf8_char, d2->utf8_char);
 }
 
 /*

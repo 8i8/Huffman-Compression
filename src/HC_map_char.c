@@ -7,7 +7,6 @@
 #include <assert.h>
 
 #define BUF_LEN 32
-#define MAP_LEN 2097152		/* 2^21 max number of Unicode char */
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Char map
@@ -36,9 +35,9 @@ static int _copy_data_to_map(void* ma, void* tr)
 	HC_HuffmanNode*node = tr;
 
 	/* If assert fails, there has been a hash collision */
-	assert((map[_hash(node->data.multi_byte_char)].len) == 0);
-	//map[_hash(node->data.multi_byte_char)] = node->data;
-	memcpy(&map[_hash(node->data.multi_byte_char)], &node->data, sizeof(Data));
+	assert((map[_hash(node->data.utf8_char)].len) == 0);
+	//map[_hash(node->data.utf8_char)] = node->data;
+	memcpy(&map[_hash(node->data.utf8_char)], &node->data, sizeof(Data));
 
 	return 0;
 }
@@ -50,7 +49,7 @@ static Data *_populate_map(Data *map, size_t len)
 {
 	size_t i;
 	for (i = 0; i < len; i++) {
-		map[i].multi_byte_char[0] = '\0';
+		map[i].utf8_char[0] = '\0';
 		map[i].string[0] = '\0';
 		map[i].len = 0;
 		map[i].frq = 0;
@@ -121,7 +120,7 @@ static Data *_huffman_tree_walk(
 		string->str[--len] = '\0';
 	}
 
-	if ((*tree)->data.multi_byte_char[0] != '\0') {
+	if ((*tree)->data.utf8_char[0] != '\0') {
 		memcpy((*tree)->data.string, string->str, len);
 		//TODO is this value redundant?
 		(*tree)->data.len = len;
@@ -169,6 +168,6 @@ void print_char_map(Data *map)
 	size_t i;
 	for (i = 0; i < MAP_LEN; i++, map++)
 		if (*(map->string) != '\0')
-			printf("%s %s\n", map->multi_byte_char, map->string);
+			printf("%s %s\n", map->utf8_char, map->string);
 }
 

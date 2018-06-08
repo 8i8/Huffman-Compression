@@ -24,11 +24,11 @@ int prologue(int argc, char *argv[], Main *var)
 	state_init();
 	var = _var_init(var);
 
-	while ((c = getopt(argc, argv, "pc:x:")) != -1)
+	while ((c = getopt(argc, argv, "pc:")) != -1)
 		switch (c)
 		{
 			case 'c':
-				if ((var->out = fopen(optarg, "w+")) == NULL) {
+				if ((var->out = fopen(optarg, "wb")) == NULL) {
 					HC_error_set("file read error: %s\n", optarg);
 					return state_set(ERROR);
 				}

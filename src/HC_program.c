@@ -16,7 +16,7 @@ int program(Main *var)
 	if (state & READ)
 		create_priority_cue(&var->tree, var->in);
 
-	if (state & (PRINT & READ))
+	if ((state & READ) && (state & PRINT))
 		print_frequency(&var->tree);
 
 	if (state & READ) {
@@ -25,12 +25,12 @@ int program(Main *var)
 		rewind(var->in);
 	}
 
-	if (state & (PRINT & READ)) {
+	if ((state & READ) && (state & PRINT)) {
 		print_huffman_tree(var->tree);
 		print_char_map(var->map);
 	}
 
-	if (state & (READ & WRITE))
+	if ((state & READ) && (state & WRITE))
 		compress_file(var->map, var->in, var->out);
 
 	if (state & DECOMP)
