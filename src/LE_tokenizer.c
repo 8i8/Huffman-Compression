@@ -1,21 +1,24 @@
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 #include "LE_lexer.h"
 #include "HC_state.h"
+#include "GE_hash.h"
 
 typedef struct _token_chain {
 	char *id;
 	int flag;
-	_token_chain *next;
+	struct _token_chain *next;
 } Token;
 
-static Tokens **token_table;
+static Token **token_table;
 
-void token_add(char *token, int flag)
+int token_add(char *token, int flag)
 {
 	int bucket = hash(token);
 	Token *new_token;
        
-	if ((new_token = malloc(sizeof(Token)) == NULL))
+	if ((new_token = malloc(sizeof(Token))) == NULL)
 		goto on_error;
 
 	new_token->id = strdup(token);
@@ -23,7 +26,7 @@ void token_add(char *token, int flag)
 	new_token->next = NULL;
 
 	if (token_table[bucket]) {
-		Token current = token[bucket];
+		Token *current = token_table[bucket];
 		while (current->next)
 			current = current->next;
 		current->next = new_token;
@@ -36,10 +39,10 @@ on_error:
 	return 1;
 }
 
-void token_init()
+int token_init()
 {
 	int state = 0;
-	if ((token_table = calloc(256 * sizeof(Token))) == NULL)
+	if ((token_table = calloc(256, sizeof(Token))) == NULL)
 		goto on_error;
 
 	token_add("map", state & LE_MAP);

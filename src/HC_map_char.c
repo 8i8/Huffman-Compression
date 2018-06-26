@@ -1,6 +1,7 @@
 #include "HC_map_char.h"
 #include "HC_error.h"
 #include "HC_struct.h"
+#include "GE_hash.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,39 +14,27 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
- * hash: Hash value for string s
- */
-static unsigned long _hash(char *s)
-{
-	unsigned long hashval;
-
-	for (hashval = 0; *s != '\0'; s++)
-		hashval = *s + 3 * hashval;
-
-	return hashval % MAP_LEN;
-}
-
-/*
- * _copy_data_to_map: Copy over the binary values from the Huffman tree into
+ * copy_data_to_map: Copy over the binary values from the Huffman tree into
  * the character map.
  */
-static int _copy_data_to_map(void* ma, void* tr)
+static int copy_data_to_map(void* ma, void* tr)
 {
 	Data *map = ma;
 	HC_HuffmanNode*node = tr;
+	int bucket = hash(node->data.utf8_char);
 
 	/* If assert fails, there has been a hash collision */
-	assert((map[_hash(node->data.utf8_char)].len) == 0);
-	//map[_hash(node->data.utf8_char)] = node->data;
-	memcpy(&map[_hash(node->data.utf8_char)], &node->data, sizeof(Data));
+	assert((map[bucket].len) == 0);
+	//map[bucket] = node->data;
+	memcpy(&map[bucket], &node->data, sizeof(Data));
 
 	return 0;
 }
 
 /*
- * _populate_map: Set all string in the map array to '\0'.
+ * populate_map: Set all string in the map array to '\0'.
  */
-static Data *_populate_map(Data *map, size_t len)
+static Data *populate_map(Data *map, size_t len)
 {
 	size_t i;
 	for (i = 0; i < len; i++) {
@@ -58,10 +47,10 @@ static Data *_populate_map(Data *map, size_t len)
 }
 
 /*
- * _expand_string: If the string that stores the binary data becomes to long,
+ * expand_string: If the string that stores the binary data becomes to long,
  * enlarge it.
  */
-static char *_expand_string(String *string, size_t len)
+static char *expand_string(String *string, size_t len)
 {
 	if (len > SIZE_MAX/2) {
 		fprintf(stderr, "%s: memory allocation failed.", __func__);
@@ -80,13 +69,13 @@ static char *_expand_string(String *string, size_t len)
 }
 
 /*
- * _add_to_string: Tracks the binary data that is bing created within the 'trie'
+ * add_to_string: Tracks the binary data that is bing created within the 'trie'
  * structure amongst the Huffman nodes.
  */
-static String *_add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
+static String *add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
 {
 	if (len >= string->lim) {
-		_expand_string(string, len);
+		expand_string(string, len);
 	}
 
 	char c[2] = {'\0'};
@@ -98,25 +87,25 @@ static String *_add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
 }
 
 /*
- * _huffman_tree_walk: Recursive function to walk tree and perform (*func) on
+ * huffman_tree_walk: Recursive function to walk tree and perform (*func) on
  * every node.
  */
-static Data *_huffman_tree_walk(
+static Data *huffman_tree_walk(
 				HC_HuffmanNode **tree,
 				void* map,
 				int(*func)(void*, void*),
 				String* string, int len)
 {
-	if ((string = _add_to_string(tree, string, len)) == NULL)
+	if ((string = add_to_string(tree, string, len)) == NULL)
 		return NULL;
 
 	if ((*tree)->left) {
-		_huffman_tree_walk(&(*tree)->left, map, func, string, ++len);
+		huffman_tree_walk(&(*tree)->left, map, func, string, ++len);
 		string->str[--len] = '\0';
 	}
 
 	if ((*tree)->right) {
-		_huffman_tree_walk(&(*tree)->right, map, func, string, ++len);
+		huffman_tree_walk(&(*tree)->right, map, func, string, ++len);
 		string->str[--len] = '\0';
 	}
 
@@ -139,8 +128,8 @@ Data *map_create(Data *map, HC_HuffmanNode **tree)
 	String string;
 	string.str = calloc(BUF_LEN, 1), string.lim = BUF_LEN-1;
 	map = malloc(sizeof(Data) * MAP_LEN);
-	map = _populate_map(map, MAP_LEN);
-	map = _huffman_tree_walk(tree, map, _copy_data_to_map, &string, 1);
+	map = populate_map(map, MAP_LEN);
+	map = huffman_tree_walk(tree, map, copy_data_to_map, &string, 1);
 	free(string.str);
 	return map;
 }
@@ -150,7 +139,7 @@ Data *map_create(Data *map, HC_HuffmanNode **tree)
  */
 char *map_read_char_to_binary(Data *map, char *c)
 {
-	return map[_hash(c)].string;
+	return map[hash(c)].string;
 }
 
 /*
@@ -158,7 +147,7 @@ char *map_read_char_to_binary(Data *map, char *c)
  */
 size_t map_read_char_to_binary_len(Data *map, char *c)
 {
-	return map[_hash(c)].len;
+	return map[hash(c)].len;
 }
 
 /*

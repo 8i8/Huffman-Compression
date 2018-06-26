@@ -28,7 +28,7 @@ DS_Trie **DS_Trie_init(DS_Trie **trie);
 /*
  * Add a new word to the trie
  */
-DS_Trie **DS_Trie_add_word(DS_Trie **trie, char *string);
+DS_Trie **DS_Trieadd_word(DS_Trie **trie, char *string);
 
 /*
  * Add a n char of a string to the trie
@@ -55,5 +55,5 @@ void DS_Trie_free(DS_Trie **trie);
  * _func_print: Printout the content of the tree from char root to current
  * node
  */
-int _func_print_trie(void *trie, void *var);
+intfunc_print_trie(void *trie, void *var);
 

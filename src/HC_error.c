@@ -11,10 +11,10 @@ static char send[MAX_LENGTH + 1];
 static int state = 0;
 
 /*
- * _place_at_front: helper function, put the prologue string at the beginning of
+ * place_at_front: helper function, put the prologue string at the beginning of
  * the message.
  */
-static void _place_at_front(char *store, char *message, int len_store, int len_message)
+static void place_at_front(char *store, char *message, int len_store, int len_message)
 {
 	char transfer[MAX_LENGTH];
 
@@ -24,9 +24,9 @@ static void _place_at_front(char *store, char *message, int len_store, int len_m
 }
 
 /*
- * _write_to_string: Write the prologue string to the stored message.
+ * ds_write_to_string: Write the prologue string to the stored message.
  */
-static char *_ds_write_to_string(int reverse, char *store, char *message)
+static char *ds_write_to_string(int reverse, char *store, char *message)
 {
 	int len_store, len_message;
 
@@ -37,7 +37,7 @@ static char *_ds_write_to_string(int reverse, char *store, char *message)
 	 * and one for a space between the phrases. */
 	if (MAX_LENGTH - len_store > len_message + 5) {
 		if (reverse)
-			_place_at_front(store, message, len_store, len_message);
+			place_at_front(store, message, len_store, len_message);
 		else
 			strcat(store, message);
 	} else
@@ -47,9 +47,9 @@ static char *_ds_write_to_string(int reverse, char *store, char *message)
 }
 
 /*
- * HC_Message_set: Compile a message and store it for further handling.
+ * ds_message_set: Compile a message and store it for further handling.
  */
-static int _ds_message_set(char *message, char *prologue, va_list *va)
+static int ds_message_set(char *message, char *prologue, va_list *va)
 {
 	char *head, *va_str;
 	int va_num;
@@ -127,11 +127,11 @@ void HC_error_set(char *prologue, ...)
 	store[0] = '\0';
 	va_list va;
 	va_start(va, prologue);
-	if(_ds_message_set(error, prologue, &va))
+	if(ds_message_set(error, prologue, &va))
 		state = 1;
 	va_end(va);
 
-	_ds_write_to_string(0, store, error);
+	ds_write_to_string(0, store, error);
 }
 
 /*
@@ -141,11 +141,11 @@ void HC_error_append(char *prologue, ...)
 {
 	va_list va;
 	va_start(va, prologue);
-	_ds_message_set(error, prologue, &va);
+	ds_message_set(error, prologue, &va);
 	va_end(va);
 
-	_ds_write_to_string(0, store, " ");
-	_ds_write_to_string(0, store, error);
+	ds_write_to_string(0, store, " ");
+	ds_write_to_string(0, store, error);
 	state = 1;
 }
 
@@ -156,11 +156,11 @@ void HC_error_insert(char *prologue, ...)
 {
 	va_list va;
 	va_start(va, prologue);
-	_ds_message_set(error, prologue, &va);
+	ds_message_set(error, prologue, &va);
 	va_end(va);
 
-	_ds_write_to_string(1, store, " ");
-	_ds_write_to_string(1, store, error);
+	ds_write_to_string(1, store, " ");
+	ds_write_to_string(1, store, error);
 	state = 1;
 }
 
@@ -181,7 +181,7 @@ char *HC_error_get(void)
  */
 void HC_error_print(void)
 {
-	_ds_write_to_string(1, store, "error: ");
+	ds_write_to_string(1, store, "error: ");
 	strcpy(send, store);
 	store[0] = '\0';
 	state = 0;

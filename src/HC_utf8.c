@@ -5,10 +5,10 @@
 #define MULTIBYTE (c >> 7)
 
 /*
- * _utf8_bytes:	Return multi-char length (-1) in bytes, read from the initial
+ * utf8_bytes:	Return multi-char length (-1) in bytes, read from the initial
  * UTF-8 char.
  */
-static unsigned _utf8_bytes(unsigned char c)
+static unsigned utf8_bytes(unsigned char c)
 {
 	if	(c >> 3 == FOUR_BYTES)
 		return 3;
@@ -27,7 +27,7 @@ static unsigned _utf8_bytes(unsigned char c)
 unsigned utf8_test(char c)
 {
 	if (MULTIBYTE)
-		return _utf8_bytes(c) + 1;
+		return utf8_bytes(c) + 1;
 	else
 		return 0;
 }
@@ -40,7 +40,7 @@ unsigned utf8_len(char *str)
 	char c = str[0];
 
 	if (MULTIBYTE)
-		return _utf8_bytes(c) + 1;
+		return utf8_bytes(c) + 1;
 	else
 		return 1;
 }
@@ -59,7 +59,7 @@ unsigned utf8_count(char c)
 			return count;
 	}
 	else if (MULTIBYTE) {
-		count = _utf8_bytes(c);
+		count = utf8_bytes(c);
 		if (count)
 			return count;
 	}

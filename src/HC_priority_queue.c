@@ -156,11 +156,11 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
- * _insert_or_count: If the char does not yet exist in the char map,
+ * insert_or_count: If the char does not yet exist in the char map,
  * insert it in alphabetical order. If it exists already, add one to the count
  * for that character.
  */
-static HC_HuffmanNode **_insert_or_count(
+static HC_HuffmanNode **insert_or_count(
 						HC_HuffmanNode **list,
 						Data data,
 						int(*func)(void*, void*))
@@ -198,10 +198,10 @@ static HC_HuffmanNode **_insert_or_count(
 }
 
 /*
- * _compile_frequency_list: Sort alphabetically and keep count of the
+ * compile_frequency_list: Sort alphabetically and keep count of the
  * occurrences of each character.
  */
-static HC_HuffmanNode **_compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
+static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 {
 	char c, *ptr;
 	Data data;
@@ -216,22 +216,22 @@ static HC_HuffmanNode **_compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 		*ptr++ = c;
 		*ptr = '\0';
 		data.frq = 1;
-		_insert_or_count(list, data, FN_data_strcmp);
+		insert_or_count(list, data, FN_data_strcmp);
 	}
 
 	/* Add EOF char */
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
-	_insert_or_count(list, data, FN_data_strcmp);
+	insert_or_count(list, data, FN_data_strcmp);
 
 	return list;
 }
 
 /*
- * _compile_frequency_list_decomp: Compile a frequency list from the
+ * compile_frequency_list_decomp: Compile a frequency list from the
  * table at the start of a compressed file.
  */
-//TODO NOW 3 _compile_frequency_list_decomp: needs a lexer.
-static HC_HuffmanNode **_compile_frequency_list_decomp(
+//TODO NOW 3 compile_frequency_list_decomp: needs a lexer.
+static HC_HuffmanNode **compile_frequency_list_decomp(
 							HC_HuffmanNode **list,
 							FILE *fp)
 {
@@ -250,12 +250,12 @@ static HC_HuffmanNode **_compile_frequency_list_decomp(
 		*ptr++ = c;
 		*ptr = '\0';
 		data.frq = 1;
-		_insert_or_count(list, data, FN_data_strcmp);
+		insert_or_count(list, data, FN_data_strcmp);
 	}
 
 	/* Add EOF char */
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
-	_insert_or_count(list, data, FN_data_strcmp);
+	insert_or_count(list, data, FN_data_strcmp);
 
 	return list;
 }
@@ -267,7 +267,7 @@ static HC_HuffmanNode **_compile_frequency_list_decomp(
 HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
 {
 	/* Count */
-	list = _compile_frequency_list(list, fp);
+	list = compile_frequency_list(list, fp);
 
 	/* Sort by frequency */
 	list = HC_mergesort(list, FN_data_frqcmp);
@@ -286,7 +286,7 @@ HC_HuffmanNode **build_priority_queue_from_file(
 							FILE *fp)
 {
 	/* Get char count */
-	list = _compile_frequency_list_decomp(list, fp);
+	list = compile_frequency_list_decomp(list, fp);
 
 	/* Sort by frequency */
 	list = HC_mergesort(list, FN_data_frqcmp);

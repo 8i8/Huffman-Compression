@@ -65,11 +65,11 @@ int HC_huffman_tree_free(HC_HuffmanNode **tree)
 	return 0;
 }
 
-static void _print_huffman_tree(HC_HuffmanNode *tree, int depth)
+static void print_huffman_tree_rec(HC_HuffmanNode *tree, int depth)
 {
 	int i;
 	if (tree->left)
-		_print_huffman_tree(tree->left, ++depth);
+		print_huffman_tree_rec(tree->left, ++depth);
 
 	for (i = 0; i < --depth; i++)
 		putchar(' ');
@@ -77,7 +77,7 @@ static void _print_huffman_tree(HC_HuffmanNode *tree, int depth)
 	printf("%s\n", tree->data.utf8_char);
 
 	if (tree->right)
-		_print_huffman_tree(tree->right, ++depth);
+		print_huffman_tree_rec(tree->right, ++depth);
 }
 
 /*
@@ -85,7 +85,7 @@ static void _print_huffman_tree(HC_HuffmanNode *tree, int depth)
  */
 void print_huffman_tree(HC_HuffmanNode *tree)
 {
-	_print_huffman_tree(tree, 0);
+	print_huffman_tree_rec(tree, 0);
 	putchar('\n');
 }
 

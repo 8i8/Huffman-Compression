@@ -1,6 +1,6 @@
 #include "HC_mergesort.h"
 
-static HC_HuffmanNode* _advance_and_cut(HC_HuffmanNode *list, size_t len)
+static HC_HuffmanNode* advance_and_cut(HC_HuffmanNode *list, size_t len)
 {
 	HC_HuffmanNode *fin;
 
@@ -17,10 +17,10 @@ static HC_HuffmanNode* _advance_and_cut(HC_HuffmanNode *list, size_t len)
 }
 
 /*
- * _merge: Merge together two linked lists whist sorting them by the given
+ * merge: Merge together two linked lists whist sorting them by the given
  * function.
  */
-static HC_HuffmanNode* _merge(
+static HC_HuffmanNode* merge(
 				HC_HuffmanNode **list,
 				HC_HuffmanNode **left, HC_HuffmanNode **right,
 				HC_HuffmanNode **end,  HC_HuffmanNode **tail,
@@ -62,11 +62,11 @@ static HC_HuffmanNode* _merge(
 }
 
 /*
- * _mergesort_cut: Merge sort for linked lists, this version does not use a
+ * mergesort_cut: Merge sort for linked lists, this version does not use a
  * count to signal the end of a segmented list, the lists are cut and the NULL
  * terminator is used to signal the end of a list.
  */
-static HC_HuffmanNode **_mergesort_cut(
+static HC_HuffmanNode **mergesort_cut(
 					HC_HuffmanNode **list,
 					size_t m_len,
 					int(*comp)(void*, void*))
@@ -89,13 +89,13 @@ static HC_HuffmanNode **_mergesort_cut(
 		count++;
 		right = left;
 
-		right = _advance_and_cut(left, m_len);
-		end = _advance_and_cut(right, m_len);
+		right = advance_and_cut(left, m_len);
+		end = advance_and_cut(right, m_len);
 
 		/* Whilst there remains any length of either the right or the
 		 * left list; compare the two and sort in order, else merge the
 		 * remainder, there should never be more than one extra */
-		left = _merge(list, &left, &right, &end, &tail, comp);
+		left = merge(list, &left, &right, &end, &tail, comp);
 	}
 
 	/* Clip the end of the list to stop an infinite loop, if the last node
@@ -106,7 +106,7 @@ static HC_HuffmanNode **_mergesort_cut(
 	/* If more than one merge has been made, continue. If only one merge or
 	 * fewer have been counted; The sort is finished */
 	if (count > 1)
-		list = _mergesort_cut(list, m_len * 2, comp);
+		list = mergesort_cut(list, m_len * 2, comp);
 
 	return list;
 }
@@ -115,7 +115,7 @@ static HC_HuffmanNode **_mergesort_cut(
  * HC_mergesort: Merge sort for linked lists, long function using count to keep
  * track of lists.
  */
-static HC_HuffmanNode **_mergesort(
+static HC_HuffmanNode **mergesort(
 					HC_HuffmanNode **list,
 					size_t m_len,
 					int(*comp)(void*, void*))
@@ -189,7 +189,7 @@ static HC_HuffmanNode **_mergesort(
 	/* If more than one merge has been made, continue. If only one merge or
 	 * fewer have been counted, then the sort is finished */
 	if (count > 1)
-		list = _mergesort(list, m_len * 2, comp);
+		list = mergesort(list, m_len * 2, comp);
 
 	return list;
 }
@@ -205,7 +205,7 @@ HC_HuffmanNode **HC_mergesort(HC_HuffmanNode **list, int(*comp)(void*, void*))
 		return NULL;
 
 	/* Set the ball rolling with a merge length of one node */
-	return _mergesort(list, 1, comp);
+	return mergesort(list, 1, comp);
 }
 
 HC_HuffmanNode **HC_mergesort_cut(HC_HuffmanNode **list, int(*comp)(void*, void*))
@@ -215,6 +215,6 @@ HC_HuffmanNode **HC_mergesort_cut(HC_HuffmanNode **list, int(*comp)(void*, void*
 		return NULL;
 
 	/* Set the ball rolling with a merge length of one node */
-	return _mergesort_cut(list, 1, comp);
+	return mergesort_cut(list, 1, comp);
 }
 

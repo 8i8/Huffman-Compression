@@ -6,13 +6,14 @@
 #include "HC_utf8.h"
 #include "HC_priority_queue.h"
 #include "LE_lexer.h"
+#include "GE_hash.h"
 
 extern int state;
 
 /*
  * Reverse the array.
  */
-static void _reverse(char *s)
+static void reverse(char *s)
 {
 	size_t i, j;
 	int c;
@@ -27,7 +28,7 @@ static void _reverse(char *s)
 /*
  * Transform a value of the int type into a string.
  */ 
-static char *_itoa(size_t n, char *s)
+static char *itoa(size_t n, char *s)
 {
 	char *s_in;
 	s_in = s;
@@ -40,17 +41,17 @@ static char *_itoa(size_t n, char *s)
 
 	*(s+1) = '\0';
 	
-	_reverse(s_in);
+	reverse(s_in);
 
 	return s;
 }
 
 /*
- * _write_frq_map: Write the frequency of each used characters repetition used
+ * write_frq_map: Write the frequency of each used characters repetition used
  * in the encoding of the file to the start of the file, so as to allow for the
  * recreation of the same Huffman tree for decompression.
  */
-static void _write_frq_map(Data *map, FILE *out)
+static void write_frq_map(Data *map, FILE *out)
 {
 	char *ptr, buf[2048] = {'\0'};
 	size_t i, len;
@@ -66,7 +67,7 @@ static void _write_frq_map(Data *map, FILE *out)
 			memcpy(ptr, map->utf8_char, len);
 			ptr += len;
 			memcpy(ptr++, "~", 1);
-			ptr = _itoa(map->frq, ptr);
+			ptr = itoa(map->frq, ptr);
 			memcpy(ptr++, "\n", 1);
 		}
 
@@ -78,10 +79,10 @@ static void _write_frq_map(Data *map, FILE *out)
 }
 
 /*
- * _write_bit: Set all of the bits in a byte, then write that byte to the given
+ * write_bit: Set all of the bits in a byte, then write that byte to the given
  * file.
  */
-static void _write_bit(FILE *out, unsigned char bit, unsigned char *byte, int *count)
+static void write_bit(FILE *out, unsigned char bit, unsigned char *byte, int *count)
 {
 	if (++(*count) == 8) {
 		fwrite(byte, 1, 1, out);
@@ -110,7 +111,7 @@ int compress_file(Data *map, FILE *in, FILE *out)
 	byte = 0;
 	count = 0;
 
-	_write_frq_map(map, out);
+	write_frq_map(map, out);
 
 	while ((c = fgetc(in)) != EOF)
 	{
@@ -124,7 +125,7 @@ int compress_file(Data *map, FILE *in, FILE *out)
 		bin = map_read_char_to_binary(map, utf8_char);
 		len = map_read_char_to_binary_len(map, utf8_char);
 		for (i = 0; i < len; i++, bin++)
-			_write_bit(out, bin[0], &byte, &count);
+			write_bit(out, bin[0], &byte, &count);
 
 		ptr = utf8_char;
 	}
@@ -133,7 +134,7 @@ int compress_file(Data *map, FILE *in, FILE *out)
 	bin = map_read_char_to_binary(map, "EOF");
 	len = map_read_char_to_binary_len(map, utf8_char);
 	for (i = 0; i < len; i++, bin++)
-		_write_bit(out, bin[0], &byte, &count);
+		write_bit(out, bin[0], &byte, &count);
 
 	/* Pad any remaining bits in the last byte with zeroes */
 	if(count > 0) {
