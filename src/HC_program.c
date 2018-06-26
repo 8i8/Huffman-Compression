@@ -14,13 +14,13 @@ extern int state;
 int program(Main *var)
 {
 	if (state & READ)
-		create_priority_cue(&var->tree, var->in);
+		create_priority_queue(&var->tree, var->in);
 
 	if ((state & READ) && (state & PRINT))
 		print_frequency(&var->tree);
 
 	if (state & READ) {
-		build_huffman_tree(&(var->tree));
+		build_huffman_tree(&var->tree);
 		var->map = map_create(var->map, &var->tree);
 		rewind(var->in);
 	}
@@ -34,7 +34,7 @@ int program(Main *var)
 		compress_file(var->map, var->in, var->out);
 
 	if (state & DECOMP)
-		;//decompress_file(var->map, var->in, var->out);
+		decompress_file(&var->tree, var->in, var->out);
 
 	if (state & ERROR) {
 		HC_error_print();

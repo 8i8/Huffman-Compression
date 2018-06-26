@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include <string.h>
+#include "HC_state.h"
 #include "HC_struct.h"
 #include "HC_map_char.h"
 #include "HC_utf8.h"
+#include "HC_priority_queue.h"
+#include "LE_lexer.h"
+
+extern int state;
 
 /*
  * Reverse the array.
@@ -40,13 +45,18 @@ static char *_itoa(size_t n, char *s)
 	return s;
 }
 
+/*
+ * _write_frq_map: Write the frequency of each used characters repetition used
+ * in the encoding of the file to the start of the file, so as to allow for the
+ * recreation of the same Huffman tree for decompression.
+ */
 static void _write_frq_map(Data *map, FILE *out)
 {
 	char *ptr, buf[2048] = {'\0'};
 	size_t i, len;
 	ptr = buf;
 
-	memcpy(buf, "<in>\n", 5);
+	memcpy(buf, "<map>\n", 5);
 	ptr += 5;
 
 	for (i = 0; i < MAP_LEN; i++, map++)
@@ -60,8 +70,8 @@ static void _write_frq_map(Data *map, FILE *out)
 			memcpy(ptr++, "\n", 1);
 		}
 
-	memcpy(ptr, "<out>\n", 6);
-	ptr += 6;
+	memcpy(ptr, "</map>\n", 7);
+	ptr += 7;
 	*(ptr+1) = '\0';
 
 	fwrite(buf, 1, ptr - buf, out);
@@ -135,9 +145,28 @@ int compress_file(Data *map, FILE *in, FILE *out)
 }
 
 /*
- * decompress_file: Read compressed file.
+ * decompress_file: Read and decompress compressed file. Analyze file stream
+ * with lexer to decompress the file.
  */
-//int decompress_file(Data *map, FILE *in, FILE *out)
-//{
-//}
+//TODO NOW 1 decompress_file: calls lexer to drive state, build_priority_queue_from_file then decompress
+int decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out)
+{
+	LE_lexer_init();
+	char c;
+
+	while ((c = fgetc(in)) != EOF)
+	{
+		/* Read frequancy map from file start */
+		state = LE_get_token(in, c);
+
+		if (state & LE_MAP)
+			build_priority_queue_from_file(list, in);
+		if (state & LE_DECOMP)
+			;
+	}
+
+	LE_lexer_free();
+
+	return 0;
+}
 

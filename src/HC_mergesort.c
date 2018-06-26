@@ -66,7 +66,10 @@ static HC_HuffmanNode* _merge(
  * count to signal the end of a segmented list, the lists are cut and the NULL
  * terminator is used to signal the end of a list.
  */
-static HC_HuffmanNode **_mergesort_cut(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*, void*))
+static HC_HuffmanNode **_mergesort_cut(
+					HC_HuffmanNode **list,
+					size_t m_len,
+					int(*comp)(void*, void*))
 {
 	size_t count;
 	HC_HuffmanNode *left, *right, *tail, *end;
@@ -112,7 +115,10 @@ static HC_HuffmanNode **_mergesort_cut(HC_HuffmanNode **list, size_t m_len, int(
  * HC_mergesort: Merge sort for linked lists, long function using count to keep
  * track of lists.
  */
-static HC_HuffmanNode **_mergesort(HC_HuffmanNode **list, size_t m_len, int(*comp)(void*, void*))
+static HC_HuffmanNode **_mergesort(
+					HC_HuffmanNode **list,
+					size_t m_len,
+					int(*comp)(void*, void*))
 {
 	size_t i, count, l_len, r_len;
 	HC_HuffmanNode *left, *right, *new, *tail;
@@ -187,6 +193,10 @@ static HC_HuffmanNode **_mergesort(HC_HuffmanNode **list, size_t m_len, int(*com
 
 	return list;
 }
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  Two mergesorts for comparison.
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 HC_HuffmanNode **HC_mergesort(HC_HuffmanNode **list, int(*comp)(void*, void*))
 {

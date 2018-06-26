@@ -122,7 +122,8 @@ static Data *_huffman_tree_walk(
 
 	if ((*tree)->data.utf8_char[0] != '\0') {
 		memcpy((*tree)->data.string, string->str, len);
-		//TODO is this value redundant?
+		// TODO 09 check necesity of len here, could this code be more
+		// efficient?
 		(*tree)->data.len = len;
 		func(map, *tree);
 	}

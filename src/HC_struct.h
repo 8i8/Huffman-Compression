@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-// TODO merge the structs data and string, there is no need for both in the
+// TODO 09 merge the structs data and string, there is no need for both in the
 // code. 
 
 #ifndef _data_

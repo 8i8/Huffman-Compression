@@ -5,6 +5,8 @@
 #include "HC_utf8.h"
 #include "HC_func_comp.h"
 
+#define IN (1 << 0)
+
 /*
  * HC_priority_queue_new_node: Internal function for creating new list nodes.
  */
@@ -150,7 +152,7 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Priority cue
+ *  Priority queue
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
@@ -159,9 +161,9 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
  * for that character.
  */
 static HC_HuffmanNode **_insert_or_count(
-					HC_HuffmanNode **list,
-					Data data,
-					int(*func)(void*, void*))
+						HC_HuffmanNode **list,
+						Data data,
+						int(*func)(void*, void*))
 {
 	int test;
 
@@ -196,10 +198,10 @@ static HC_HuffmanNode **_insert_or_count(
 }
 
 /*
- * _compile_frequeuency_list: Sort alphabetically and keep count of the
+ * _compile_frequency_list: Sort alphabetically and keep count of the
  * occurrences of each character.
  */
-static HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *fp)
+static HC_HuffmanNode **_compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 {
 	char c, *ptr;
 	Data data;
@@ -208,7 +210,7 @@ static HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *f
 	while ((c = fgetc(fp)) != EOF)
 	{
 		ptr = data.utf8_char;
-		/* Get char for the lenght of the multi-byte character */
+		/* Get char for the length of the multi-byte character */
 		while (utf8_count(c) && (*ptr++ = c))
 			c = fgetc(fp);
 		*ptr++ = c;
@@ -225,14 +227,68 @@ static HC_HuffmanNode **_compile_frequeuency_list(HC_HuffmanNode **list, FILE *f
 }
 
 /*
- * create_priority_cue: Call the ListSort function and set the sort parameter.
+ * _compile_frequency_list_decomp: Compile a frequency list from the
+ * table at the start of a compressed file.
  */
-HC_HuffmanNode **create_priority_cue(HC_HuffmanNode **list, FILE *fp)
+//TODO NOW 3 _compile_frequency_list_decomp: needs a lexer.
+static HC_HuffmanNode **_compile_frequency_list_decomp(
+							HC_HuffmanNode **list,
+							FILE *fp)
+{
+	char c, *ptr;
+	Data data;
+	short state = 0;
+	state |= IN;
+
+	/* Scan document */
+	while ((c = fgetc(fp)) != EOF && state == IN)
+	{
+		ptr = data.utf8_char;
+		/* Get char for the length of the multi-byte character */
+		while (utf8_count(c) && (*ptr++ = c))
+			c = fgetc(fp);
+		*ptr++ = c;
+		*ptr = '\0';
+		data.frq = 1;
+		_insert_or_count(list, data, FN_data_strcmp);
+	}
+
+	/* Add EOF char */
+	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
+	_insert_or_count(list, data, FN_data_strcmp);
+
+	return list;
+}
+
+/*
+ * create_priority_queue: Compile a frequency list for all characters in the
+ * document, sort that list into a priority queue.
+ */
+HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
 {
 	/* Count */
-	list = _compile_frequeuency_list(list, fp);
+	list = _compile_frequency_list(list, fp);
 
-	/* Sort by frequeuency */
+	/* Sort by frequency */
+	list = HC_mergesort(list, FN_data_frqcmp);
+
+	return list;
+}
+
+/*
+ * build_priority_queue_from_file: Retrieve the frequency mapping from the
+ * beginning of a compressed file and make it into a list, sort the list into a
+ * priority queue.
+ */
+// TODO NOW 2 build_priority_queue_from_file. calls frequency list, and mergesort.
+HC_HuffmanNode **build_priority_queue_from_file(
+							HC_HuffmanNode **list,
+							FILE *fp)
+{
+	/* Get char count */
+	list = _compile_frequency_list_decomp(list, fp);
+
+	/* Sort by frequency */
 	list = HC_mergesort(list, FN_data_frqcmp);
 
 	return list;

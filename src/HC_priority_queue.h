@@ -20,8 +20,14 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode*list);
 /* HC_HuffmanTree_walk: Walk tree and perform (*func) on every node */
 Data *HC_HuffmanTree_walk(HC_HuffmanNode **tree, void* store, int(*func)(void*, void*));
 
-/* create_priority_cue: Call the ListSort function and set the sort parameter */
-HC_HuffmanNode **create_priority_cue(HC_HuffmanNode **list, FILE *fp);
+/* create_priority_queue: Compile a frequency list for all characters in the
+ * document, sort that list into a priority queue */
+HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp);
+
+/* build_priority_queue_from_file: Retrieve the frequency mapping from the
+ * beginning of a compressed file and make it into a list, sort the list into a
+ * priority queue */
+HC_HuffmanNode **build_priority_queue_from_file(HC_HuffmanNode **list, FILE *fp);
 
 /* print_frequency: Output the frequency map */
 void print_frequency(HC_HuffmanNode **list);

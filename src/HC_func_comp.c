@@ -26,7 +26,6 @@ int FN_data_frqcmp(void *v1, void *v2)
 	d1 = (Data*) v1;
 	d2 = (Data*) v2;
 
-	//TODO overflow protection required here.
 	return (int)(d1->frq - d2->frq);
 }
 

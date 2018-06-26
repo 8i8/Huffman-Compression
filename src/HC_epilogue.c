@@ -3,7 +3,7 @@
 #include "HC_huffman_tree.h"
 #include <stdlib.h>
 
-extern unsigned state;
+extern int state;
 
 /*
  * epilogue: Free all memory and close files.
