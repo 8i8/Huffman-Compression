@@ -27,3 +27,5 @@ clean:
 distclean: clean
 	rm -f compression a.out scratch*
 
+$(OBJ): Makefile
+

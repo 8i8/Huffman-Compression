@@ -33,10 +33,10 @@ static char *itoa(size_t n, char *s)
 	char *s_in;
 	s_in = s;
 
-	do {
+	do
 		/* make n positive and generate digits in reverse order */
 		*s++ = (char)(n % 10) + '0';
-	}
+
 	while ((n /= 10) != 0);
 
 	*(s+1) = '\0';
@@ -50,26 +50,40 @@ static char *itoa(size_t n, char *s)
  * write_frq_map: Write the frequency of each used characters repetition used
  * in the encoding of the file to the start of the file, so as to allow for the
  * recreation of the same Huffman tree for decompression.
+ * TODO write a propper buffer here
  */
-static void write_frq_map(Data *map, FILE *out)
+static void write_frq_map(Data **map, FILE *out)
 {
 	char *ptr, buf[2048] = {'\0'};
 	size_t i, len;
+	Data *cur;
 	ptr = buf;
 
 	memcpy(buf, "<map>\n", 5);
 	ptr += 5;
 
-	for (i = 0; i < MAP_LEN; i++, map++)
-		if (map->frq) {
+	for (i = 0; i < MAP_LEN; i++) {
+		if (map[i] != NULL) {
 			memcpy(ptr++, "\t", 1);
-			len = utf8_len(map->utf8_char);
-			memcpy(ptr, map->utf8_char, len);
+			len = utf8_len(map[i]->utf8_char);
+			memcpy(ptr, map[i]->utf8_char, len);
 			ptr += len;
 			memcpy(ptr++, "~", 1);
-			ptr = itoa(map->frq, ptr);
+			ptr = itoa(map[i]->frq, ptr);
 			memcpy(ptr++, "\n", 1);
+			if ((cur = map[i]->next)) {
+				while ((cur = cur->next)) {
+					memcpy(ptr++, "\t", 1);
+					len = utf8_len(cur->utf8_char);
+					memcpy(ptr, cur->utf8_char, len);
+					ptr += len;
+					memcpy(ptr++, "~", 1);
+					ptr = itoa(cur->frq, ptr);
+					memcpy(ptr++, "\n", 1);
+				}
+			}
 		}
+	}
 
 	memcpy(ptr, "</map>\n", 7);
 	ptr += 7;
@@ -99,7 +113,7 @@ static void write_bit(FILE *out, unsigned char bit, unsigned char *byte, int *co
 /*
  * compress_file: Write compressed file.
  */
-int compress_file(Data *map, FILE *in, FILE *out)
+int compress_file(Data **map, FILE *in, FILE *out)
 {
 	int count;
 	unsigned char byte;
@@ -113,13 +127,15 @@ int compress_file(Data *map, FILE *in, FILE *out)
 
 	write_frq_map(map, out);
 
+	fwrite("<comp>\n\t", 1, 8, out);
+
 	while ((c = fgetc(in)) != EOF)
 	{
 		/* Get char for the lenght of what is possibly a multi-byte
 		 * character */
-		while (utf8_count(c) && (*ptr++ = c))
+		while ((*ptr++ = c) && utf8_count(c))
 			c = fgetc(in);
-		*ptr++ = c;
+
 		*ptr = '\0';
 
 		bin = map_read_char_to_binary(map, utf8_char);
@@ -142,6 +158,8 @@ int compress_file(Data *map, FILE *in, FILE *out)
 		 fwrite(&byte, 1, 1, out);
 	}
 
+	fwrite("\n</comp>\n", 1, 9, out);
+
 	return 0;
 }
 
@@ -158,12 +176,14 @@ int decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out)
 	while ((c = fgetc(in)) != EOF)
 	{
 		/* Read frequancy map from file start */
-		state = LE_get_token(in, c);
+		state |= LE_get_token(in, c);
 
 		if (state & LE_MAP)
 			build_priority_queue_from_file(list, in);
-		if (state & LE_DECOMP)
-			;
+		else if (state & LE_DECOMP)
+			continue;
+		else
+			break;
 	}
 
 	LE_lexer_free();

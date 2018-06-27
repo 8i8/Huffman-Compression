@@ -1,9 +1,11 @@
 #include <stdio.h>
 
 #ifndef _string_
+#define _string_
 typedef struct {
 	char *str;
 	char *ptr;
+	size_t len;
 	size_t buf;
 } String;
 #endif
@@ -26,6 +28,12 @@ String *GE_string_len(String *Str, size_t len);
  * the allocated memory address.
  */
 String *GE_string_set(String *Str, char *str);
+
+/*
+ * GE_string_add: Add a single char to the string, buffer that string if
+ * required.
+ */
+String *GE_string_add(String *Str, char c);
 
 /*
  * GE_string_free: Destroy string.

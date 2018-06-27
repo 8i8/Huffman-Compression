@@ -10,13 +10,26 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
+ * populate_map: Set all values in the Data struct to '\0'.
+ */
+static Data *data_init(Data *map)
+{
+	map->utf8_char[0] = '\0';
+	map->string[0] = '\0';
+	map->len = 0;
+	map->frq = 0;
+	map->next = NULL;
+	return map;
+}
+
+/*
  * build_huffman_tree: Create a binary tree from the given linked list.
  */
 HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 {
 	HC_HuffmanNode *new, *one, *two;
 	Data data;
-	data.frq = 0, data.utf8_char[0] = '\0';
+	data_init(&data);
 
 	while ((*list)->next)
 	{

@@ -210,10 +210,11 @@ static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 	while ((c = fgetc(fp)) != EOF)
 	{
 		ptr = data.utf8_char;
-		/* Get char for the length of the multi-byte character */
-		while (utf8_count(c) && (*ptr++ = c))
+
+		/* Get multi-byte character */
+		while ((*ptr++ = c) && utf8_count(c))
 			c = fgetc(fp);
-		*ptr++ = c;
+
 		*ptr = '\0';
 		data.frq = 1;
 		insert_or_count(list, data, FN_data_strcmp);
@@ -230,18 +231,16 @@ static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
  * compile_frequency_list_decomp: Compile a frequency list from the
  * table at the start of a compressed file.
  */
-//TODO NOW 3 compile_frequency_list_decomp: needs a lexer.
+//TODO NOW 2a compile_frequency_list_decomp: needs a lexer.
 static HC_HuffmanNode **compile_frequency_list_decomp(
 							HC_HuffmanNode **list,
 							FILE *fp)
 {
 	char c, *ptr;
 	Data data;
-	short state = 0;
-	state |= IN;
 
 	/* Scan document */
-	while ((c = fgetc(fp)) != EOF && state == IN)
+	while ((c = fgetc(fp)) != EOF)
 	{
 		ptr = data.utf8_char;
 		/* Get char for the length of the multi-byte character */

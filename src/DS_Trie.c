@@ -231,7 +231,7 @@ int DS_Trie_is_token(DS_Trie **trie, char *token)
 
 	/* Is the first character in the tries hash? */
 	if (trie[(unsigned int)*Str->ptr])
-		res = _check_token(trie[(unsigned int)*Str->ptr++], Str);
+		res = check_token(trie[(unsigned int)*Str->ptr++], Str);
 
 	GE_string_free(Str);
 

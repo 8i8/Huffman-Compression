@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include "LE_tokenizer.h"
 #include "HC_state.h"
 #include "GE_string.h"
 #include "LE_lexer.h"
+#include "GE_string.h"
 
 extern int state;
 
@@ -26,9 +28,12 @@ void LE_lexer_free(void)
 /*
  * LE_get_token: Returns a state on reading a token.
  */
-//TODO NOW 5 returns the state; Needs token read from tokenizer.
+//TODO NOW 5 returns the state
 int LE_get_token(FILE *fp, char c)
 {
+	int off, token;
+        off = token = 0;
+
 	while (isspace(c)) 
 		c = fgetc(fp);
 
@@ -38,19 +43,29 @@ int LE_get_token(FILE *fp, char c)
 		return state;
 	}
 
-	while (c != '>')
+	while (c != '>' && c != EOF)
 	{
 		while (isspace(c)) 
 			c = fgetc(fp);
 
 		if (c == '/')
-			state &= LE_OUT;
-		else
-			state &= LE_IN;
+			off = 1;
 
-		//TODO NOW c = _read_token(fp, c);
+		String *str = malloc(sizeof(String));
+
+		while (isalnum((c = fgetc(fp))))
+			GE_string_add(str, c);
+
+		token |= LE_check_token(str->str);
+
+		free(str);
+
+		if (off)
+			state &= ~token;
+		else
+			state |= token;
 	}
 
-	return state;
+	return 	LE_get_token(fp, c);
 }
 

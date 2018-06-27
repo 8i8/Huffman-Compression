@@ -55,5 +55,5 @@ void DS_Trie_free(DS_Trie **trie);
  * _func_print: Printout the content of the tree from char root to current
  * node
  */
-intfunc_print_trie(void *trie, void *var);
+int func_print_trie(void *trie, void *var);
 

@@ -19,31 +19,20 @@
  */
 static int copy_data_to_map(void* ma, void* tr)
 {
-	Data *map = ma;
-	HC_HuffmanNode*node = tr;
-	int bucket = hash(node->data.utf8_char);
+	Data **map = ma;
+	Data *data = tr;
+	Data *cur;
+	int bucket = hash(data->utf8_char);
 
-	/* If assert fails, there has been a hash collision */
-	assert((map[bucket].len) == 0);
-	//map[bucket] = node->data;
-	memcpy(&map[bucket], &node->data, sizeof(Data));
+	if (map[bucket]) {
+		cur = map[bucket];
+		while (cur->next)
+			cur = cur->next;
+		cur->next = data;
+	} else
+		map[bucket] = data;
 
 	return 0;
-}
-
-/*
- * populate_map: Set all string in the map array to '\0'.
- */
-static Data *populate_map(Data *map, size_t len)
-{
-	size_t i;
-	for (i = 0; i < len; i++) {
-		map[i].utf8_char[0] = '\0';
-		map[i].string[0] = '\0';
-		map[i].len = 0;
-		map[i].frq = 0;
-	}
-	return map;
 }
 
 /*
@@ -74,9 +63,8 @@ static char *expand_string(String *string, size_t len)
  */
 static String *add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
 {
-	if (len >= string->lim) {
+	if (len >= string->lim)
 		expand_string(string, len);
-	}
 
 	char c[2] = {'\0'};
 	c[0] = (*tree)->bit;
@@ -90,7 +78,7 @@ static String *add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
  * huffman_tree_walk: Recursive function to walk tree and perform (*func) on
  * every node.
  */
-static Data *huffman_tree_walk(
+static Data **huffman_tree_walk(
 				HC_HuffmanNode **tree,
 				void* map,
 				int(*func)(void*, void*),
@@ -114,7 +102,7 @@ static Data *huffman_tree_walk(
 		// TODO 09 check necesity of len here, could this code be more
 		// efficient?
 		(*tree)->data.len = len;
-		func(map, *tree);
+		func(map, &(*tree)->data);
 	}
 
 	return map;
@@ -123,12 +111,11 @@ static Data *huffman_tree_walk(
 /*
  * map_create: Create char map from Huffman tree.
  */
-Data *map_create(Data *map, HC_HuffmanNode **tree)
+Data **map_create(Data **map, HC_HuffmanNode **tree)
 {
 	String string;
 	string.str = calloc(BUF_LEN, 1), string.lim = BUF_LEN-1;
-	map = malloc(sizeof(Data) * MAP_LEN);
-	map = populate_map(map, MAP_LEN);
+	map = calloc(sizeof(Data*), MAP_LEN);
 	map = huffman_tree_walk(tree, map, copy_data_to_map, &string, 1);
 	free(string.str);
 	return map;
@@ -137,27 +124,59 @@ Data *map_create(Data *map, HC_HuffmanNode **tree)
 /*
  * map_read_char_to_binary: Returns binary value for char from the given map.
  */
-char *map_read_char_to_binary(Data *map, char *c)
+char *map_read_char_to_binary(Data **map, char *c)
 {
-	return map[hash(c)].string;
+	return map[hash(c)]->string;
 }
 
 /*
  * map_read_char_to_binary_len: Returns the length of the binary value for the given char.
  */
-size_t map_read_char_to_binary_len(Data *map, char *c)
+size_t map_read_char_to_binary_len(Data **map, char *c)
 {
-	return map[hash(c)].len;
+	return map[hash(c)]->len;
 }
 
 /*
  * print_char_map: Print out the char map made by the Huffman tree.
  */
-void print_char_map(Data *map)
+void print_char_map(Data **map)
 {
 	size_t i;
+	Data *cur;
 	for (i = 0; i < MAP_LEN; i++, map++)
-		if (*(map->string) != '\0')
-			printf("%s %s\n", map->utf8_char, map->string);
+		if (map[i]) {
+			printf("%s %s\n", map[i]->utf8_char, map[i]->string);
+			if ((cur = map[i]->next))
+				printf("%s %s\n", cur->utf8_char, cur->string);
+		}
+}
+
+/*
+ * map_free_tree: Free the linked list that has been created to deal with hash
+ * collisions.
+ */
+static void map_free_tree(Data *map)
+{
+	Data *old;
+	while (map->next) {
+		old = map;
+		map = map->next;
+		free(old);
+	}
+	free(map);
+}
+
+/*
+ * HC_map_free: Free all memory used by the charatcer mapping.
+ */
+void HC_map_free(Data **map)
+{
+	size_t i;
+
+	for (i = 0; i < MAP_LEN; i++)
+		if (map[i])
+			map_free_tree(map[i]);
+	free(map);
 }
 

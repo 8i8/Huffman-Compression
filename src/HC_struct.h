@@ -10,6 +10,7 @@ typedef struct _data {
 	char string[128];
 	size_t len;
 	size_t frq;
+	struct _data *next;
 } Data;
 #endif
 
@@ -38,7 +39,7 @@ typedef struct _string {
 typedef struct _main {
 	FILE *in, *out;
 	HC_HuffmanNode *tree;
-	Data *map;
+	Data **map;
 } Main;
 #endif
 
