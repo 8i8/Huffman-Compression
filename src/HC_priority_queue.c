@@ -14,7 +14,7 @@ HC_HuffmanNode *HC_priority_queue_new_node(Data data)
 {
 	HC_HuffmanNode *new_node = NULL;
 	if ((new_node = malloc(sizeof(HC_HuffmanNode))) == NULL) {
-		HC_error_set("%s: memory allocation failed.", __func__);
+		fprintf(stderr, "%s: memory allocation failed.", __func__);
 		return NULL;
 	}
 	new_node->next = NULL;
@@ -39,7 +39,7 @@ HC_HuffmanNode **HC_priority_queue_add(HC_HuffmanNode **list, Data data)
 			list = &(*list)->next;
 
 		if (((*list)->next = HC_priority_queue_new_node(data)) == NULL) {
-			HC_error_append("%s: ", __func__);
+			fprintf(stderr, "%s: ", __func__);
 			return NULL;
 		}
 
@@ -60,11 +60,11 @@ HC_HuffmanNode **HC_priority_queue_insert(HC_HuffmanNode** list, Data data)
 	HC_HuffmanNode *new;
 
 	if (list == NULL || *list == NULL) {
-		HC_error_set("%s: NULL pointer.", __func__);
+		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	}
 	if ((new = HC_priority_queue_new_node(data)) == NULL) {
-		HC_error_append("%s: ", __func__);
+		fprintf(stderr, "%s: ", __func__);
 		return NULL;
 	}
 
@@ -82,7 +82,7 @@ HC_HuffmanNode **HC_priority_queue_insert_node(
 						HC_HuffmanNode *new_node)
 {
 	if (list == NULL || *list == NULL || new_node == NULL) {
-		HC_error_set("%s: NULL pointer.", __func__);
+		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	}
 
@@ -101,7 +101,7 @@ HC_HuffmanNode **HC_priority_queue_insert_ordered(
 						int(*freq)(void*, void*))
 {
 	if (newList == NULL) {
-		HC_error_set("%s: NULL pointer.", __func__);
+		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	}
 
@@ -131,7 +131,7 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
 	HC_HuffmanNode *popped;
 
 	if (list == NULL) {
-		HC_error_set("%s: Null pointer.", __func__);
+		fprintf(stderr, "%s: Null pointer.", __func__);
 		return NULL;
 	}
 
@@ -171,8 +171,8 @@ static HC_HuffmanNode **insert_or_count(
 		HC_error_set("%s: NULL pointer.", __func__);
 		return NULL;
 	} else if (*list == NULL) {
-		list = HC_priority_queue_add(list, data);
-		return list;
+		HC_error_set("%s: NULL pointer.", __func__);
+		return NULL;
 	}
 
 	while (*list != NULL)
@@ -201,7 +201,7 @@ static HC_HuffmanNode **insert_or_count(
  * compile_frequency_list: Sort alphabetically and keep count of the
  * occurrences of each character.
  */
-static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
+static HC_HuffmanNode *compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 {
 	char c, *ptr;
 	Data data;
@@ -224,7 +224,7 @@ static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
 	insert_or_count(list, data, FN_data_strcmp);
 
-	return list;
+	return *list;
 }
 
 /*
@@ -266,10 +266,12 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
 HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
 {
 	/* Count */
-	list = compile_frequency_list(list, fp);
+	if ((*list = compile_frequency_list(list, fp)) == NULL)
+		printf("%s(): error compile_frequency_list failed.\n", __func__);
 
 	/* Sort by frequency */
-	list = HC_mergesort(list, FN_data_frqcmp);
+	if ((list = HC_mergesort(list, FN_data_frqcmp)) == NULL)
+		printf("%s(): error mergesort failed.\n", __func__);
 
 	return list;
 }

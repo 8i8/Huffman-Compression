@@ -11,11 +11,11 @@
 static unsigned utf8_bytes(unsigned char c)
 {
 	if	(c >> 3 == FOUR_BYTES)
-		return 4;
-	else if (c >> 4 == THREE_BYTES)
 		return 3;
-	else if (c >> 5 == TWO_BYTES)
+	else if (c >> 4 == THREE_BYTES)
 		return 2;
+	else if (c >> 5 == TWO_BYTES)
+		return 1;
 
 	return 0;
 }
