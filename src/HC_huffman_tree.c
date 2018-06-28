@@ -1,7 +1,6 @@
 #include "HC_priority_queue.h"
 #include "HC_mergesort.h"
 #include "HC_func_comp.h"
-#include "HC_error.h"
 #include <stdlib.h>
 
 
@@ -43,14 +42,14 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 
 		/* Add leaves to new node and give a binary value */
 		if ((new = HC_priority_queue_new_node(data)) == NULL)
-			HC_error_print();
+			fprintf(stderr, "%s:", __func__);
 		new->left = one, new->right = two;
 		new->left->bit = '0', new->right->bit = '1';
 
 		/* Insert new node into priority queue */
 		if (*list) {
 			if (HC_priority_queue_insert_ordered(list, new, FN_data_frqcmp) == NULL)
-				HC_error_print();
+				fprintf(stderr, "%s:", __func__);
 		} else 
 			*list = new;
 	}

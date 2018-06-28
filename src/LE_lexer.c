@@ -28,7 +28,6 @@ void LE_lexer_free(void)
 /*
  * LE_get_token: Returns a state on reading a token.
  */
-//TODO NOW 5 returns the state
 int LE_get_token(FILE *fp, char c)
 {
 	int off, token;

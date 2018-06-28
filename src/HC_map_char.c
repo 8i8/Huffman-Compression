@@ -1,5 +1,4 @@
 #include "HC_map_char.h"
-#include "HC_error.h"
 #include "HC_struct.h"
 #include "GE_hash.h"
 #include <stdint.h>

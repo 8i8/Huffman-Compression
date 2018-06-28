@@ -1,42 +1,37 @@
 #include "HC_struct.h"
 #include "HC_state.h"
-#include "HC_error.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
-
-static Main *_var_init(Main *var)
-{
-	var->tree = NULL;
-	var-> map = NULL;
-	var->in = var->out = NULL;
-	return var;
-}
 
 /*
  * prologue: Deal with all args at the program start and in consequence set the
  * programs initial state.
  */
+//TODO NOW var is initalised here to NULL
 int prologue(int argc, char *argv[], Main *var)
 {
 	char c;
 
 	state_init();
-	var = _var_init(var);
+
+	var->tree = NULL;
+	var->map = NULL;
+	var->in = var->out = NULL;
 
 	while ((c = getopt(argc, argv, "pc:")) != -1)
 		switch (c)
 		{
 			case 'c':
 				if ((var->out = fopen(optarg, "wb")) == NULL) {
-					HC_error_set("file read error: %s\n", optarg);
+					fprintf(stderr, "file read error: %s\n", optarg);
 					return state_set(ERROR);
 				}
 				state_set(WRITE);
 				break;
 			case 'x':
 				if ((var->out = fopen(optarg, "r")) == NULL) {
-					HC_error_set("file read error: %s\n", optarg);
+					fprintf(stderr, "file read error: %s\n", optarg);
 					return state_set(ERROR);
 				}
 				state_set(DECOMP);

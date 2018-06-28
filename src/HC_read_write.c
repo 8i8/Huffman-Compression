@@ -167,7 +167,6 @@ int compress_file(Data **map, FILE *in, FILE *out)
  * decompress_file: Read and decompress compressed file. Analyze file stream
  * with lexer to decompress the file.
  */
-//TODO NOW 1 decompress_file: calls lexer to drive state, build_priority_queue_from_file then decompress
 int decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out)
 {
 	LE_lexer_init();

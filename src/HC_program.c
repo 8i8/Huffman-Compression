@@ -1,6 +1,5 @@
 #include "HC_struct.h"
 #include "HC_state.h"
-#include "HC_error.h"
 #include "HC_huffman_tree.h"
 #include "HC_map_char.h"
 #include "HC_priority_queue.h"
@@ -11,6 +10,7 @@ extern int state;
 /*
  * program: Compress input and write file out if specified.
  */
+//TODO how is the functioning of the var->tree* working here?
 int program(Main *var)
 {
 	if (state & READ)
@@ -37,7 +37,7 @@ int program(Main *var)
 		decompress_file(&var->tree, var->in, var->out);
 
 	if (state & ERROR) {
-		HC_error_print();
+		fprintf(stderr, "%s: state error signaled.", __func__);
 		return 1;
 	}
 

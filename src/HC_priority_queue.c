@@ -1,9 +1,9 @@
-#include "HC_error.h"
 #include "HC_mergesort.h"
 #include <stdlib.h>
 #include <string.h>
 #include "HC_utf8.h"
 #include "HC_func_comp.h"
+#include "HC_priority_queue.h"
 
 #define IN (1 << 0)
 
@@ -160,6 +160,7 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
  * insert it in alphabetical order. If it exists already, add one to the count
  * for that character.
  */
+//TODO NOW an error is being signaled here.
 static HC_HuffmanNode **insert_or_count(
 						HC_HuffmanNode **list,
 						Data data,
@@ -168,10 +169,10 @@ static HC_HuffmanNode **insert_or_count(
 	int test;
 
 	if (list == NULL) {
-		HC_error_set("%s: NULL pointer.", __func__);
+		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	} else if (*list == NULL) {
-		HC_error_set("%s: NULL pointer.", __func__);
+		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	}
 
@@ -179,7 +180,7 @@ static HC_HuffmanNode **insert_or_count(
 	{
 		if ((test = (*func)((void*)&data, (void*)&(*list)->data)) < 0) {
 			if ((HC_priority_queue_insert(list, data)) == NULL) {
-				HC_error_append("%s: ", __func__);
+				fprintf(stderr, "%s: ", __func__);
 				return NULL;
 			}
 			break;
@@ -201,7 +202,9 @@ static HC_HuffmanNode **insert_or_count(
  * compile_frequency_list: Sort alphabetically and keep count of the
  * occurrences of each character.
  */
-static HC_HuffmanNode *compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
+//TODO NOW this function is the root problem, with null values being sent to
+//insert_or_count
+static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode *list, FILE *fp)
 {
 	char c, *ptr;
 	Data data;
@@ -224,14 +227,13 @@ static HC_HuffmanNode *compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
 	insert_or_count(list, data, FN_data_strcmp);
 
-	return *list;
+	return list;
 }
 
 /*
  * compile_frequency_list_decomp: Compile a frequency list from the
  * table at the start of a compressed file.
  */
-//TODO NOW 2a compile_frequency_list_decomp: needs a lexer.
 static HC_HuffmanNode **compile_frequency_list_decomp(
 							HC_HuffmanNode **list,
 							FILE *fp)
@@ -263,15 +265,16 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
  * create_priority_queue: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue.
  */
+//TODO NOW and the function is called from here ...
 HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
 {
 	/* Count */
-	if ((*list = compile_frequency_list(list, fp)) == NULL)
-		printf("%s(): error compile_frequency_list failed.\n", __func__);
+	if ((list = compile_frequency_list(list, fp)) == NULL)
+		fprintf(stderr, "%s(): error compile_frequency_list failed.\n", __func__);
 
 	/* Sort by frequency */
 	if ((list = HC_mergesort(list, FN_data_frqcmp)) == NULL)
-		printf("%s(): error mergesort failed.\n", __func__);
+		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
 
 	return list;
 }
@@ -281,7 +284,6 @@ HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
  * beginning of a compressed file and make it into a list, sort the list into a
  * priority queue.
  */
-// TODO NOW 2 build_priority_queue_from_file. calls frequency list, and mergesort.
 HC_HuffmanNode **build_priority_queue_from_file(
 							HC_HuffmanNode **list,
 							FILE *fp)

@@ -20,6 +20,7 @@
 #include "HC_program.h"
 #include "HC_epilogue.h"
 
+//TODO NOW how is the main struct working out?
 int main(int argc, char *argv[])
 {
 	Main v, *var;
