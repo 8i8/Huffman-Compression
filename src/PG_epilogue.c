@@ -9,16 +9,16 @@ extern int state;
 /*
  * epilogue: Free all memory and close files.
  */
-int epilogue(Main *var)
+int epilogue(Files *io, HC_HuffmanNode **tree, Data **map)
 {
 	if (state & READ) {
-		HC_huffman_tree_free(&var->tree);
-		free(var->map);
-		fclose(var->in);
+		HC_huffman_tree_free(tree);
+		free(map);
+		fclose(io->in);
 	}
 
 	if (state & WRITE)
-		fclose(var->out);
+		fclose(io->out);
 
 	if (state & ERROR)
 		return 1;

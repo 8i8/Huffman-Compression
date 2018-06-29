@@ -11,36 +11,36 @@ extern int state;
  * program: Compress input and write file out if specified.
  */
 //TODO how is the functioning of the var->tree* working here?
-int program(Main *var)
+HC_HuffmanNode **program(Files *io, HC_HuffmanNode **tree, Data **map)
 {
 	if (state & READ)
-		create_priority_queue(&var->tree, var->in);
+		create_priority_queue(tree, io->in);
 
 	if ((state & READ) && (state & PRINT))
-		print_frequency(&var->tree);
+		print_frequency(*tree);
 
 	if (state & READ) {
-		build_huffman_tree(&var->tree);
-		var->map = map_create(var->map, &var->tree);
-		rewind(var->in);
+		build_huffman_tree(tree);
+		map = map_create(map, tree);
+		rewind(io->in);
 	}
 
 	if ((state & READ) && (state & PRINT)) {
-		print_huffman_tree(var->tree);
-		print_char_map(var->map);
+		print_huffman_tree(*tree);
+		print_char_map(map);
 	}
 
 	if ((state & READ) && (state & WRITE))
-		compress_file(var->map, var->in, var->out);
+		compress_file(map, io->in, io->out);
 
 	if (state & DECOMP)
-		decompress_file(&var->tree, var->in, var->out);
+		decompress_file(tree, io->in, io->out);
 
 	if (state & ERROR) {
 		fprintf(stderr, "%s: state error signaled.", __func__);
-		return 1;
+		return NULL;
 	}
 
-	return 0;
+	return tree;
 }
 

@@ -8,29 +8,25 @@
  * prologue: Deal with all args at the program start and in consequence set the
  * programs initial state.
  */
-//TODO NOW var is initalised here to NULL
-int prologue(int argc, char *argv[], Main *var)
+int prologue(int argc, char *argv[], Files *io)
 {
 	char c;
 
 	state_init();
-
-	var->tree = NULL;
-	var->map = NULL;
-	var->in = var->out = NULL;
+	io->in = io->out = NULL;
 
 	while ((c = getopt(argc, argv, "pc:")) != -1)
 		switch (c)
 		{
 			case 'c':
-				if ((var->out = fopen(optarg, "wb")) == NULL) {
+				if ((io->out = fopen(optarg, "wb")) == NULL) {
 					fprintf(stderr, "file read error: %s\n", optarg);
 					return state_set(ERROR);
 				}
 				state_set(WRITE);
 				break;
 			case 'x':
-				if ((var->out = fopen(optarg, "r")) == NULL) {
+				if ((io->out = fopen(optarg, "r")) == NULL) {
 					fprintf(stderr, "file read error: %s\n", optarg);
 					return state_set(ERROR);
 				}
@@ -51,12 +47,12 @@ int prologue(int argc, char *argv[], Main *var)
 				break;
 		}
 
-	if (optind != argc && ((var->in = fopen(argv[optind], "r")) == NULL)) {
-		printf("file read error: %s\n", argv[optind]);
+	if (optind != argc && ((io->in = fopen(argv[optind], "r")) == NULL)) {
+		fprintf(stderr, "file read error: %s\n", argv[optind]);
 		return state_set(ERROR);
 	}
 
-	if (var->in != NULL)
+	if (io->in != NULL)
 		state_set(READ);
 
 	return 0;

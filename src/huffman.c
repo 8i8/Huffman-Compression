@@ -16,19 +16,20 @@
  *
  */
 #include "HC_state.h"
-#include "HC_prologue.h"
-#include "HC_program.h"
-#include "HC_epilogue.h"
+#include "PG_prologue.h"
+#include "PG_program.h"
+#include "PG_epilogue.h"
 
-//TODO NOW how is the main struct working out?
 int main(int argc, char *argv[])
 {
-	Main v, *var;
-	var = &v;
+	HC_HuffmanNode *tree = NULL;
+	Data **map = NULL;
+	Files files, *io;
+	io = &files;
 
-	prologue(argc, argv, var);
-	program(var);
-	epilogue(var);
+	prologue(argc, argv, io);
+	program(io, &tree, map);
+	epilogue(io, &tree, map);
 
 	return 0;
 }

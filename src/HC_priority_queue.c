@@ -97,27 +97,30 @@ HC_HuffmanNode **HC_priority_queue_insert_node(
  */
 HC_HuffmanNode **HC_priority_queue_insert_ordered(
 						HC_HuffmanNode **list,
-						HC_HuffmanNode *newList,
+						HC_HuffmanNode *new_list,
 						int(*freq)(void*, void*))
 {
-	if (newList == NULL) {
+	HC_HuffmanNode *start;
+	start = *list;
+
+	if (new_list == NULL) {
 		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	}
 
 	if (*list == NULL) {
-		*list = newList;
+		*list = new_list;
 		return list;
 	}
 	
 	
-	while (*list && (*list)->next && (freq((void*)*list, (void*)newList) < 0))
+	while (*list && (*list)->next && (freq((void*)*list, (void*)new_list) < 0))
 		list = &(*list)->next;
 
-	newList->next = *list;
-	newList->prev = (*list)->prev;
-	(*list)->prev = newList;
-	*list = newList;
+	new_list->next = *list;
+	new_list->prev = (*list)->prev;
+	(*list)->prev = new_list;
+	*list = start;
 
 	return list;
 }
@@ -160,21 +163,24 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
  * insert it in alphabetical order. If it exists already, add one to the count
  * for that character.
  */
-//TODO NOW an error is being signaled here.
+//TODO NOW the HuffmanNode is NULL here when it should have been instantiated
 static HC_HuffmanNode **insert_or_count(
 						HC_HuffmanNode **list,
 						Data data,
 						int(*func)(void*, void*))
 {
 	int test;
+	HC_HuffmanNode *rtn;
 
 	if (list == NULL) {
 		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	} else if (*list == NULL) {
-		fprintf(stderr, "%s: NULL pointer.", __func__);
-		return NULL;
+		*list = HC_priority_queue_new_node(data);
+		return list;
 	}
+
+	rtn = *list;
 
 	while (*list != NULL)
 	{
@@ -195,6 +201,8 @@ static HC_HuffmanNode **insert_or_count(
 		}
 	}
 
+	*list = rtn;
+
 	return list;
 }
 
@@ -204,8 +212,10 @@ static HC_HuffmanNode **insert_or_count(
  */
 //TODO NOW this function is the root problem, with null values being sent to
 //insert_or_count
-static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode *list, FILE *fp)
+static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 {
+	HC_HuffmanNode *start;
+	start = *list;
 	char c, *ptr;
 	Data data;
 
@@ -227,6 +237,8 @@ static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode *list, FILE *fp)
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
 	insert_or_count(list, data, FN_data_strcmp);
 
+	*list = start;
+
 	return list;
 }
 
@@ -238,6 +250,7 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
 							HC_HuffmanNode **list,
 							FILE *fp)
 {
+	HC_HuffmanNode *start; start = *list;
 	char c, *ptr;
 	Data data;
 
@@ -258,6 +271,8 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
 	insert_or_count(list, data, FN_data_strcmp);
 
+	*list = start;
+
 	return list;
 }
 
@@ -269,11 +284,11 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
 HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
 {
 	/* Count */
-	if ((list = compile_frequency_list(list, fp)) == NULL)
+	if (compile_frequency_list(list, fp) == NULL)
 		fprintf(stderr, "%s(): error compile_frequency_list failed.\n", __func__);
 
 	/* Sort by frequency */
-	if ((list = HC_mergesort(list, FN_data_frqcmp)) == NULL)
+	if (HC_mergesort(list, FN_data_frqcmp) == NULL)
 		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
 
 	return list;
@@ -300,12 +315,12 @@ HC_HuffmanNode **build_priority_queue_from_file(
 /*
  * print_frequency: Output the frequency map.
  */
-void print_frequency(HC_HuffmanNode **list)
+void print_frequency(HC_HuffmanNode *list)
 {
-	while (*list != NULL) {
-		printf("%s ", (*list)->data.utf8_char);
-		printf("%lu\n", (*list)->data.frq);
-		list = &(*list)->next;
+	while (list != NULL) {
+		printf("%s ", list->data.utf8_char);
+		printf("%lu\n", list->data.frq);
+		list = list->next;
 	}
 }
 

@@ -30,5 +30,5 @@ HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp);
 HC_HuffmanNode **build_priority_queue_from_file(HC_HuffmanNode **list, FILE *fp);
 
 /* print_frequency: Output the frequency map */
-void print_frequency(HC_HuffmanNode **list);
+void print_frequency(HC_HuffmanNode *list);
 

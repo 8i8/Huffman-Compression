@@ -38,8 +38,6 @@ typedef struct _string {
 #define _main_
 typedef struct _main {
 	FILE *in, *out;
-	HC_HuffmanNode *tree;
-	Data **map;
-} Main;
+} Files;
 #endif
 

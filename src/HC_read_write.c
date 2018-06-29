@@ -54,7 +54,7 @@ static char *itoa(size_t n, char *s)
  */
 static void write_frq_map(Data **map, FILE *out)
 {
-	char *ptr, buf[2048] = {'\0'};
+	char *ptr, buf[4096] = {'\0'};
 	size_t i, len;
 	Data *cur;
 	ptr = buf;
@@ -71,17 +71,17 @@ static void write_frq_map(Data **map, FILE *out)
 			memcpy(ptr++, "~", 1);
 			ptr = itoa(map[i]->frq, ptr);
 			memcpy(ptr++, "\n", 1);
-			if ((cur = map[i]->next)) {
-				while ((cur = cur->next)) {
-					memcpy(ptr++, "\t", 1);
-					len = utf8_len(cur->utf8_char);
-					memcpy(ptr, cur->utf8_char, len);
-					ptr += len;
-					memcpy(ptr++, "~", 1);
-					ptr = itoa(cur->frq, ptr);
-					memcpy(ptr++, "\n", 1);
-				}
-			}
+			//if ((cur = map[i]->next)) {
+			//	while ((cur = cur->next)) {
+			//		memcpy(ptr++, "\t", 1);
+			//		len = utf8_len(cur->utf8_char);
+			//		memcpy(ptr, cur->utf8_char, len);
+			//		ptr += len;
+			//		memcpy(ptr++, "~", 1);
+			//		ptr = itoa(cur->frq, ptr);
+			//		memcpy(ptr++, "\n", 1);
+			//	}
+			//}
 		}
 	}
 

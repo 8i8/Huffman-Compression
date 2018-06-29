@@ -35,10 +35,8 @@ unsigned utf8_test(char c)
 /*
  * utf8_len: Return the length of a multibyte char.
  */
-unsigned utf8_len(char *str)
+unsigned utf8_len(char c)
 {
-	char c = str[0];
-
 	if (MULTIBYTE)
 		return utf8_bytes(c);
 	else

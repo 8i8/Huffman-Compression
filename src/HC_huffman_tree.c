@@ -62,7 +62,11 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
  */
 int HC_huffman_tree_free(HC_HuffmanNode **tree)
 {
-	if ((*tree)->next != NULL) {
+	if (*tree == NULL) {
+		fprintf(stderr, "%s(): tree node is NULL.", __func__);
+		return 1;
+	}
+	else if ((*tree)->next != NULL) {
 		fprintf(stderr, "%s(): Priority queue nodes still exist.", __func__);
 		return 1;
 	}
