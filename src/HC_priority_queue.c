@@ -163,7 +163,6 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
  * insert it in alphabetical order. If it exists already, add one to the count
  * for that character.
  */
-//TODO NOW the HuffmanNode is NULL here when it should have been instantiated
 static HC_HuffmanNode **insert_or_count(
 						HC_HuffmanNode **list,
 						Data data,
@@ -201,7 +200,7 @@ static HC_HuffmanNode **insert_or_count(
 		}
 	}
 
-	*list = rtn;
+	list = &rtn;
 
 	return list;
 }
@@ -210,8 +209,6 @@ static HC_HuffmanNode **insert_or_count(
  * compile_frequency_list: Sort alphabetically and keep count of the
  * occurrences of each character.
  */
-//TODO NOW this function is the root problem, with null values being sent to
-//insert_or_count
 static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 {
 	HC_HuffmanNode *start;
@@ -237,7 +234,7 @@ static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
 	insert_or_count(list, data, FN_data_strcmp);
 
-	*list = start;
+	list = &start;
 
 	return list;
 }
@@ -271,7 +268,7 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
 	insert_or_count(list, data, FN_data_strcmp);
 
-	*list = start;
+	list = &start;
 
 	return list;
 }
@@ -280,7 +277,6 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
  * create_priority_queue: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue.
  */
-//TODO NOW and the function is called from here ...
 HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
 {
 	/* Count */

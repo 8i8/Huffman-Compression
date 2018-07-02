@@ -10,7 +10,6 @@ extern int state;
 /*
  * program: Compress input and write file out if specified.
  */
-//TODO how is the functioning of the var->tree* working here?
 HC_HuffmanNode **program(Files *io, HC_HuffmanNode **tree, Data **map)
 {
 	if (state & READ)
@@ -31,6 +30,7 @@ HC_HuffmanNode **program(Files *io, HC_HuffmanNode **tree, Data **map)
 	}
 
 	if ((state & READ) && (state & WRITE))
+		//TODO NOW call
 		compress_file(map, io->in, io->out);
 
 	if (state & DECOMP)

@@ -36,6 +36,11 @@ String *GE_string_set(String *Str, char *str);
 String *GE_string_add(String *Str, char c);
 
 /*
+ * GE_string_concat: Add a string to the end of the current string.
+ */
+String *GE_string_concat(String *Str, char *string, int len);
+
+/*
  * GE_string_free: Destroy string.
  */
 void GE_string_free(String *Str);

@@ -26,13 +26,13 @@ typedef struct _hc_dlinkedlist {
 } HC_HuffmanNode;
 #endif
 
-#ifndef _string_
-#define _string_
-typedef struct _string {
-	char *str;
-	size_t lim;
-} String;
-#endif
+//#ifndef _string_
+//#define _string_
+//typedef struct _string {
+//	char *str;
+//	size_t lim;
+//} String;
+//#endif
 
 #ifndef _main_
 #define _main_

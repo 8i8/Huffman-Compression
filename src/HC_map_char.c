@@ -1,6 +1,7 @@
 #include "HC_map_char.h"
 #include "HC_struct.h"
 #include "GE_hash.h"
+#include "GE_string.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,43 +35,41 @@ static int copy_data_to_map(void* ma, void* tr)
 	return 0;
 }
 
-/*
- * expand_string: If the string that stores the binary data becomes to long,
- * enlarge it.
- */
-static char *expand_string(String *string, size_t len)
-{
-	if (len > SIZE_MAX/2) {
-		fprintf(stderr, "%s: memory allocation failed.", __func__);
-		return string->str;
-	}
-
-	char *new;
-	/* Same as len * 2 */
-	len <<= 1;
-	new = malloc(len);
-	memcpy(new, string->str, string->lim);
-	free(string->str);
-	string->str = new;
-	string->lim = len;
-	return new;
-}
+///*
+// * expand_string: If the string that stores the binary data becomes to long,
+// * enlarge it.
+// */
+//static char *expand_string(String *string, size_t len)
+//{
+//	if (len > SIZE_MAX/2) {
+//		fprintf(stderr, "%s: memory allocation failed.", __func__);
+//		return string->str;
+//	}
+//
+//	char *new;
+//	/* Same as len * 2 */
+//	len <<= 1;
+//	new = malloc(len);
+//	memcpy(new, string->str, string->lim);
+//	free(string->str);
+//	string->str = new;
+//	string->lim = len;
+//	return new;
+//}
 
 /*
  * add_to_string: Tracks the binary data that is bing created within the 'trie'
  * structure amongst the Huffman nodes.
  */
-static String *add_to_string(HC_HuffmanNode **tree, String *string, size_t len)
+static String *add_to_string(HC_HuffmanNode **tree, String *str, size_t len)
 {
-	if (len >= string->lim)
-		expand_string(string, len);
+	//TODO NOW remove this
+	//if (len >= string->lim)
+	//	expand_string(string, len);
+	GE_string_len(str, len);
+	GE_string_add(str, (*tree)->bit);
 
-	char c[2] = {'\0'};
-	c[0] = (*tree)->bit;
-	c[1] = '\0';
-	strcat(string->str, c);
-
-	return string;
+	return str;
 }
 
 /*
@@ -112,11 +111,11 @@ static Data **huffman_tree_walk(
  */
 Data **map_create(Data **map, HC_HuffmanNode **tree)
 {
-	String string;
-	string.str = calloc(BUF_LEN, 1), string.lim = BUF_LEN-1;
+	String *str = NULL;
+	GE_string_init(str);
 	map = calloc(sizeof(Data*), MAP_LEN);
-	map = huffman_tree_walk(tree, map, copy_data_to_map, &string, 1);
-	free(string.str);
+	map = huffman_tree_walk(tree, map, copy_data_to_map, str, 1);
+	GE_string_free(str);
 	return map;
 }
 
@@ -125,7 +124,17 @@ Data **map_create(Data **map, HC_HuffmanNode **tree)
  */
 char *map_read_char_to_binary(Data **map, char *c)
 {
-	return map[hash(c)]->string;
+	int bucket = hash(c);
+	Data *cur;
+	cur = map[bucket];
+
+	while ((cur->next != NULL) && strcmp(cur->utf8_char, c))
+		cur = cur->next;
+
+	if (strcmp(cur->utf8_char, c))
+		return NULL;
+	else
+		return cur->string;
 }
 
 /*
@@ -134,6 +143,18 @@ char *map_read_char_to_binary(Data **map, char *c)
 size_t map_read_char_to_binary_len(Data **map, char *c)
 {
 	return map[hash(c)]->len;
+
+	int bucket = hash(c);
+	Data *cur;
+	cur = map[bucket];
+
+	while ((cur->next != NULL) && strcmp(cur->utf8_char, c))
+		cur = cur->next;
+
+	if (strcmp(cur->utf8_char, c))
+		return 0;
+	else
+		return cur->len;
 }
 
 /*
@@ -143,7 +164,7 @@ void print_char_map(Data **map)
 {
 	size_t i;
 	Data *cur;
-	for (i = 0; i < MAP_LEN; i++, map++)
+	for (i = 0; i < MAP_LEN; i++)
 		if (map[i]) {
 			printf("%s %s\n", map[i]->utf8_char, map[i]->string);
 			if ((cur = map[i]->next))

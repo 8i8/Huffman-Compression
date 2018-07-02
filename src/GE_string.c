@@ -17,7 +17,8 @@ String *GE_string_init(String *Str)
 }
 
 /*
- * _string_len: Buffer for simple string struct.
+ * _string_len: Buffer for simple string struct, test whether buffer requires
+ * lengthening.
  */
 String *GE_string_len(String *Str, size_t len)
 {
@@ -59,6 +60,23 @@ String *GE_string_add(String *Str, char c)
 	}
 	*Str->ptr++ = c;
 	Str->ptr = '\0';
+	return Str;
+}
+
+/*
+ * GE_string_concat: Add a string to the end of the current string.
+ */
+String *GE_string_concat(String *Str, char *string, int len)
+{
+	Str->len += len;
+	if (Str->len >= Str->buf) {
+		Str->buf <<= 1;
+		Str->ptr = Str->str = realloc(Str->str, Str->buf+1);
+		Str->ptr += Str->len;
+	}
+	memcpy(Str->ptr, string, len);
+	//Str->ptr += len;
+	*Str->ptr = '\0';
 	return Str;
 }
 
