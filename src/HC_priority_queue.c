@@ -1,9 +1,11 @@
 #include "HC_mergesort.h"
+#include "HC_struct.h"
 #include <stdlib.h>
 #include <string.h>
 #include "HC_utf8.h"
 #include "HC_func_comp.h"
 #include "HC_priority_queue.h"
+#include "HC_print.h"
 
 #define IN (1 << 0)
 
@@ -94,34 +96,37 @@ HC_HuffmanNode **HC_priority_queue_insert_node(
 
 /*
  * HC_priority_queue_insert_ordered: Insert a new node conditionaly.
+ * TODO NOW It would seem that the problem is in this function.
  */
 HC_HuffmanNode **HC_priority_queue_insert_ordered(
 						HC_HuffmanNode **list,
-						HC_HuffmanNode *new_list,
+						HC_HuffmanNode *new,
 						int(*freq)(void*, void*))
 {
 	HC_HuffmanNode *start;
 	start = *list;
-
-	if (new_list == NULL) {
+	if (new == NULL) {
 		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	}
 
 	if (*list == NULL) {
-		*list = new_list;
+		*list = new;
 		return list;
 	}
 	
-	
-	while (*list && (*list)->next && (freq((void*)*list, (void*)new_list) < 0))
+	while (*list && (*list)->next && (freq((void*)new, (void*)*list) < 0))
 		list = &(*list)->next;
 
-	new_list->next = *list;
-	new_list->prev = (*list)->prev;
-	(*list)->prev = new_list;
-	*list = start;
+	new->next = *list;
+	new->prev = (*list)->prev;
+	(*list)->prev = new;
 
+	if (start->prev)
+		*list = start->prev;
+	else
+		*list = start;
+	
 	return list;
 }
 
@@ -306,17 +311,5 @@ HC_HuffmanNode **build_priority_queue_from_file(
 	list = HC_mergesort(list, FN_data_frqcmp);
 
 	return list;
-}
-
-/*
- * print_frequency: Output the frequency map.
- */
-void print_frequency(HC_HuffmanNode *list)
-{
-	while (list != NULL) {
-		printf("%s ", list->data.utf8_char);
-		printf("%lu\n", list->data.frq);
-		list = list->next;
-	}
 }
 

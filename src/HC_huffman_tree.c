@@ -1,6 +1,7 @@
 #include "HC_priority_queue.h"
 #include "HC_mergesort.h"
 #include "HC_func_comp.h"
+#include "HC_print.h"
 #include <stdlib.h>
 
 
@@ -23,6 +24,7 @@ static Data *data_init(Data *map)
 
 /*
  * build_huffman_tree: Create a binary tree from the given linked list.
+ *TODO NOW this function is not working correctly.
  */
 HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 {
@@ -38,15 +40,17 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 		*list = HC_priority_queue_pop(*list);
 
 		data.frq = one->data.frq + two->data.frq;
-		data.utf8_char[0] = '\0';
 
 		/* Add leaves to new node and give a binary value */
 		if ((new = HC_priority_queue_new_node(data)) == NULL)
 			fprintf(stderr, "%s:", __func__);
+
 		new->left = one, new->right = two;
 		new->left->bit = '0', new->right->bit = '1';
 
 		/* Insert new node into priority queue */
+		//TODO NOW there is an issue in the return of this function,
+		//the new node is getting lost.
 		if (*list) {
 			if (HC_priority_queue_insert_ordered(list, new, FN_data_frqcmp) == NULL)
 				fprintf(stderr, "%s:", __func__);
@@ -79,29 +83,5 @@ int HC_huffman_tree_free(HC_HuffmanNode **tree)
 	free(*tree);
 
 	return 0;
-}
-
-static void print_huffman_tree_rec(HC_HuffmanNode *tree, int depth)
-{
-	int i;
-	if (tree->left)
-		print_huffman_tree_rec(tree->left, ++depth);
-
-	for (i = 0; i < --depth; i++)
-		putchar(' ');
-
-	printf("%s\n", tree->data.utf8_char);
-
-	if (tree->right)
-		print_huffman_tree_rec(tree->right, ++depth);
-}
-
-/*
- * print_huffman_tree: Print out huffman tree.
- */
-void print_huffman_tree(HC_HuffmanNode *tree)
-{
-	print_huffman_tree_rec(tree, 0);
-	putchar('\n');
 }
 

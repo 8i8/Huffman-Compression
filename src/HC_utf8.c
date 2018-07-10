@@ -38,7 +38,7 @@ unsigned utf8_test(char c)
 unsigned utf8_len(char c)
 {
 	if (MULTIBYTE)
-		return utf8_bytes(c);
+		return utf8_bytes(c) + 1;
 	else
 		return 1;
 }

@@ -22,7 +22,7 @@ String *GE_string_init(String *Str)
  */
 String *GE_string_len(String *Str, size_t len)
 {
-	if (len >= Str->buf) {
+	while (len >= Str->buf) {
 		Str->len = Str->ptr - Str->str;
 		Str->buf <<= 1;
 		Str->ptr = Str->str = realloc(Str->str, Str->buf+1);
@@ -42,24 +42,42 @@ String *GE_string_set(String *Str, char *str)
 	Str->len = strlen(str);
 	Str = GE_string_len(Str, Str->len);
 	strcpy(Str->str, str);
-	Str->ptr = Str->str;
+	Str->ptr = Str->str + Str->len;
 	return Str;
 }
 
 /*
- * GE_string_add: Add a single char to the string, buffer that string if
+ * GE_string_add_char: Add a single char to the string, buffer that string if
  * required.
  */
-String *GE_string_add(String *Str, char c)
+String *GE_string_add_char(String *Str, char c)
 {
-	Str->len++;
-	if (Str->len >= Str->buf) {
+	if (Str == NULL) {
+		fprintf(stderr, "%s:() Str is NULL.\n", __func__);
+		return NULL;
+	}
+
+	if (Str->len+1 >= Str->buf) {
 		Str->buf <<= 1;
 		Str->ptr = Str->str = realloc(Str->str, Str->buf+1);
 		Str->ptr += Str->len;
 	}
-	*Str->ptr++ = c;
-	Str->ptr = '\0';
+
+	Str->len++;
+	*Str->ptr = c;
+	Str->ptr++;
+	*Str->ptr = '\0';
+	return Str;
+}
+
+/*
+ * GE_string_rem_char: Remove a single char froṁ the string.
+ */
+String *GE_string_rem_char(String *Str)
+{
+	Str->len--;
+	Str->ptr--;
+	*Str->ptr = '\0';
 	return Str;
 }
 
@@ -68,15 +86,17 @@ String *GE_string_add(String *Str, char c)
  */
 String *GE_string_concat(String *Str, char *string, int len)
 {
-	Str->len += len;
-	if (Str->len >= Str->buf) {
+	if (Str->len + len >= Str->buf) {
 		Str->buf <<= 1;
 		Str->ptr = Str->str = realloc(Str->str, Str->buf+1);
 		Str->ptr += Str->len;
 	}
+
 	memcpy(Str->ptr, string, len);
-	//Str->ptr += len;
+	Str->len += len;
+	Str->ptr += len;
 	*Str->ptr = '\0';
+
 	return Str;
 }
 

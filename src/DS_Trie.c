@@ -138,32 +138,23 @@ int func_print_trie(void *input, void *var)
  * output_word: Recursive function that will perform it's given task on
  * arriving at each word ending.
  */
-static int output_word(
+static void output_word(
 				DS_Trie *trie,
 				String *Str,
-				int (*func)(void*, void*),
-				int count)
+				int (*func)(void*, void*))
 {
 	int i;
-	Str = GE_string_len(Str, count);
-	*Str->ptr++ = trie->c;
+	Str = GE_string_add_char(Str, trie->c);
 
 	if (trie->end)
-		*Str->ptr = '\0', (*func)((void*)Str, &count);
+		(*func)(Str, &Str->len);
 
 	if (trie->next != NULL)
 		for (i = 0; i < UCHAR; i++)
 			if (trie->next[i] != NULL) {
-				count = output_word(
-						trie->next[i],
-						Str,
-						func,
-						++count);
-				count--;
-				Str->ptr--;
+				output_word(trie->next[i], Str, func);
+				Str = GE_string_rem_char(Str);
 			}
-
-	return count;
 }
 
 /*
@@ -175,14 +166,13 @@ static void output_list(
 				String *Str,
 				int (*func)(void*, void*))
 {
-	int i, count = 0;
+	int i;
 
 	for (i = 0; i < UCHAR; i++)
 		if (trie[i] != NULL) {
-			*Str->ptr = trie[i]->c;
-			count = output_word(trie[i], Str, func, ++count);
-			count--;
-			Str->ptr = Str->str;
+			Str = GE_string_add_char(Str, trie[i]->c);
+			output_word(trie[i], Str, func);
+			Str = GE_string_rem_char(Str);
 		}
 }
 
@@ -193,9 +183,7 @@ DS_Trie **DS_Trie_print_list(DS_Trie **trie, int (*func)(void*, void*))
 {
 	String *Str = NULL;
 	Str = GE_string_init(Str);
-
 	output_list(trie, Str, func);
-
 	GE_string_free(Str);
 
 	return trie;

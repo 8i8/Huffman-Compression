@@ -26,6 +26,7 @@ typedef struct _hc_dlinkedlist {
 } HC_HuffmanNode;
 #endif
 
+//TODO NOW the string comd has been modified
 //#ifndef _string_
 //#define _string_
 //typedef struct _string {

@@ -30,10 +30,15 @@ String *GE_string_len(String *Str, size_t len);
 String *GE_string_set(String *Str, char *str);
 
 /*
- * GE_string_add: Add a single char to the string, buffer that string if
+ * GE_string_add_char: Add a single char to the string, buffer that string if
  * required.
  */
-String *GE_string_add(String *Str, char c);
+String *GE_string_add_char(String *Str, char c);
+
+/*
+ * GE_string_rem_char: Remove a single char froṁ the string.
+ */
+String *GE_string_rem_char(String *Str);
 
 /*
  * GE_string_concat: Add a string to the end of the current string.

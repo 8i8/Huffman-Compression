@@ -52,20 +52,18 @@ static char *itoa(size_t n, char *s)
  * write_frq_map: Write the frequency of each used characters repetition used
  * in the encoding of the file to the start of the file, so as to allow for the
  * recreation of the same Huffman tree for decompression.
- * TODO write a proper buffer here
  */
 static void write_frq_map(Data **map, FILE *out)
 {
 	String *buf = NULL;
-	char *num;
+	char *num, *pt_num;
 	size_t i, len;
 	Data *cur;
 
-	num = malloc(256);
-	GE_string_init(buf);
-	GE_string_concat(buf, "<map>\n", 6);
+	pt_num = num = malloc(256);
+	buf = GE_string_init(buf);
+	buf = GE_string_concat(buf, "<map>\n", 6);
 
-	//TODO NOW error here
 	for (i = 0; i < MAP_LEN; i++) {
 		if (map[i] != NULL) {
 			GE_string_concat(buf, "\t", 1);
@@ -75,6 +73,7 @@ static void write_frq_map(Data **map, FILE *out)
 			num = itoa(map[i]->frq, num);
 			GE_string_concat(buf, num, strlen(num));
 			GE_string_concat(buf, "\n", 1);
+			num = pt_num;
 			if ((cur = map[i]->next)) {
 				while ((cur = cur->next)) {
 					GE_string_concat(buf, "\t", 1);
@@ -84,6 +83,7 @@ static void write_frq_map(Data **map, FILE *out)
 					num = itoa(cur->frq, num);
 					GE_string_concat(buf, num, strlen(num));
 					GE_string_concat(buf, "\n", 1);
+					num = pt_num;
 				}
 			}
 		}
@@ -128,7 +128,6 @@ int compress_file(Data **map, FILE *in, FILE *out)
 	byte = 0;
 	count = 0;
 
-	// TODO NOW called here
 	write_frq_map(map, out);
 
 	fwrite("<comp>\n\t", 1, 8, out);

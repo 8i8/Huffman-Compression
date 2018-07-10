@@ -53,7 +53,7 @@ int LE_get_token(FILE *fp, char c)
 		String *str = malloc(sizeof(String));
 
 		while (isalnum((c = fgetc(fp))))
-			GE_string_add(str, c);
+			GE_string_add_char(str, c);
 
 		token |= LE_check_token(str->str);
 

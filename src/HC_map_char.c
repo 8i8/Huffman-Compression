@@ -14,108 +14,63 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
- * copy_data_to_map: Copy over the binary values from the Huffman tree into
- * the character map.
- */
-static int copy_data_to_map(void* ma, void* tr)
-{
-	Data **map = ma;
-	Data *data = tr;
-	Data *cur;
-	int bucket = hash(data->utf8_char);
-
-	if (map[bucket]) {
-		cur = map[bucket];
-		while (cur->next)
-			cur = cur->next;
-		cur->next = data;
-	} else
-		map[bucket] = data;
-
-	return 0;
-}
-
-///*
-// * expand_string: If the string that stores the binary data becomes to long,
-// * enlarge it.
-// */
-//static char *expand_string(String *string, size_t len)
-//{
-//	if (len > SIZE_MAX/2) {
-//		fprintf(stderr, "%s: memory allocation failed.", __func__);
-//		return string->str;
-//	}
-//
-//	char *new;
-//	/* Same as len * 2 */
-//	len <<= 1;
-//	new = malloc(len);
-//	memcpy(new, string->str, string->lim);
-//	free(string->str);
-//	string->str = new;
-//	string->lim = len;
-//	return new;
-//}
-
-/*
- * add_to_string: Tracks the binary data that is bing created within the 'trie'
- * structure amongst the Huffman nodes.
- */
-static String *add_to_string(HC_HuffmanNode **tree, String *str, size_t len)
-{
-	//TODO NOW remove this
-	//if (len >= string->lim)
-	//	expand_string(string, len);
-	GE_string_len(str, len);
-	GE_string_add(str, (*tree)->bit);
-
-	return str;
-}
-
-/*
  * huffman_tree_walk: Recursive function to walk tree and perform (*func) on
  * every node.
+ * TODO NOW check on the string and the map allocation
  */
-static Data **huffman_tree_walk(
+static Data *huffman_tree_walk(
 				HC_HuffmanNode **tree,
-				void* map,
-				int(*func)(void*, void*),
-				String* string, int len)
+				Data** map,
+				String* string)
 {
-	if ((string = add_to_string(tree, string, len)) == NULL)
+	int bucket;
+	Data *cur;
+
+	if ((string = GE_string_add_char(string, (*tree)->bit)) == NULL)
 		return NULL;
 
 	if ((*tree)->left) {
-		huffman_tree_walk(&(*tree)->left, map, func, string, ++len);
-		string->str[--len] = '\0';
+		huffman_tree_walk(&(*tree)->left, map, string);
+		string = GE_string_rem_char(string);
 	}
 
 	if ((*tree)->right) {
-		huffman_tree_walk(&(*tree)->right, map, func, string, ++len);
-		string->str[--len] = '\0';
+		huffman_tree_walk(&(*tree)->right, map, string);
+		string = GE_string_rem_char(string);
 	}
 
 	if ((*tree)->data.utf8_char[0] != '\0') {
-		memcpy((*tree)->data.string, string->str, len);
-		// TODO 09 check necesity of len here, could this code be more
-		// efficient?
-		(*tree)->data.len = len;
-		func(map, &(*tree)->data);
-	}
+		memcpy((*tree)->data.string, string->str, string->len);
+		(*tree)->data.len = string->len;
 
-	return map;
+		bucket = hash((*tree)->data.utf8_char);
+
+		if (map[bucket] != NULL) {
+			cur = map[bucket];
+			while (cur->next)
+				cur = cur->next;
+			cur->next = &(*tree)->data;
+		} else
+			map[bucket] = &(*tree)->data;
+		}
+
+	return *map;
 }
 
 /*
  * map_create: Create char map from Huffman tree.
+ * TODO NOW How is the map arry getting alocated?
  */
 Data **map_create(Data **map, HC_HuffmanNode **tree)
 {
 	String *str = NULL;
-	GE_string_init(str);
-	map = calloc(sizeof(Data*), MAP_LEN);
-	map = huffman_tree_walk(tree, map, copy_data_to_map, str, 1);
+	Data *start;
+	str = GE_string_init(str);
+	map = calloc(MAP_LEN, sizeof(Data*));
+	start = *map;
+	huffman_tree_walk(tree, map, str);
 	GE_string_free(str);
+	*map = start;
 	return map;
 }
 
