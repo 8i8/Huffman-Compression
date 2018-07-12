@@ -24,7 +24,6 @@ static Data *data_init(Data *map)
 
 /*
  * build_huffman_tree: Create a binary tree from the given linked list.
- *TODO NOW this function is not working correctly.
  */
 HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 {
@@ -49,8 +48,6 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 		new->left->bit = '0', new->right->bit = '1';
 
 		/* Insert new node into priority queue */
-		//TODO NOW there is an issue in the return of this function,
-		//the new node is getting lost.
 		if (*list) {
 			if (HC_priority_queue_insert_ordered(list, new, FN_data_frqcmp) == NULL)
 				fprintf(stderr, "%s:", __func__);

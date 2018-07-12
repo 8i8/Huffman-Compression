@@ -8,10 +8,15 @@
 
 extern int state;
 
+Data **PG_map_init(void)
+{
+	return HC_map_init();
+}
+
 /*
  * program: Compress input and write file out if specified.
  */
-HC_HuffmanNode **program(Files *io, HC_HuffmanNode **tree, Data **map)
+Data **program(Files *io, HC_HuffmanNode **tree, Data **map)
 {
 	if (state & READ) {
 		printf("Create priority queue.\n");
@@ -59,6 +64,6 @@ HC_HuffmanNode **program(Files *io, HC_HuffmanNode **tree, Data **map)
 		return NULL;
 	}
 
-	return tree;
+	return map;
 }
 

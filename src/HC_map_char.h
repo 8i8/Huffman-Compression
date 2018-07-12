@@ -1,5 +1,8 @@
 #include "HC_struct.h"
 
+/* HC_map_init: Initialise array for char map */
+Data **HC_map_init(void);
+
 /* map_create: Create char map from Huffman tree */
 Data **map_create(Data **map, HC_HuffmanNode**tree);
 

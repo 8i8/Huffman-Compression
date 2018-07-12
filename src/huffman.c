@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
 	Files files, *io;
 	io = &files;
 
+	map = PG_map_init();
+
 	prologue(argc, argv, io);
 	program(io, &tree, map);
 	epilogue(io, &tree, map);

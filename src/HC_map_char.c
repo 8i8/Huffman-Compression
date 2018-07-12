@@ -16,9 +16,10 @@
 /*
  * huffman_tree_walk: Recursive function to walk tree and perform (*func) on
  * every node.
- * TODO NOW check on the string and the map allocation
+ * TODO NOW both the tree and the char map use a linked list structure, it
+ * would seem that this could be the root of the current confusion.
  */
-static Data *huffman_tree_walk(
+static Data **huffman_tree_walk(
 				HC_HuffmanNode **tree,
 				Data** map,
 				String* string)
@@ -54,23 +55,26 @@ static Data *huffman_tree_walk(
 			map[bucket] = &(*tree)->data;
 		}
 
-	return *map;
+	return map;
+}
+
+/*
+ * HC_map_init: Initialise array for char map.
+ */
+Data **HC_map_init(void)
+{
+	return calloc(MAP_LEN, sizeof(Data*));
 }
 
 /*
  * map_create: Create char map from Huffman tree.
- * TODO NOW How is the map arry getting alocated?
  */
 Data **map_create(Data **map, HC_HuffmanNode **tree)
 {
 	String *str = NULL;
-	Data *start;
 	str = GE_string_init(str);
-	map = calloc(MAP_LEN, sizeof(Data*));
-	start = *map;
 	huffman_tree_walk(tree, map, str);
 	GE_string_free(str);
-	*map = start;
 	return map;
 }
 

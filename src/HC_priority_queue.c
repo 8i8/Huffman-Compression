@@ -96,7 +96,7 @@ HC_HuffmanNode **HC_priority_queue_insert_node(
 
 /*
  * HC_priority_queue_insert_ordered: Insert a new node conditionaly.
- * TODO NOW It would seem that the problem is in this function.
+ * TODO NOW Problem in the frequancy comparison function, the < sign.
  */
 HC_HuffmanNode **HC_priority_queue_insert_ordered(
 						HC_HuffmanNode **list,
@@ -105,6 +105,7 @@ HC_HuffmanNode **HC_priority_queue_insert_ordered(
 {
 	HC_HuffmanNode *start;
 	start = *list;
+
 	if (new == NULL) {
 		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
@@ -114,18 +115,17 @@ HC_HuffmanNode **HC_priority_queue_insert_ordered(
 		*list = new;
 		return list;
 	}
-	
-	while (*list && (*list)->next && (freq((void*)new, (void*)*list) < 0))
+
+	if ((freq((void*)new, (void*)*list)) <= 0)
+		start = new;
+	else
+		start = *list;
+
+	while (*list && (*list)->next && (freq((void*)new, (void*)*list) > 0))
 		list = &(*list)->next;
 
 	new->next = *list;
-	new->prev = (*list)->prev;
-	(*list)->prev = new;
-
-	if (start->prev)
-		*list = start->prev;
-	else
-		*list = start;
+	*list = start;
 	
 	return list;
 }
