@@ -1,5 +1,6 @@
 #include "HC_mergesort.h"
 #include "HC_struct.h"
+#include "HC_huffman_tree.h"
 #include <stdlib.h>
 #include <string.h>
 #include "HC_utf8.h"
@@ -63,6 +64,7 @@ HC_HuffmanNode **HC_priority_queue_insert(HC_HuffmanNode** list, Data data)
 		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	}
+
 	if ((new = HC_priority_queue_new_node(data)) == NULL) {
 		fprintf(stderr, "%s: ", __func__);
 		return NULL;
@@ -210,6 +212,7 @@ static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 	start = *list;
 	char c, *ptr;
 	Data data;
+	HC_data_init(&data);
 
 	/* Scan document */
 	while ((c = fgetc(fp)) != EOF)

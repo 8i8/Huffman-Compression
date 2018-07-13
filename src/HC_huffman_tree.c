@@ -10,9 +10,9 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
- * populate_map: Set all values in the Data struct to '\0'.
+ * HC_data_init: Initalize an empty Data struct.
  */
-static Data *data_init(Data *map)
+Data *HC_data_init(Data *map)
 {
 	map->utf8_char[0] = '\0';
 	map->string[0] = '\0';
@@ -29,7 +29,7 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 {
 	HC_HuffmanNode *new, *one, *two;
 	Data data;
-	data_init(&data);
+	HC_data_init(&data);
 
 	while ((*list)->next)
 	{
@@ -37,6 +37,7 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 		two = HC_priority_queue_pop(list);
 
 		one->next = NULL, two->next = NULL;
+		data.next = NULL;
 		data.frq = one->data.frq + two->data.frq;
 
 		/* Add leaves to new node and give a binary value */

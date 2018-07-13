@@ -70,7 +70,7 @@ static void print_huffman_tree_rec(HC_HuffmanNode *tree, int depth)
 	for (i = 0; i < --d; i++)
 		putchar(' ');
 
-	if (tree->data.len)
+	if (tree->data.utf8_char[0] != '\0')
 		printf("\'%s\'\n", tree->data.utf8_char);
 	depth--;
 

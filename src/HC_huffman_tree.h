@@ -8,3 +8,6 @@ int HC_huffman_tree_free(HC_HuffmanNode **tree);
 
 /* print_huffman_tree: Print out huffman tree */
 void print_huffman_tree(HC_HuffmanNode *tree);
+
+/* HC_data_init: Initalize an empty Data struct */
+Data *HC_data_init(Data *map);

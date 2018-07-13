@@ -49,7 +49,6 @@ String *GE_string_set(String *Str, char *str)
 /*
  * GE_string_add_char: Add a single char to the string, buffer that string if
  * required.
- * TODO NOW the string is not adding the char here.
  */
 String *GE_string_add_char(String *Str, char c)
 {

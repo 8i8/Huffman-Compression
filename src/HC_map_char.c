@@ -17,7 +17,7 @@
  * huffman_tree_walk: Recursive function to walk tree and perform (*func) on
  * every node.
  */
-static Data *huffman_tree_walk(
+static Data **huffman_tree_walk(
 				HC_HuffmanNode *tree,
 				Data** map,
 				String* string)
@@ -25,33 +25,33 @@ static Data *huffman_tree_walk(
 	int bucket;
 	Data *cur;
 
-	if ((*tree)->bit)
-		if ((string = GE_string_add_char(string, (*tree)->bit)) == NULL)
+	if (tree->bit)
+		if ((string = GE_string_add_char(string, tree->bit)) == NULL)
 			return NULL;
 
-	if ((*tree)->left) {
-		huffman_tree_walk(&(*tree)->left, map, string);
+	if (tree->left) {
+		huffman_tree_walk(tree->left, map, string);
 		string = GE_string_rem_char(string);
 	}
 
-	if ((*tree)->right) {
-		huffman_tree_walk(&(*tree)->right, map, string);
+	if (tree->right) {
+		huffman_tree_walk(tree->right, map, string);
 		string = GE_string_rem_char(string);
 	}
 
-	if ((*tree)->data.utf8_char[0] != '\0') {
-		memcpy((*tree)->data.string, string->str, string->len);
-		(*tree)->data.len = string->len;
+	if (tree->data.utf8_char[0] != '\0') {
+		memcpy(tree->data.string, string->str, string->len+1);
+		tree->data.len = string->len;
 
-		bucket = hash((*tree)->data.utf8_char);
+		bucket = hash(tree->data.utf8_char);
 
 		if (map[bucket] != NULL) {
 			cur = map[bucket];
 			while (cur->next)
 				cur = cur->next;
-			cur->next = &(*tree)->data;
+			cur->next = &tree->data;
 		} else
-			map[bucket] = &(*tree)->data;
+			map[bucket] = &tree->data;
 	}
 
 	return map;
@@ -72,7 +72,7 @@ Data **map_create(Data **map, HC_HuffmanNode **tree)
 {
 	String *str = NULL;
 	str = GE_string_init(str);
-	huffman_tree_walk(tree, map, str);
+	huffman_tree_walk(*tree, map, str);
 	GE_string_free(str);
 	return map;
 }

@@ -41,7 +41,7 @@ Data **program(Files *io, HC_HuffmanNode **tree, Data **map)
 
 	if (state & READ) {
 		printf("Make character hashmap.\n");
-		map = map_create(map, tree);
+		map_create(map, tree);
 	}
 
 	if ((state & READ) && (state & PRINT)) {
