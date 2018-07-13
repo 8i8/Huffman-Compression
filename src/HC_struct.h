@@ -1,8 +1,5 @@
 #include <stdio.h>
 
-// TODO 09 merge the structs data and string, there is no need for both in the
-// code. 
-
 #ifndef _data_
 #define _data_
 typedef struct _data {
@@ -19,7 +16,6 @@ typedef struct _data {
 typedef struct _hc_dlinkedlist {
 	Data data;
 	char bit;
-	struct _hc_dlinkedlist *prev;
 	struct _hc_dlinkedlist *next;
 	struct _hc_dlinkedlist *right;
 	struct _hc_dlinkedlist *left;

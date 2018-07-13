@@ -10,3 +10,7 @@ void print_frequency_map(HC_HuffmanNode *list);
  */
 void print_huffman_tree(HC_HuffmanNode *tree);
 
+/*
+ * print_char_map: Print out the char map made by the Huffman tree.
+ */
+void print_char_map(Data **map);

@@ -16,19 +16,18 @@
 /*
  * huffman_tree_walk: Recursive function to walk tree and perform (*func) on
  * every node.
- * TODO NOW both the tree and the char map use a linked list structure, it
- * would seem that this could be the root of the current confusion.
  */
-static Data **huffman_tree_walk(
-				HC_HuffmanNode **tree,
+static Data *huffman_tree_walk(
+				HC_HuffmanNode *tree,
 				Data** map,
 				String* string)
 {
 	int bucket;
 	Data *cur;
 
-	if ((string = GE_string_add_char(string, (*tree)->bit)) == NULL)
-		return NULL;
+	if ((*tree)->bit)
+		if ((string = GE_string_add_char(string, (*tree)->bit)) == NULL)
+			return NULL;
 
 	if ((*tree)->left) {
 		huffman_tree_walk(&(*tree)->left, map, string);
@@ -53,7 +52,7 @@ static Data **huffman_tree_walk(
 			cur->next = &(*tree)->data;
 		} else
 			map[bucket] = &(*tree)->data;
-		}
+	}
 
 	return map;
 }
@@ -114,21 +113,6 @@ size_t map_read_char_to_binary_len(Data **map, char *c)
 		return 0;
 	else
 		return cur->len;
-}
-
-/*
- * print_char_map: Print out the char map made by the Huffman tree.
- */
-void print_char_map(Data **map)
-{
-	size_t i;
-	Data *cur;
-	for (i = 0; i < MAP_LEN; i++)
-		if (map[i]) {
-			printf("%s %s\n", map[i]->utf8_char, map[i]->string);
-			if ((cur = map[i]->next))
-				printf("%s %s\n", cur->utf8_char, cur->string);
-		}
 }
 
 /*

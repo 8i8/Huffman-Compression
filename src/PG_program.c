@@ -46,7 +46,7 @@ Data **program(Files *io, HC_HuffmanNode **tree, Data **map)
 
 	if ((state & READ) && (state & PRINT)) {
 		printf("Print char map.\n");
-		//print_char_map(map);
+		print_char_map(map);
 	}
 
 	if ((state & READ) && (state & WRITE)) {
@@ -56,13 +56,15 @@ Data **program(Files *io, HC_HuffmanNode **tree, Data **map)
 
 	if (state & DECOMP) {
 		printf("Decompress file.\n");
-		decompress_file(tree, io->in, io->out);
+		//decompress_file(tree, io->in, io->out);
 	}
 
 	if (state & ERROR) {
 		fprintf(stderr, "%s: state error signaled.", __func__);
 		return NULL;
 	}
+	
+	printf("Free memory.\n");
 
 	return map;
 }

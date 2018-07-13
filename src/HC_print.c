@@ -1,5 +1,6 @@
 #include "HC_struct.h"
 #include "HC_print.h"
+#include "GE_hash.h"
 
 /*
  * print_node: Print one node.
@@ -69,7 +70,8 @@ static void print_huffman_tree_rec(HC_HuffmanNode *tree, int depth)
 	for (i = 0; i < --d; i++)
 		putchar(' ');
 
-	printf("%s\n", tree->data.utf8_char);
+	if (tree->data.len)
+		printf("\'%s\'\n", tree->data.utf8_char);
 	depth--;
 
 	if (tree->right)
@@ -82,6 +84,29 @@ static void print_huffman_tree_rec(HC_HuffmanNode *tree, int depth)
 void print_huffman_tree(HC_HuffmanNode *tree)
 {
 	print_huffman_tree_rec(tree, 0);
+	while (tree->next) {
+		tree = tree->next;
+		printf("Error ~ ");
+		print_huffman_tree_rec(tree->left, 0);
+	}
 	putchar('\n');
+}
+
+/*
+ * print_char_map: Print out the char map made by the Huffman tree.
+ */
+void print_char_map(Data **map)
+{
+	size_t i;
+	Data *cur;
+	for (i = 0; i < MAP_LEN; i++)
+		if (map[i]) {
+			printf("%s %s\n", map[i]->utf8_char, map[i]->string);
+			cur = map[i]->next;
+			while (cur) {
+				printf("%s %s\n", cur->utf8_char, cur->string);
+				cur = map[i]->next;
+			}
+		}
 }
 

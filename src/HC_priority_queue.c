@@ -20,7 +20,6 @@ HC_HuffmanNode *HC_priority_queue_new_node(Data data)
 		return NULL;
 	}
 	new_node->next = NULL;
-	new_node->prev = NULL;
 	new_node->left = NULL;
 	new_node->right = NULL;
 	new_node->data = data;
@@ -45,7 +44,6 @@ HC_HuffmanNode **HC_priority_queue_add(HC_HuffmanNode **list, Data data)
 			return NULL;
 		}
 
-		(*list)->next->prev = (*list);
 		list = &(*list)->next;
 		(*list)->data = data;
 		(*list)->next = NULL;
@@ -96,7 +94,6 @@ HC_HuffmanNode **HC_priority_queue_insert_node(
 
 /*
  * HC_priority_queue_insert_ordered: Insert a new node conditionaly.
- * TODO NOW Problem in the frequancy comparison function, the < sign.
  */
 HC_HuffmanNode **HC_priority_queue_insert_ordered(
 						HC_HuffmanNode **list,
@@ -119,13 +116,15 @@ HC_HuffmanNode **HC_priority_queue_insert_ordered(
 	if ((freq((void*)new, (void*)*list)) <= 0)
 		start = new;
 	else
+
 		start = *list;
 
-	while (*list && (*list)->next && (freq((void*)new, (void*)*list) > 0))
+	while (*list && (*list)->next && (freq((void*)new, (void*)(*list)->next) > 0))
 		list = &(*list)->next;
 
-	new->next = *list;
-	*list = start;
+	new->next = (*list)->next;
+	(*list)->next = new;
+	list = &start;
 	
 	return list;
 }
@@ -134,7 +133,7 @@ HC_HuffmanNode **HC_priority_queue_insert_ordered(
  * HC_priority_queue_pop: Pop the first node and return a pointer to the next node
  * of NULL if it does not exist.
  */
-HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
+HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode **list)
 {
 	HC_HuffmanNode *popped;
 
@@ -144,19 +143,10 @@ HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode *list)
 	}
 
 	/* Remove the node */
-	popped = list;
+	popped = *list;
+	*list = (*list)->next;
 
-	if (list->prev)
-		list->prev->next = list->next;
-	if (list->next)
-		list->next->prev = list->prev;
-
-	list = list->next;
-
-	popped->next = NULL;
-	popped->prev = NULL;
-
-	return list;
+	return popped;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

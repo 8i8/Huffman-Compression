@@ -15,7 +15,7 @@ HC_HuffmanNode **HC_priority_queue_insert_ordered(HC_HuffmanNode **list, HC_Huff
 
 /* HC_priority_queue_pop: Pop the first node and return a pointer to the new list
  * address. */
-HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode*list);
+HC_HuffmanNode *HC_priority_queue_pop(HC_HuffmanNode **list);
 
 /* HC_HuffmanTree_walk: Walk tree and perform (*func) on every node */
 Data *HC_HuffmanTree_walk(HC_HuffmanNode **tree, void* store, int(*func)(void*, void*));

@@ -33,11 +33,10 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 
 	while ((*list)->next)
 	{
-		one = *list;
-		*list = HC_priority_queue_pop(*list);
-		two = *list;
-		*list = HC_priority_queue_pop(*list);
+		one = HC_priority_queue_pop(list);
+		two = HC_priority_queue_pop(list);
 
+		one->next = NULL, two->next = NULL;
 		data.frq = one->data.frq + two->data.frq;
 
 		/* Add leaves to new node and give a binary value */
@@ -64,13 +63,11 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 int HC_huffman_tree_free(HC_HuffmanNode **tree)
 {
 	if (*tree == NULL) {
-		fprintf(stderr, "%s(): tree node is NULL.", __func__);
+		fprintf(stderr, "%s(): tree node is NULL.\n", __func__);
 		return 1;
 	}
-	else if ((*tree)->next != NULL) {
-		fprintf(stderr, "%s(): Priority queue nodes still exist.", __func__);
-		return 1;
-	}
+	else if ((*tree)->next != NULL)
+		fprintf(stderr, "%s(): Priority queue nodes still exist.\n", __func__);
 
 	if ((*tree)->left)
 		HC_huffman_tree_free(&(*tree)->left);
