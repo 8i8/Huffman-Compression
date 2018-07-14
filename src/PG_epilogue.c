@@ -7,7 +7,7 @@
 /*
  * epilogue: Free all memory and close files.
  */
-int epilogue(Files *io, HC_HuffmanNode **tree, Data **map, const int state)
+int epilogue(Files *io, HC_HuffmanNode **tree, Data **map, const unsigned state)
 {
 	if (state & READ) {
 		HC_huffman_tree_free(tree);

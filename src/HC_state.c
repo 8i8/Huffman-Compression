@@ -3,7 +3,7 @@
 /*
  * state_init; Initialize the state struct.
  */
-int state_init(void)
+unsigned state_init(void)
 {
 	return 0;
 }
@@ -11,15 +11,15 @@ int state_init(void)
 /*
  * state_set; Set flag by passing in appropriate bit field.
  */
-int state_set(int state, unsigned token)
+unsigned state_set(unsigned state, unsigned flag)
 {
-	return state |= token;
+	return state |= flag;
 }
 
 /*
  * state_unset: Unset flag by passing appropriate bitfiled.
  */
-int state_unset(int state, unsigned token)
+unsigned state_unset(unsigned state, unsigned flag)
 {
-	return state &= ~token;
+	return state &= ~flag;
 }

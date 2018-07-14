@@ -64,12 +64,11 @@ static int token_add(char *token, int flag)
  */
 int LE_token_init(void)
 {
-	int state = 0;
 	if ((token_table = calloc(TABLE_LEN, sizeof(Token))) == NULL)
 		return 1;
 
-	token_add("map", state & LE_MAP);
-	token_add("comp", state & LE_DECOMP);
+	token_add("map", 0 & LE_MAP);
+	token_add("comp", 0 & LE_DECOMP);
 
 	return 0;
 }

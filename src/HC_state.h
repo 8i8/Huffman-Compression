@@ -11,10 +11,10 @@
 #define LE_OUT       (1 << 8)
 
 /* init_state; Initialize the state struct */
-int state_init(void);
+unsigned state_init(void);
 
 /* state; Set flag by passing in appropriate bit field */
-int state_set(int state, unsigned s);
+unsigned state_set(unsigned state, unsigned flag);
 
 /* state_unset: Unset flag by passing appropriate bitfiled */
-int state_unset(int state, unsigned token);
+unsigned state_unset(unsigned state, unsigned flag);

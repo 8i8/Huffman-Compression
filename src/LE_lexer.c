@@ -26,7 +26,7 @@ void LE_lexer_free(void)
 /*
  * LE_get_token: Returns a state on reading a token.
  */
-int LE_get_token(FILE *fp, char c, int state)
+unsigned LE_get_token(FILE *fp, char c, unsigned state)
 {
 	int off, token;
         off = token = 0;

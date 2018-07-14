@@ -31,13 +31,13 @@ int main(int argc, char *argv[])
 	Data **map = NULL;
 	Files files, *io;
 	io = &files;
-	int state;
+	unsigned state;
 
 	state = state_init();
 	map = HC_map_init();
 
 	/* Get commandline input and set program state */
-	state = prologue(argc, argv, io);
+	state = prologue(argc, argv, io, state);
 
 	/* Run program */
 	if (state & READ) {
@@ -82,13 +82,10 @@ int main(int argc, char *argv[])
 		decompress_file(&tree, io->in, io->out);
 	}
 
-	if (state & ERROR) {
+	if (state & ERROR)
 		fprintf(stderr, "%s: state error signaled.", __func__);
-		return NULL;
-	}
 	
 	/* Clean up */
-	printf("Free memory.\n");
 	epilogue(io, &tree, map, state);
 
 	return 0;
