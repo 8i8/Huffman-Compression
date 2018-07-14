@@ -4,12 +4,10 @@
 #include "HC_map_char.h"
 #include <stdlib.h>
 
-extern int state;
-
 /*
  * epilogue: Free all memory and close files.
  */
-int epilogue(Files *io, HC_HuffmanNode **tree, Data **map)
+int epilogue(Files *io, HC_HuffmanNode **tree, Data **map, const int state)
 {
 	if (state & READ) {
 		HC_huffman_tree_free(tree);

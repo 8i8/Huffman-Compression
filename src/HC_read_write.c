@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <stdlib.h>
-#include "HC_state.h"
 #include "HC_struct.h"
+#include "HC_state.h"
 #include "HC_map_char.h"
 #include "HC_utf8.h"
 #include "HC_priority_queue.h"
 #include "LE_lexer.h"
 #include "GE_hash.h"
 #include "GE_string.h"
-
-extern int state;
 
 /*
  * write_frq_map: Write the frequency of each used characters repetition used
@@ -53,12 +52,11 @@ void write_frq_map(Data **map, FILE *out)
 			}
 		}
 	}
-
-	GE_string_concat(buf, "</map>\n", 7);
 	free(num);
 
+	GE_string_concat(buf, "</map>\n", 7);
 	fwrite(buf->str, 1, buf->len, out);
-	printf("%s\n", buf->str);
+
 	GE_string_free(buf);
 }
 
@@ -135,7 +133,7 @@ int compress_file(Data **map, FILE *in, FILE *out)
  * decompress_file: Read and then decompress compressed file. Analyze file
  * stream with lexer to decompress the file.
  */
-int decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out)
+int decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out, int state)
 {
 	LE_lexer_init();
 	char c;
@@ -143,7 +141,7 @@ int decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out)
 	while ((c = fgetc(in)) != EOF)
 	{
 		/* Read frequency map from file start */
-		state |= LE_get_token(in, c);
+		state = state_set(state, LE_get_token(in, c, state));
 
 		if (state & LE_MAP)
 			build_priority_queue_from_file(list, in);
@@ -155,6 +153,6 @@ int decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out)
 
 	LE_lexer_free();
 
-	return 0;
+	return state;
 }
 

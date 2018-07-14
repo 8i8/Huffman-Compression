@@ -8,11 +8,10 @@
  * prologue: Deal with all args at the program start and in consequence set the
  * programs initial state.
  */
-int prologue(int argc, char *argv[], Files *io)
+int prologue(int argc, char *argv[], Files *io, int state)
 {
 	char c;
 
-	state_init();
 	io->in = io->out = NULL;
 
 	while ((c = getopt(argc, argv, "pc:")) != -1)
@@ -21,19 +20,19 @@ int prologue(int argc, char *argv[], Files *io)
 			case 'c':
 				if ((io->out = fopen(optarg, "wb")) == NULL) {
 					fprintf(stderr, "file read error: %s\n", optarg);
-					return state_set(ERROR);
+					return state_set(state, ERROR);
 				}
-				state_set(WRITE);
+				state = state_set(state, WRITE);
 				break;
 			case 'x':
 				if ((io->out = fopen(optarg, "r")) == NULL) {
 					fprintf(stderr, "file read error: %s\n", optarg);
-					return state_set(ERROR);
+					return state_set(state, ERROR);
 				}
-				state_set(DECOMP);
+				state = state_set(state, DECOMP);
 				break;
 			case 'p':
-				state_set(PRINT);
+				state = state_set(state, PRINT);
 				break;
 			case '?':
 				if (optopt == 'c')
@@ -42,19 +41,19 @@ int prologue(int argc, char *argv[], Files *io)
 					fprintf (stderr, "Unknown option `-%c'.\n", optopt);
 				else
 					fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
-				return state_set(ERROR);
+				return state_set(state, ERROR);
 			default :
 				break;
 		}
 
 	if (optind != argc && ((io->in = fopen(argv[optind], "r")) == NULL)) {
 		fprintf(stderr, "file read error: %s\n", argv[optind]);
-		return state_set(ERROR);
+		return state_set(state, ERROR);
 	}
 
 	if (io->in != NULL)
-		state_set(READ);
+		state = state_set(state, READ);
 
-	return 0;
+	return state;
 }
 

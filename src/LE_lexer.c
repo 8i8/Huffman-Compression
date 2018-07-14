@@ -2,12 +2,10 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "LE_tokenizer.h"
-#include "HC_state.h"
 #include "GE_string.h"
 #include "LE_lexer.h"
 #include "GE_string.h"
-
-extern int state;
+#include "HC_state.h"
 
 /*
  * LE_token_init: Initialise token trie for lexing.
@@ -28,7 +26,7 @@ void LE_lexer_free(void)
 /*
  * LE_get_token: Returns a state on reading a token.
  */
-int LE_get_token(FILE *fp, char c)
+int LE_get_token(FILE *fp, char c, int state)
 {
 	int off, token;
         off = token = 0;
@@ -55,16 +53,19 @@ int LE_get_token(FILE *fp, char c)
 		while (isalnum((c = fgetc(fp))))
 			GE_string_add_char(str, c);
 
-		token |= LE_check_token(str->str);
+		state = state_set(token, LE_check_token(str->str));
 
 		free(str);
 
 		if (off)
-			state &= ~token;
+			state = state_unset(state, token);
 		else
-			state |= token;
+			state = state_set(state, token);
 	}
 
-	return 	LE_get_token(fp, c);
+	if (c == '>' || c == EOF)
+		return state;
+	else
+		return 	LE_get_token(fp, c, state);
 }
 

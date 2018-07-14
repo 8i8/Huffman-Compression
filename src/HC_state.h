@@ -14,4 +14,7 @@
 int state_init(void);
 
 /* state; Set flag by passing in appropriate bit field */
-int state_set(unsigned s);
+int state_set(int state, unsigned s);
+
+/* state_unset: Unset flag by passing appropriate bitfiled */
+int state_unset(int state, unsigned token);
