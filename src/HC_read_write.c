@@ -13,51 +13,16 @@
 extern int state;
 
 /*
- * Reverse the array.
- */
-static void reverse(char *s)
-{
-	size_t i, j;
-	int c;
-
-	for (i = 0, j = strlen(s) - 1; i < j; i++, j--) {
-		c = s[j];
-		s[j] = s[i];
-		s[i] = c;
-	}
-}
-
-/*
- * Transform a value of the int type into a string.
- */ 
-static char *itoa(size_t n, char *s)
-{
-	char *s_in;
-	s_in = s;
-
-	do
-		/* make n positive and generate digits in reverse order */
-		*s++ = (char)(n % 10) + '0';
-
-	while ((n /= 10) != 0);
-
-	*(s+1) = '\0';
-	
-	reverse(s_in);
-
-	return s;
-}
-
-/*
  * write_frq_map: Write the frequency of each used characters repetition used
  * in the encoding of the file to the start of the file, so as to allow for the
  * recreation of the same Huffman tree for decompression.
+ * TODO NOW the string is not getting correctly made.
  */
-static void write_frq_map(Data **map, FILE *out)
+void write_frq_map(Data **map, FILE *out)
 {
 	String *buf = NULL;
 	char *num, *pt_num;
-	size_t i, len;
+	size_t i;
 	Data *cur;
 
 	pt_num = num = malloc(256);
@@ -67,20 +32,20 @@ static void write_frq_map(Data **map, FILE *out)
 	for (i = 0; i < MAP_LEN; i++) {
 		if (map[i] != NULL) {
 			GE_string_concat(buf, "\t", 1);
-			len = utf8_len(map[i]->utf8_char);
-			GE_string_concat(buf, map[i]->utf8_char, len);
-			GE_string_concat(buf, "~", 1);
-			num = itoa(map[i]->frq, num);
+			GE_string_concat(buf, map[i]->utf8_char,
+					strlen(map[i]->utf8_char));
+			GE_string_concat(buf, " ~ ", 3);
+			sprintf(num, "%lu", map[i]->frq);
 			GE_string_concat(buf, num, strlen(num));
 			GE_string_concat(buf, "\n", 1);
 			num = pt_num;
 			if ((cur = map[i]->next)) {
 				while ((cur = cur->next)) {
 					GE_string_concat(buf, "\t", 1);
-					len = utf8_len(cur->utf8_char);
-					GE_string_concat(buf, cur->utf8_char, len);
-					GE_string_concat(buf, "~", 1);
-					num = itoa(cur->frq, num);
+				      	GE_string_concat(buf, map[i]->utf8_char,
+							strlen(map[i]->utf8_char));
+					GE_string_concat(buf, " ~ ", 3);
+					sprintf(num, "%lu", map[i]->frq);
 					GE_string_concat(buf, num, strlen(num));
 					GE_string_concat(buf, "\n", 1);
 					num = pt_num;
@@ -92,7 +57,9 @@ static void write_frq_map(Data **map, FILE *out)
 	GE_string_concat(buf, "</map>\n", 7);
 	free(num);
 
-	fwrite(buf, 1, buf->len, out);
+	fwrite(buf->str, 1, buf->len, out);
+	printf("%s\n", buf->str);
+	GE_string_free(buf);
 }
 
 /*
@@ -127,8 +94,6 @@ int compress_file(Data **map, FILE *in, FILE *out)
 
 	byte = 0;
 	count = 0;
-
-	write_frq_map(map, out);
 
 	fwrite("<comp>\n\t", 1, 8, out);
 

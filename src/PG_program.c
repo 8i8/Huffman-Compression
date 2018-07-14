@@ -51,12 +51,13 @@ Data **program(Files *io, HC_HuffmanNode **tree, Data **map)
 
 	if ((state & READ) && (state & WRITE)) {
 		printf("Compress file.\n");
-		//compress_file(map, io->in, io->out);
+		write_frq_map(map, io->out);
+		compress_file(map, io->in, io->out);
 	}
 
 	if (state & DECOMP) {
 		printf("Decompress file.\n");
-		//decompress_file(tree, io->in, io->out);
+		decompress_file(tree, io->in, io->out);
 	}
 
 	if (state & ERROR) {
