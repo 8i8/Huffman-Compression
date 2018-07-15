@@ -5,8 +5,8 @@
 #define MULTIBYTE (c >> 7)
 
 /*
- * utf8_bytes:	Return multi-char length (-1) in bytes, read from the initial
- * UTF-8 char.
+ * utf8_bytes:	Return multi-char length in bytes, value is -1 as it is read as
+ * the number of char remaining.
  */
 static unsigned utf8_bytes(unsigned char c)
 {
@@ -27,7 +27,7 @@ static unsigned utf8_bytes(unsigned char c)
 unsigned utf8_test(char c)
 {
 	if (MULTIBYTE)
-		return utf8_bytes(c);
+		return utf8_bytes(c) + 1;
 	else
 		return 0;
 }

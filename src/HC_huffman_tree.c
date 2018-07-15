@@ -2,7 +2,7 @@
 #include "HC_mergesort.h"
 #include "HC_func_comp.h"
 #include "HC_print.h"
-#include "HC_state.h"
+#include "GE_state.h"
 #include <stdlib.h>
 
 

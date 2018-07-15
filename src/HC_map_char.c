@@ -2,7 +2,7 @@
 #include "HC_struct.h"
 #include "GE_hash.h"
 #include "GE_string.h"
-#include "HC_state.h"
+#include "GE_state.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>

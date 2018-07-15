@@ -1,5 +1,5 @@
 #include "HC_struct.h"
-#include "HC_state.h"
+#include "GE_state.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>

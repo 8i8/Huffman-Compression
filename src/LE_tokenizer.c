@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "LE_lexer.h"
-#include "HC_state.h"
+#include "GE_state.h"
 #include "GE_hash.h"
 #include "LE_tokenizer.h"
 
@@ -67,8 +67,8 @@ int LE_token_init(void)
 	if ((token_table = calloc(TABLE_LEN, sizeof(Token))) == NULL)
 		return 1;
 
-	token_add("map", 0 & LE_MAP);
-	token_add("comp", 0 & LE_DECOMP);
+	token_add("map", 0 & LEX_MAP);
+	token_add("comp", 0 & LEX_DECOMPRESS);
 
 	return 0;
 }

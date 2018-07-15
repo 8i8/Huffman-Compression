@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "HC_utf8.h"
-#include "HC_state.h"
+#include "GE_state.h"
 #include "HC_func_comp.h"
 #include "HC_priority_queue.h"
 #include "HC_print.h"

@@ -16,7 +16,7 @@
  *
  */
 #include "HC_struct.h"
-#include "HC_state.h"
+#include "GE_state.h"
 #include "PG_prologue.h"
 #include "HC_priority_queue.h"
 #include "HC_huffman_tree.h"
@@ -48,13 +48,12 @@ int main(int argc, char *argv[])
 	}
 
 	if ((is_set(state, COMPRESS)) && (is_set(state, WRITE))) {
-		write_frq_map(map, io->out);
+		write_map_to_file(map, io->out);
 		compress_file(map, io->in, io->out, state);
 	}
 
-	if (is_set(state, DECOMPRESS)) {
+	if (is_set(state, DECOMPRESS))
 		decompress_file(&tree, io->in, io->out, state);
-	}
 
 	if (is_set(state, ERROR))
 		fprintf(stderr, "%s: state error signaled.", __func__);

@@ -1,5 +1,5 @@
 #include "HC_struct.h"
-#include "HC_state.h"
+#include "GE_state.h"
 #include "HC_huffman_tree.h"
 #include "HC_map_char.h"
 #include <stdlib.h>

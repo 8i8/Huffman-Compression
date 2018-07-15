@@ -1,9 +1,8 @@
-#include <stdio.h>
+//#include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include "HC_struct.h"
-#include "HC_state.h"
+#include "GE_state.h"
 #include "HC_map_char.h"
 #include "HC_utf8.h"
 #include "HC_priority_queue.h"
@@ -12,11 +11,11 @@
 #include "GE_string.h"
 
 /*
- * write_frq_map: Write the frequency of each used characters repetition used
- * in the encoding of the file to the start of the file, so as to allow for the
- * recreation of the same Huffman tree for decompression.
+ * write_map_to_file: Write the frequency of each used characters repetition
+ * used in the encoding of the file to the start of the file, so as to allow
+ * for the recreation of the same Huffman tree for decompression.
  */
-void write_frq_map(Data **map, FILE *out)
+void write_map_to_file(Data **map, FILE *out)
 {
 	String *buf = NULL;
 	char *num, *pt_num;
@@ -139,6 +138,17 @@ unsigned compress_file(Data **map, FILE *in, FILE *out, const unsigned state)
 }
 
 /*
+ * read_compressed_file: Read the compressed file and write the decompressed
+ * data to the output file.
+ */
+FILE *read_compressed_file(FILE *in, FILE *out)
+{
+	in = out;
+
+	return in;
+}
+
+/*
  * decompress_file: Read and then decompress compressed file. Analyze file
  * stream with lexer to decompress the file.
  */
@@ -155,10 +165,14 @@ unsigned decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out, unsigned st
 		/* Read frequency map from file start */
 		state_set(state, LE_get_token(in, c, state));
 
-		if (state & LE_MAP)
+		if (is_set(state, LEX_MAP))
+
 			build_priority_queue_from_file(list, in);
-		else if (state & LE_DECOMP)
-			continue;
+
+		else if (is_set(state, LEX_DECOMPRESS))
+
+			read_compressed_file(in, out);
+
 		else
 			break;
 	}

@@ -5,7 +5,7 @@
 #include "GE_string.h"
 #include "LE_lexer.h"
 #include "GE_string.h"
-#include "HC_state.h"
+#include "GE_state.h"
 
 /*
  * LE_token_init: Initialise token trie for lexing.
