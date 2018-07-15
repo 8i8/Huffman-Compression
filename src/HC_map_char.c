@@ -2,6 +2,7 @@
 #include "HC_struct.h"
 #include "GE_hash.h"
 #include "GE_string.h"
+#include "HC_state.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,12 +69,21 @@ Data **HC_map_init(void)
 /*
  * map_create: Create char map from Huffman tree.
  */
-Data **map_create(Data **map, HC_HuffmanNode **tree)
+Data **map_create(Data **map, HC_HuffmanNode **tree, const unsigned state)
 {
+	if (is_set(state, VERBOSE))
+		printf("Make character hashmap.\n");
+
 	String *str = NULL;
 	str = GE_string_init(str);
 	huffman_tree_walk(*tree, map, str);
 	GE_string_free(str);
+
+	if (is_set(state, PRINT)) {
+		printf("Print char map.\n");
+		print_char_map(map);
+	}
+
 	return map;
 }
 

@@ -63,11 +63,15 @@ void write_frq_map(Data **map, FILE *out)
  * write_bit: Set all of the bits in a byte, then write that byte to the given
  * file.
  */
-static void write_bit(FILE *out, unsigned char bit, unsigned char *byte, int *count)
+static void write_bit(
+				FILE *out,
+				unsigned char bit,
+				unsigned char *byte,
+				unsigned *bit_count)
 {
-	if (++(*count) == 8) {
+	if (++(*bit_count) == 8) {
 		fwrite(byte, 1, 1, out);
-		*count = 0;
+		*bit_count = 0;
 		*byte = 0;
 	}
 
@@ -80,25 +84,25 @@ static void write_bit(FILE *out, unsigned char bit, unsigned char *byte, int *co
 /*
  * compress_file: Write compressed file.
  */
-int compress_file(Data **map, FILE *in, FILE *out)
+unsigned compress_file(Data **map, FILE *in, FILE *out, const unsigned state)
 {
-	int count;
+	unsigned bit_count, utf8_count;
 	unsigned char byte;
 
 	char c, *ptr, utf8_char[5], *bin;
 	size_t len, i;
 	ptr = utf8_char;
 
-	byte = 0;
-	count = 0;
+	bit_count = byte = utf8_count = 0;
 
 	fwrite("<comp>\n\t", 1, 8, out);
 
-	while ((c = fgetc(in)) != EOF)
+	//TODO NEXT Buffer this input to make more efficient.
+	while ((c = fgetc(in)) != EOF && utf8_count < 4)
 	{
 		/* Get char for the lenght of what is possibly a multi-byte
 		 * character */
-		while ((*ptr++ = c) && utf8_count(c))
+		while ((*ptr++ = c) && (utf8_count = utf8_countdown(c)) && utf8_count < 4)
 			c = fgetc(in);
 
 		*ptr = '\0';
@@ -106,26 +110,32 @@ int compress_file(Data **map, FILE *in, FILE *out)
 		bin = map_read_char_to_binary(map, utf8_char);
 		len = map_read_char_to_binary_len(map, utf8_char);
 		for (i = 0; i < len; i++, bin++)
-			write_bit(out, bin[0], &byte, &count);
+			write_bit(out, bin[0], &byte, &bit_count);
 
 		ptr = utf8_char;
 	}
+
+	if (utf8_count > 4)
+		fprintf(stderr, "%s: utf8_countdown error.\n", __func__);
 
 	/* Add EOF char */
 	bin = map_read_char_to_binary(map, "EOF");
 	len = map_read_char_to_binary_len(map, utf8_char);
 	for (i = 0; i < len; i++, bin++)
-		write_bit(out, bin[0], &byte, &count);
+		write_bit(out, bin[0], &byte, &bit_count);
 
 	/* Pad any remaining bits in the last byte with zeroes */
-	if(count > 0) {
-		 byte <<= 8 - count;
+	if(bit_count > 0) {
+		 byte <<= 8 - bit_count;
 		 fwrite(&byte, 1, 1, out);
 	}
 
 	fwrite("\n</comp>\n", 1, 9, out);
 
-	return 0;
+	if (is_set(state, VERBOSE))
+		printf("Compressed file writen.\n");
+
+	return state;
 }
 
 /*
@@ -137,10 +147,13 @@ unsigned decompress_file(HC_HuffmanNode **list, FILE *in, FILE *out, unsigned st
 	LE_lexer_init();
 	char c;
 
+	if (is_set(state, VERBOSE))
+		printf("Decompress file.\n");
+
 	while ((c = fgetc(in)) != EOF)
 	{
 		/* Read frequency map from file start */
-		state = state_set(state, LE_get_token(in, c, state));
+		state_set(state, LE_get_token(in, c, state));
 
 		if (state & LE_MAP)
 			build_priority_queue_from_file(list, in);

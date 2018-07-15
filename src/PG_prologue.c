@@ -14,7 +14,7 @@ unsigned prologue(int argc, char *argv[], Files *io, unsigned state)
 
 	io->in = io->out = NULL;
 
-	while ((c = getopt(argc, argv, "pc:")) != -1)
+	while ((c = getopt(argc, argv, "pvc:")) != -1)
 		switch (c)
 		{
 			case 'c':
@@ -22,17 +22,21 @@ unsigned prologue(int argc, char *argv[], Files *io, unsigned state)
 					fprintf(stderr, "file read error: %s\n", optarg);
 					return state_set(state, ERROR);
 				}
-				state = state_set(state, WRITE);
+				state_set(state, COMPRESS);
+				state_set(state, WRITE);
 				break;
 			case 'x':
 				if ((io->out = fopen(optarg, "r")) == NULL) {
 					fprintf(stderr, "file read error: %s\n", optarg);
 					return state_set(state, ERROR);
 				}
-				state = state_set(state, DECOMP);
+				state_set(state, DECOMPRESS);
 				break;
 			case 'p':
-				state = state_set(state, PRINT);
+				state_set(state, PRINT);
+				break;
+			case 'v':
+				state_set(state, VERBOSE);
 				break;
 			case '?':
 				if (optopt == 'c')
@@ -51,8 +55,8 @@ unsigned prologue(int argc, char *argv[], Files *io, unsigned state)
 		return state_set(state, ERROR);
 	}
 
-	if (io->in != NULL)
-		state = state_set(state, READ);
+	if (io->in == NULL)
+		state_set(state, COMPRESS);
 
 	return state;
 }

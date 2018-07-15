@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "HC_utf8.h"
+#include "HC_state.h"
 #include "HC_func_comp.h"
 #include "HC_priority_queue.h"
 #include "HC_print.h"
@@ -220,7 +221,7 @@ static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 		ptr = data.utf8_char;
 
 		/* Get multi-byte character */
-		while ((*ptr++ = c) && utf8_count(c))
+		while ((*ptr++ = c) && utf8_countdown(c))
 			c = fgetc(fp);
 
 		*ptr = '\0';
@@ -254,7 +255,7 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
 	{
 		ptr = data.utf8_char;
 		/* Get char for the length of the multi-byte character */
-		while (utf8_count(c) && (*ptr++ = c))
+		while (utf8_countdown(c) && (*ptr++ = c))
 			c = fgetc(fp);
 		*ptr++ = c;
 		*ptr = '\0';
@@ -275,8 +276,14 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
  * create_priority_queue: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue.
  */
-HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
+HC_HuffmanNode **create_priority_queue(
+					HC_HuffmanNode **list,
+					FILE *fp,
+					const unsigned state)
 {
+	if (is_set(state, VERBOSE))
+		printf("Create priority queue.\n");
+
 	/* Count */
 	if (compile_frequency_list(list, fp) == NULL)
 		fprintf(stderr, "%s(): error compile_frequency_list failed.\n", __func__);
@@ -284,6 +291,11 @@ HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp)
 	/* Sort by frequency */
 	if (HC_mergesort(list, FN_data_frqcmp) == NULL)
 		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
+
+	if (is_set(state, PRINT)) {
+		printf("print frequeancy map.\n");
+		print_frequency_map(*list);
+	}
 
 	return list;
 }

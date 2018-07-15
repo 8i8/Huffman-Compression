@@ -16,14 +16,14 @@
  *
  */
 #include "HC_struct.h"
-#include "PG_prologue.h"
-#include "PG_epilogue.h"
 #include "HC_state.h"
+#include "PG_prologue.h"
+#include "HC_priority_queue.h"
 #include "HC_huffman_tree.h"
 #include "HC_map_char.h"
-#include "HC_priority_queue.h"
 #include "HC_read_write.h"
 #include "HC_print.h"
+#include "PG_epilogue.h"
 
 int main(int argc, char *argv[])
 {
@@ -40,51 +40,25 @@ int main(int argc, char *argv[])
 	state = prologue(argc, argv, io, state);
 
 	/* Run program */
-	if (state & READ) {
-		printf("Create priority queue.\n");
-		create_priority_queue(&tree, io->in);
-	}
-
-	if ((state & READ) && (state & PRINT)) {
-		printf("print frequeancy map.\n");
-		print_frequency_map(tree);
-	}
-
-	if (state & READ) {
-		printf("Build huffman tree.\n");
-		build_huffman_tree(&tree);
+	if (is_set(state, COMPRESS)) {
+		create_priority_queue(&tree, io->in, state);
+		build_huffman_tree(&tree, state);
 		rewind(io->in);
+		map_create(map, &tree, state);
 	}
 
-	if ((state & READ) && (state & PRINT)) {
-		printf("Print huffman tree.\n");
-		print_huffman_tree(tree);
-	}
-
-	if (state & READ) {
-		printf("Make character hashmap.\n");
-		map_create(map, &tree);
-	}
-
-	if ((state & READ) && (state & PRINT)) {
-		printf("Print char map.\n");
-		print_char_map(map);
-	}
-
-	if ((state & READ) && (state & WRITE)) {
-		printf("Compress file.\n");
+	if ((is_set(state, COMPRESS)) && (is_set(state, WRITE))) {
 		write_frq_map(map, io->out);
-		compress_file(map, io->in, io->out);
+		compress_file(map, io->in, io->out, state);
 	}
 
-	if (state & DECOMP) {
-		printf("Decompress file.\n");
-		decompress_file(&tree, io->in, io->out);
+	if (is_set(state, DECOMPRESS)) {
+		decompress_file(&tree, io->in, io->out, state);
 	}
 
-	if (state & ERROR)
+	if (is_set(state, ERROR))
 		fprintf(stderr, "%s: state error signaled.", __func__);
-	
+
 	/* Clean up */
 	epilogue(io, &tree, map, state);
 

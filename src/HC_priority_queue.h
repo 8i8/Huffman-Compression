@@ -22,7 +22,10 @@ Data *HC_HuffmanTree_walk(HC_HuffmanNode **tree, void* store, int(*func)(void*, 
 
 /* create_priority_queue: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue */
-HC_HuffmanNode **create_priority_queue(HC_HuffmanNode **list, FILE *fp);
+HC_HuffmanNode **create_priority_queue(
+						HC_HuffmanNode **list,
+						FILE *fp,
+						const unsigned state);
 
 /* build_priority_queue_from_file: Retrieve the frequency mapping from the
  * beginning of a compressed file and make it into a list, sort the list into a

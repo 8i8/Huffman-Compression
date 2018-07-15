@@ -2,6 +2,7 @@
 #include "HC_mergesort.h"
 #include "HC_func_comp.h"
 #include "HC_print.h"
+#include "HC_state.h"
 #include <stdlib.h>
 
 
@@ -25,16 +26,19 @@ Data *HC_data_init(Data *map)
 /*
  * build_huffman_tree: Create a binary tree from the given linked list.
  */
-HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
+HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **tree, const unsigned state)
 {
 	HC_HuffmanNode *new, *one, *two;
 	Data data;
 	HC_data_init(&data);
 
-	while ((*list)->next)
+	if (is_set(state, VERBOSE))
+		printf("Build huffman tree.\n");
+
+	while ((*tree)->next)
 	{
-		one = HC_priority_queue_pop(list);
-		two = HC_priority_queue_pop(list);
+		one = HC_priority_queue_pop(tree);
+		two = HC_priority_queue_pop(tree);
 
 		one->next = NULL, two->next = NULL;
 		data.next = NULL;
@@ -48,14 +52,19 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **list)
 		new->left->bit = '0', new->right->bit = '1';
 
 		/* Insert new node into priority queue */
-		if (*list) {
-			if (HC_priority_queue_insert_ordered(list, new, FN_data_frqcmp) == NULL)
+		if (*tree) {
+			if (HC_priority_queue_insert_ordered(tree, new, FN_data_frqcmp) == NULL)
 				fprintf(stderr, "%s:", __func__);
 		} else 
-			*list = new;
+			*tree = new;
 	}
 
-	return list;
+	if (is_set(state, PRINT)) {
+		printf("Print huffman tree.\n");
+		print_huffman_tree(*tree);
+	}
+
+	return tree;
 }
 
 /*

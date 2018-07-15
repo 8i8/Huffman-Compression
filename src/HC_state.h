@@ -1,20 +1,18 @@
 #include <stdio.h>
 
-#define READ         (1 << 0)  /* 00000001 */
+#define COMPRESS     (1 << 0)  /* 00000001 */
 #define WRITE        (1 << 1)  /* 00000010 */
 #define ERROR        (1 << 2)  /* 00000100 */
 #define PRINT        (1 << 3)  /* 00001000 */
-#define DECOMP       (1 << 4)  /* 00010000 */
+#define VERBOSE      (1 << 4)  /* 00010000 */
 #define LE_MAP       (1 << 5)  /* 00100000 */
 #define LE_DECOMP    (1 << 6)  /* 01000000 */
 #define LE_IN        (1 << 7)  /* 10000000 */
 #define LE_OUT       (1 << 8)
+#define DECOMPRESS   (1 << 9)  /* 00010000 */
 
-/* init_state; Initialize the state struct */
-unsigned state_init(void);
+#define state_init() 0
+#define state_set(state, flag)	 state |= flag
+#define state_unset(state, flag) state &= ~flag
+#define is_set(state, flag)      state & flag
 
-/* state; Set flag by passing in appropriate bit field */
-unsigned state_set(unsigned state, unsigned flag);
-
-/* state_unset: Unset flag by passing appropriate bitfiled */
-unsigned state_unset(unsigned state, unsigned flag);

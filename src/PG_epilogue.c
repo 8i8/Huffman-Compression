@@ -9,7 +9,7 @@
  */
 int epilogue(Files *io, HC_HuffmanNode **tree, Data **map, const unsigned state)
 {
-	if (state & READ) {
+	if (state & COMPRESS) {
 		HC_huffman_tree_free(tree);
 		free(map);
 		fclose(io->in);

@@ -53,14 +53,14 @@ unsigned LE_get_token(FILE *fp, char c, unsigned state)
 		while (isalnum((c = fgetc(fp))))
 			GE_string_add_char(str, c);
 
-		state = state_set(token, LE_check_token(str->str));
+		state_set(token, LE_check_token(str->str));
 
 		free(str);
 
 		if (off)
-			state = state_unset(state, token);
+			state_unset(state, token);
 		else
-			state = state_set(state, token);
+			state_set(state, token);
 	}
 
 	if (c == '>' || c == EOF)
