@@ -7,16 +7,17 @@
 /*
  * epilogue: Free all memory and close files.
  */
-int epilogue(Files *io, HC_HuffmanNode **tree, Data **map, const unsigned state)
+int epilogue(F_Buf **io, HC_HuffmanNode **tree, Data **map, const unsigned state)
 {
-	if (state & COMPRESS) {
-		HC_huffman_tree_free(tree);
-		free(map);
-		fclose(io->in);
-	}
+	size_t i = 0;
 
-	if (state & WRITE)
-		fclose(io->out);
+	HC_huffman_tree_free(tree);
+	free(map);
+
+	while (io[i] != NULL)
+		free(io[i++]);
+
+	free(io);
 
 	if (state & ERROR)
 		return 1;

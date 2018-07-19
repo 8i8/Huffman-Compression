@@ -1,62 +1,64 @@
 #include "HC_struct.h"
 #include "GE_state.h"
+#include "GE_file_buffer.h"
 #include <stdlib.h>
-#include <unistd.h>
 #include <ctype.h>
 
 /*
  * prologue: Deal with all args at the program start and in consequence set the
  * programs initial state.
  */
-unsigned prologue(int argc, char *argv[], Files *io, unsigned state)
+unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 {
+	FILE *fp;
 	char c;
+	int file;
 
-	io->in = io->out = NULL;
+	file = 0;
 
-	while ((c = getopt(argc, argv, "pvc:")) != -1)
-		switch (c)
-		{
-			case 'c':
-				if ((io->out = fopen(optarg, "wb")) == NULL) {
-					fprintf(stderr, "file read error: %s\n", optarg);
-					return state_set(state, ERROR);
+	while (--argc > 0) {
+		if ((*++argv)[0] == '-') {
+			while ((c = *++argv[0])) {
+				switch (c)
+				{
+					case 'c':
+						state_set(state, COMPRESS);
+						break;
+					case 'x':
+						state_set(state, DECOMPRESS);
+						break;
+					case 'p':
+						state_set(state, PRINT);
+						break;
+					case 'v':
+						state_set(state, VERBOSE);
+						break;
+					default :
+						break;
 				}
-				state_set(state, COMPRESS);
-				state_set(state, WRITE);
-				break;
-			case 'x':
-				if ((io->out = fopen(optarg, "r")) == NULL) {
-					fprintf(stderr, "file read error: %s\n", optarg);
-					return state_set(state, ERROR);
-				}
-				state_set(state, DECOMPRESS);
-				break;
-			case 'p':
-				state_set(state, PRINT);
-				break;
-			case 'v':
-				state_set(state, VERBOSE);
-				break;
-			case '?':
-				if (optopt == 'c')
-					fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-				else if (isprint (optopt))
-					fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-				else
-					fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
-				return state_set(state, ERROR);
-			default :
-				break;
+			}
+			argv++;
 		}
 
-	if (optind != argc && ((io->in = fopen(argv[optind], "r")) == NULL)) {
-		fprintf(stderr, "file read error: %s\n", argv[optind]);
-		return state_set(state, ERROR);
-	}
+		/* Open a file with binary write enabled, to write the compressed data
+		 * too */
+		if (argc && is_set(state, COMPRESS) && file == 0) {
+			if ((fp = fopen(*argv++, "wb")) == NULL) {
+				fprintf(stderr, "file read error: %s\n", *argv);
+				free(io[file]);
+				return state_set(state, ERROR);
+			} else
+				--argc, io[file++] = GE_buffer_init(fp);
+		} 
 
-	if (io->in == NULL)
-		state_set(state, COMPRESS);
+		/* Open a readable file for every argument trailing the options given
+		 * and the initial write file */
+		if ((fp = fopen(*argv, "r")) == NULL) {
+			fprintf(stderr, "file read error: %s\n", *argv);
+			return state_set(state, ERROR);
+		} else
+			--argc, io[file++] = GE_buffer_init(fp);
+	}
 
 	return state;
 }

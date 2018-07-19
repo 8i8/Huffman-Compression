@@ -29,3 +29,13 @@ typedef struct _main {
 } Files;
 #endif
 
+#ifndef _file_buffer_
+#define _file_buffer_
+typedef struct _file_buffer {
+	FILE *fp;
+	char *buf;
+	char *ptr;
+	char *end;
+	int eof;
+} F_Buf;
+#endif

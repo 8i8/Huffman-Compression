@@ -9,3 +9,6 @@ test*
 *.swp
 a.out
 temp
+debug
+model/
+notes/

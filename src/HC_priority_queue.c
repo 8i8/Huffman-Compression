@@ -1,3 +1,4 @@
+#include "GE_file_buffer.h"
 #include "HC_mergesort.h"
 #include "HC_struct.h"
 #include "HC_huffman_tree.h"
@@ -207,33 +208,39 @@ static HC_HuffmanNode **insert_or_count(
  * compile_frequency_list: Sort alphabetically and keep count of the
  * occurrences of each character.
  */
-static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
+static HC_HuffmanNode **compile_frequency_list(
+						HC_HuffmanNode **list,
+						F_Buf **io,
+						const unsigned state)
 {
-	HC_HuffmanNode *start;
-	start = *list;
 	char c, *ptr;
+	size_t i;
 	Data data;
 	HC_data_init(&data);
 
-	/* Scan document */
-	while ((c = fgetc(fp)) != EOF)
-	{
-		ptr = data.utf8_char;
+	for (i = is_set(state, COMPRESS); i < MAX_FILES && io[i]; i++) {
+		GE_buffer_on(io[i]);
+		while ((c = GE_buffer_fgetc(io[i])) != EOF)
+		{
+			ptr = data.utf8_char;
 
-		/* Get multi-byte character */
-		while ((*ptr++ = c) && utf8_countdown(c))
-			c = fgetc(fp);
+			/* Add char and check for multi-byte character */
+			while ((*ptr++ = c) && utf8_countdown(c))
+				c = GE_buffer_fgetc(io[i]);
 
-		*ptr = '\0';
-		data.frq = 1;
+			*ptr = '\0';
+			data.frq = 1;
+			insert_or_count(list, data, FN_data_strcmp);
+		}
+
+		/* Add EOF char */
+		memcpy(data.utf8_char, "EOF", 4), data.frq = 1;
 		insert_or_count(list, data, FN_data_strcmp);
+
+		rewind(io[i]->fp);
+		GE_buffer_off(io[i]);
 	}
 
-	/* Add EOF char */
-	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
-	insert_or_count(list, data, FN_data_strcmp);
-
-	list = &start;
 
 	return list;
 }
@@ -241,33 +248,38 @@ static HC_HuffmanNode **compile_frequency_list(HC_HuffmanNode **list, FILE *fp)
 /*
  * compile_frequency_list_decomp: Compile a frequency list from the
  * table at the start of a compressed file.
+ * TODO this function has not been tested.
  */
 static HC_HuffmanNode **compile_frequency_list_decomp(
 							HC_HuffmanNode **list,
-							FILE *fp)
+							F_Buf **io)
 {
-	HC_HuffmanNode *start; start = *list;
-	char c, *ptr;
 	Data data;
+	char c, *ptr;
+	size_t i;
 
 	/* Scan document */
-	while ((c = fgetc(fp)) != EOF)
-	{
-		ptr = data.utf8_char;
-		/* Get char for the length of the multi-byte character */
-		while (utf8_countdown(c) && (*ptr++ = c))
-			c = fgetc(fp);
-		*ptr++ = c;
-		*ptr = '\0';
-		data.frq = 1;
+	for (i = 0; i < MAX_FILES && io[i]; i++) {
+		GE_buffer_on(io[i]);
+		while ((c = GE_buffer_fgetc(io[i])) != EOF)
+		{
+			ptr = data.utf8_char;
+			/* Get char for the length of the multi-byte character */
+			while ((*ptr++ = c) && utf8_countdown(c))
+				c = GE_buffer_fgetc(io[i]);
+			*ptr++ = c;
+			*ptr = '\0';
+			data.frq = 1;
+			insert_or_count(list, data, FN_data_strcmp);
+		}
+
+		/* Add EOF char */
+		memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
 		insert_or_count(list, data, FN_data_strcmp);
+
+		GE_buffer_rewind(io[i]);
+		GE_buffer_off(io[i]);
 	}
-
-	/* Add EOF char */
-	memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
-	insert_or_count(list, data, FN_data_strcmp);
-
-	list = &start;
 
 	return list;
 }
@@ -278,14 +290,14 @@ static HC_HuffmanNode **compile_frequency_list_decomp(
  */
 HC_HuffmanNode **create_priority_queue(
 					HC_HuffmanNode **list,
-					FILE *fp,
+					F_Buf **buf,
 					const unsigned state)
 {
 	if (is_set(state, VERBOSE))
 		printf("Create priority queue.\n");
 
 	/* Count */
-	if (compile_frequency_list(list, fp) == NULL)
+	if (compile_frequency_list(list, buf, state) == NULL)
 		fprintf(stderr, "%s(): error compile_frequency_list failed.\n", __func__);
 
 	/* Sort by frequency */
@@ -307,10 +319,10 @@ HC_HuffmanNode **create_priority_queue(
  */
 HC_HuffmanNode **build_priority_queue_from_file(
 							HC_HuffmanNode **list,
-							FILE *fp)
+							F_Buf **io)
 {
 	/* Get char count */
-	list = compile_frequency_list_decomp(list, fp);
+	list = compile_frequency_list_decomp(list, io);
 
 	/* Sort by frequency */
 	list = HC_mergesort(list, FN_data_frqcmp);

@@ -2,7 +2,6 @@
 #include "GE_string.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #define UCHAR 127 /* Length of character index for c_list */
 
@@ -125,12 +124,8 @@ int func_print_trie(void *input, void *var)
 {
 	int *n = var;
 	String *Str = input;
-#ifdef __unix__
-	write(1, Str->str, *n);
-	write(1, "\n", 1);
-#else
-	printf("%s\n", Str->str);
-#endif
+	fwrite(Str->str, 1 ,*n, stdout);
+	fwrite("\n", 1, 1, stdout);
 	return 0;
 }
 

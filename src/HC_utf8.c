@@ -27,7 +27,7 @@ static unsigned utf8_bytes(unsigned char c)
 unsigned utf8_test(char c)
 {
 	if (MULTIBYTE)
-		return utf8_bytes(c) + 1;
+		return utf8_bytes(c);
 	else
 		return 0;
 }

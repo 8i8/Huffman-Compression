@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define COMPRESS       (1 << 0)  /* 0000000001 */
-#define WRITE          (1 << 1)  /* 0000000010 */
+//#define WRITE          (1 << 1)  /* 0000000010 */
 #define ERROR          (1 << 2)  /* 0000000100 */
 #define PRINT          (1 << 3)  /* 0000001000 */
 #define VERBOSE        (1 << 4)  /* 0000010000 */
@@ -14,5 +14,5 @@
 #define state_init() 0
 #define state_set(state, flag)	  state |= flag
 #define state_unset(state, flag)  state &= ~flag
-#define is_set(state, flag)       state & flag
+#define is_set(state, flag)       (state & flag) ? 1 : 0
 
