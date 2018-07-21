@@ -39,22 +39,23 @@ int main(int argc, char *argv[])
 	/* Get command line input and set program state */
 	state = prologue(argc, argv, io, state);
 
-	/* Create huffman tree, if COMPRESS is set start at 1 else start at 0,
-	 * the first argument is used as the file output when required */
-	create_priority_queue(&tree, io, state);
-	build_huffman_tree(&tree, state);
-
-	/* Create hash map to binary representation of char */
-	map_create(map, &tree, state);
-
 	/* If required, write compressed data */
 	if (is_set(state, COMPRESS)) {
+		/* Create huffman tree, if COMPRESS is set start at 1 else start at 0,
+		 * the first argument is used as the file output when required */
+		create_priority_queue(&tree, io, state);
+		build_huffman_tree(&tree, state);
+
+		/* Create hash map to binary representation of char */
+		map_create(map, &tree, state);
+
 		write_map_to_file(map, io[0]->fp);
 		compress_file(map, io, state);
 	}
 
-	if (is_set(state, DECOMPRESS))
+	if (is_set(state, DECOMPRESS)) {
 		decompress_file(&tree, io, state);
+	}
 
 	if (is_set(state, ERROR))
 		fprintf(stderr, "%s: state error signaled.", __func__);

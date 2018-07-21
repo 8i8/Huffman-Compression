@@ -22,9 +22,11 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 				switch (c)
 				{
 					case 'c':
+						state_unset(state, DECOMPRESS);
 						state_set(state, COMPRESS);
 						break;
 					case 'x':
+						state_unset(state, COMPRESS);
 						state_set(state, DECOMPRESS);
 						break;
 					case 'p':
@@ -42,10 +44,27 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 
 		/* Open a file with binary write enabled, to write the compressed data
 		 * too */
-		if (argc && is_set(state, COMPRESS) && file == 0) {
+		if (file < MAX_FILES && argc && is_set(state, COMPRESS) && file == 0) {
 			if ((fp = fopen(*argv++, "wb")) == NULL) {
 				fprintf(stderr, "file read error: %s\n", *argv);
 				free(io[file]);
+				return state_set(state, ERROR);
+			} else if (file == MAX_FILES) {
+				fwrite("file limit exceeded.", 1, 20, stderr);
+				return state_set(state, ERROR);
+			} else
+				--argc, io[file++] = GE_buffer_init(fp);
+		} 
+
+		/* Open a file with text write enabled, to write the decompressed data
+		 * too */
+		if (file < MAX_FILES && argc && is_set(state, DECOMPRESS) && file == 0) {
+			if ((fp = fopen(*argv++, "w")) == NULL) {
+				fprintf(stderr, "file read error: %s\n", *argv);
+				free(io[file]);
+				return state_set(state, ERROR);
+			} else if (file == MAX_FILES) {
+				fwrite("file limit exceeded.", 1, 20, stderr);
 				return state_set(state, ERROR);
 			} else
 				--argc, io[file++] = GE_buffer_init(fp);
@@ -53,11 +72,15 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 
 		/* Open a readable file for every argument trailing the options given
 		 * and the initial write file */
-		if ((fp = fopen(*argv, "r")) == NULL) {
+		if (file < MAX_FILES && argc && (fp = fopen(*argv, "r")) == NULL) {
 			fprintf(stderr, "file read error: %s\n", *argv);
+			return state_set(state, ERROR);
+		} else if (file == MAX_FILES) {
+			fwrite("file limit exceeded.", 1, 20, stderr);
 			return state_set(state, ERROR);
 		} else
 			--argc, io[file++] = GE_buffer_init(fp);
+
 	}
 
 	return state;
