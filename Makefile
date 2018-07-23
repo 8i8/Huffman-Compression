@@ -1,25 +1,25 @@
-EXE = compression
-CFLAGS = -Wall -Wextra -Isrc
-SRCS = $(wildcard src/*.c)
+SRCS = $(wildcard src/*/*.c)
 TSRCS = $(wildcard tests/*.c)
 OBJ = $(SRCS:.c=.o)
 
-CFLAGS += -Wall -Wextra -pedantic
-#CFLAGS += -Werror
+CFLAGS = -Wall -Wextra -pedantic
+CFLAGS += -Werror
 CFLAGS += -g
 CFLAGS += -fsanitize=address -fno-omit-frame-pointer
-#LFLAGS += -lm
+CFLAGS += -I./include
 
-vpath %.c src/
-vpath %.h src/
+#VPATH = src:../include
+#vpath $(FOLDER)
+
+#vpath %.c src/
+#vpath %.h include/
 
 .PHONY: all clean distclean
 
-all :
-	$(MAKE) $(EXE)
+all : compress
 
-$(EXE): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(EXE) $(LFLAGS)
+compress: $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 clean:
 	$(RM) $(OBJ)
