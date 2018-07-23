@@ -1,6 +1,6 @@
+#include <stdlib.h>
 #include "data_structures/DS_Trie.h"
 #include "general/GE_string.h"
-#include <stdlib.h>
 
 #define UCHAR 127 /* Length of character index for c_list */
 

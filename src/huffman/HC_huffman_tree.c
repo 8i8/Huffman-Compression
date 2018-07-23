@@ -1,9 +1,9 @@
-#include "huffman/HC_linkedlist.h"
+#include <stdlib.h>
+#include "data_structures/DS_linkedlist.h"
 #include "data_structures/DS_mergesort.h"
 #include "huffman/HC_func_comp.h"
 #include "huffman/HC_print.h"
 #include "general/GE_state.h"
-#include <stdlib.h>
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

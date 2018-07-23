@@ -1,8 +1,8 @@
+#include <stdlib.h>
+#include <ctype.h>
 #include "huffman/HC_huffman_node.h"
 #include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
-#include <stdlib.h>
-#include <ctype.h>
 
 /*
  * prologue: Deal with all args at the program start and in consequence set the

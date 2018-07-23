@@ -2,16 +2,12 @@
 #include <string.h>
 #include "general/GE_state.h"
 #include "data_structures/DS_mergesort.h"
+#include "data_structures/DS_linkedlist.h"
 #include "huffman/HC_huffman_node.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_utf8.h"
 #include "huffman/HC_func_comp.h"
-#include "huffman/HC_linkedlist.h"
 #include "huffman/HC_print.h"
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Priority queue
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
  * insert_or_count: If the char does not yet exist in the char map,
@@ -150,7 +146,7 @@ HC_HuffmanNode **create_priority_queue(
 					const unsigned state)
 {
 	if (is_set(state, VERBOSE))
-		printf("Create priority queue.\n");
+		fwrite("Create priority queue.\n", 1, 23, stdout);
 
 	/* Count */
 	if (compile_frequency_list(list, buf, state) == NULL)
@@ -161,7 +157,7 @@ HC_HuffmanNode **create_priority_queue(
 		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
 
 	if (is_set(state, PRINT)) {
-		printf("print frequeancy map.\n");
+		fwrite("print frequeancy map.\n", 1, 22, stdout);
 		print_frequency_map(*list);
 	}
 

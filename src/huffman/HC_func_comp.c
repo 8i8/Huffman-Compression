@@ -1,5 +1,5 @@
-#include "huffman/HC_huffman_node.h"
 #include <string.h>
+#include "huffman/HC_huffman_node.h"
 
 /*
  * FN_data_strcmp: Compare Data one and two, the value should be a single char and
