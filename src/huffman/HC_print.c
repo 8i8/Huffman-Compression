@@ -1,4 +1,4 @@
-#include "huffman/HC_huffman_node.h"
+#include "data_structures/DS_huffman_node.h"
 #include "huffman/HC_print.h"
 #include "general/GE_hash.h"
 
@@ -39,7 +39,7 @@ static void print_tree(HC_HuffmanNode *tree, int depth)
 }
 
 /*
- * print_frequency_map: Output the frequency linkedlist, if any treenodes exist
+ * print_frequency_map: Output the frequency huffman_tree, if any treenodes exist
  * print those also, includes a verification for nodes joint by the left right
  * tree connections.
  */

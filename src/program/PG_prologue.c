@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <ctype.h>
-#include "huffman/HC_huffman_node.h"
+#include "data_structures/DS_huffman_node.h"
 #include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
 

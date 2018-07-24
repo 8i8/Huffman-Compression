@@ -1,4 +1,4 @@
-#include "huffman/HC_huffman_node.h"
+#include "data_structures/DS_huffman_node.h"
 
 /* HC_map_init: Initialise array for char map */
 Data **HC_map_init(void);

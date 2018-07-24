@@ -8,24 +8,16 @@ CFLAGS += -g
 CFLAGS += -fsanitize=address -fno-omit-frame-pointer
 CFLAGS += -I./include
 
-#VPATH = src:../include
-#vpath $(FOLDER)
-
-#vpath %.c src/
-#vpath %.h include/
-
-.PHONY: all clean distclean
-
-all : compress
+.PHONY: clean distclean
 
 compress: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
 	$(RM) $(OBJ)
 
 distclean: clean
-	rm -f compression a.out scratch*
+	rm -f compress a.out scratch*
 
 $(OBJ): Makefile
 

@@ -2,11 +2,9 @@
 #include <string.h>
 #include "general/GE_state.h"
 #include "data_structures/DS_mergesort.h"
-#include "data_structures/DS_linkedlist.h"
-#include "huffman/HC_huffman_node.h"
-#include "huffman/HC_huffman_tree.h"
+#include "data_structures/DS_huffman_tree.h"
+#include "data_structures/DS_huffman_node.h"
 #include "huffman/HC_utf8.h"
-#include "huffman/HC_func_comp.h"
 #include "huffman/HC_print.h"
 
 /*
@@ -26,7 +24,7 @@ static HC_HuffmanNode **insert_or_count(
 		fprintf(stderr, "%s: NULL pointer.", __func__);
 		return NULL;
 	} else if (*list == NULL) {
-		*list = DS_linkedlist_new_node(data);
+		*list = DS_huffman_tree_new_node(data);
 		return list;
 	}
 
@@ -35,7 +33,7 @@ static HC_HuffmanNode **insert_or_count(
 	while (*list != NULL)
 	{
 		if ((test = (*func)((void*)&data, (void*)&(*list)->data)) < 0) {
-			if ((DS_linkedlist_insert(list, data)) == NULL) {
+			if ((DS_huffman_tree_insert(list, data)) == NULL) {
 				fprintf(stderr, "%s: ", __func__);
 				return NULL;
 			}
@@ -46,7 +44,7 @@ static HC_HuffmanNode **insert_or_count(
 		} else if (test > 0)
 			list = &(*list)->next;
 		if (*list == NULL) {
-			DS_linkedlist_add(list, data);
+			DS_huffman_tree_add(list, data);
 			break;
 		}
 	}
@@ -68,7 +66,7 @@ static HC_HuffmanNode **compile_frequency_list(
 	char c, *ptr;
 	size_t i;
 	Data data;
-	HC_data_init(&data);
+	DS_huffman_data_init(&data);
 
 	for (i = is_set(state, COMPRESS); i < MAX_FILES && io[i]; i++) {
 		GE_buffer_on(io[i]);

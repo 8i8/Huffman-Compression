@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "huffman/HC_map_char.h"
-#include "huffman/HC_huffman_node.h"
+#include "data_structures/DS_huffman_node.h"
 #include "general/GE_hash.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"

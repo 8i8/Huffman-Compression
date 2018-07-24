@@ -1,4 +1,4 @@
-#include "huffman/HC_huffman_node.h"
+#include "data_structures/DS_huffman_node.h"
 #include "general/GE_file_buffer.h"
 
 /* create_priority_queue: Compile a frequency list for all characters in the

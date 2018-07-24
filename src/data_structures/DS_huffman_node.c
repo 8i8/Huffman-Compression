@@ -1,5 +1,18 @@
 #include <string.h>
-#include "huffman/HC_huffman_node.h"
+#include "data_structures/DS_huffman_node.h"
+
+/*
+ * DS_huffman_data_init: Initalize an empty Data struct.
+ */
+Data *DS_huffman_data_init(Data *map)
+{
+	map->utf8_char[0] = '\0';
+	map->string[0] = '\0';
+	map->len = 0;
+	map->frq = 0;
+	map->next = NULL;
+	return map;
+}
 
 /*
  * FN_data_strcmp: Compare Data one and two, the value should be a single char and

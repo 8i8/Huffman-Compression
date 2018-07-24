@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
-#include "huffman/HC_huffman_node.h"
+#include "data_structures/DS_huffman_node.h"
 #include "huffman/HC_map_char.h"
 #include "huffman/HC_utf8.h"
 #include "huffman/HC_priority_queue.h"
