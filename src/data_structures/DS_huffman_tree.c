@@ -5,6 +5,7 @@
 #include "general/GE_hash.h"
 #include "data_structures/DS_huffman_node.h"
 #include "huffman/HC_priority_queue.h"
+#include "huffman/HC_map_char.h"
 #include "huffman/HC_print.h"
 
 /*
@@ -17,6 +18,7 @@ HC_HuffmanNode *DS_huffman_tree_new_node(Data data)
 		fprintf(stderr, "%s: memory allocation failed.", __func__);
 		return NULL;
 	}
+
 	new_node->next = NULL;
 	new_node->left = NULL;
 	new_node->right = NULL;
@@ -178,10 +180,11 @@ HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **tree, const unsigned
 		if ((new = DS_huffman_tree_new_node(data)) == NULL)
 			fprintf(stderr, "%s:", __func__);
 
+		/* Begin to build the binary tree, add relevent binary state */
 		new->left = one, new->right = two;
 		new->left->bit = '0', new->right->bit = '1';
 
-		/* Insert new node into priority queue */
+		/* Insert the new node into the priority queue */
 		if (*tree) {
 			if (DS_huffman_tree_insert_ordered(tree, new, FN_data_frqcmp) == NULL)
 				fprintf(stderr, "%s:", __func__);
@@ -198,44 +201,36 @@ HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **tree, const unsigned
 }
 
 /*
- * DS_huffman_tree_get_binary: Recursive function to walk tree and retrieve the
- * binary data.
+ * DS_huffman_tree_extract_encoding: Recursive function to walk tree and
+ * extract binary data for encoding.
  */
-Data **DS_huffman_tree_get_binary(
+Data **DS_huffman_tree_extract_encoding(
 					HC_HuffmanNode *tree,
 					String* string,
 					Data** map)
 {
-	int bucket;
-	Data *cur;
-
+	/* Add binary bit data to string */
 	if (tree->bit)
 		if ((string = GE_string_add_char(string, tree->bit)) == NULL)
 			return NULL;
 
+	/* Branch left, adds '0' */
 	if (tree->left) {
-		DS_huffman_tree_get_binary(tree->left, string, map);
+		DS_huffman_tree_extract_encoding(tree->left, string, map);
 		string = GE_string_rem_char(string);
 	}
 
+	/* Branch left, adds '1' */
 	if (tree->right) {
-		DS_huffman_tree_get_binary(tree->right, string, map);
+		DS_huffman_tree_extract_encoding(tree->right, string, map);
 		string = GE_string_rem_char(string);
 	}
 
+	/* Fill data struct and insert into hash map */
 	if (tree->data.utf8_char[0] != '\0') {
 		memcpy(tree->data.string, string->str, string->len+1);
 		tree->data.len = string->len;
-
-		bucket = hash(tree->data.utf8_char);
-
-		if (map[bucket] != NULL) {
-			cur = map[bucket];
-			while (cur->next)
-				cur = cur->next;
-			cur->next = &tree->data;
-		} else
-			map[bucket] = &tree->data;
+		HC_map_add(map, &tree->data);
 	}
 
 	return map;

@@ -142,7 +142,7 @@ unsigned compress_file(Data **map, F_Buf **io, const unsigned state)
 	GE_buffer_off(io[0]);
 
 	if (is_set(state, VERBOSE))
-		printf("Compressed file writen.\n");
+		printf("Compressed file written.\n");
 
 	return state;
 }

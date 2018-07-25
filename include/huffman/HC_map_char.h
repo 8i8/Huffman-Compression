@@ -6,6 +6,9 @@ Data **HC_map_init(void);
 /* map_create: Create char map from Huffman tree */
 Data **map_create(Data **map, HC_HuffmanNode**tree, const unsigned state);
 
+/* HC_map_add: Add data struct to binary data hashmap */
+int HC_map_add(void *m, void *d);
+
 /* map_read_char_to_binary: Returns binary value for char from the given map */
 char *map_read_char_to_binary(Data **map, char *c);
 

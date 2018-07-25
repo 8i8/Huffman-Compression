@@ -9,7 +9,7 @@
 #include "general/GE_hash.h"
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Char map
+ *  Huffman coding into hash map.
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
@@ -30,7 +30,7 @@ Data **map_create(Data **map, HC_HuffmanNode **tree, const unsigned state)
 
 	String *str = NULL;
 	str = GE_string_init(str);
-	DS_huffman_tree_get_binary(*tree, str, map);
+	DS_huffman_tree_extract_encoding(*tree, str, map);
 	GE_string_free(str);
 
 	if (is_set(state, PRINT)) {
@@ -39,6 +39,28 @@ Data **map_create(Data **map, HC_HuffmanNode **tree, const unsigned state)
 	}
 
 	return map;
+}
+
+/*
+ * HC_map_add: Add data struct to binary data hashmap.
+ */
+int HC_map_add(void *m, void *d)
+{
+	int bucket;
+	Data *cur, *data, **map;
+	map = m, data = d;
+
+	bucket = hash(data->utf8_char);
+
+	if (map[bucket] != NULL) {
+		cur = map[bucket];
+		while (cur->next)
+			cur = cur->next;
+		cur->next = data;
+	} else
+		map[bucket] = data;
+
+	return 0;
 }
 
 /*

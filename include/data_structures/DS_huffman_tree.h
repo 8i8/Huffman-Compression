@@ -24,9 +24,9 @@ HC_HuffmanNode *DS_huffman_tree_pop(HC_HuffmanNode **list);
 /* build_ordered_binary_tree: Create a binary tree from the given linked list */
 HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **list, const unsigned state);
 
-/* DS_huffman_tree_get_binary: Recursive function to walk tree and retrieve the
+/* DS_huffman_tree_extract_encoding: Recursive function to walk tree and retrieve the
  * binary data */
-Data **DS_huffman_tree_get_binary(
+Data **DS_huffman_tree_extract_encoding(
 						HC_HuffmanNode *tree,
 						String* string,
 						Data** map);
