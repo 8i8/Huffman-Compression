@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "general/GE_file_buffer.h"
-#include "huffman/HC_utf8.h"
 
 #define BUF   BUFFER_SIZE - 1      /* Buffer with a margin */
 

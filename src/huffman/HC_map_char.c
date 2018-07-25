@@ -3,59 +3,14 @@
 #include <string.h>
 #include "huffman/HC_map_char.h"
 #include "data_structures/DS_huffman_node.h"
-#include "general/GE_hash.h"
+#include "data_structures/DS_huffman_tree.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
-
-#define BUF_LEN 32
+#include "general/GE_hash.h"
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Char map
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-/*
- * huffman_tree_walk: Recursive function to walk tree and perform (*func) on
- * every node.
- */
-static Data **huffman_tree_walk(
-				HC_HuffmanNode *tree,
-				Data** map,
-				String* string)
-{
-	int bucket;
-	Data *cur;
-
-	if (tree->bit)
-		if ((string = GE_string_add_char(string, tree->bit)) == NULL)
-			return NULL;
-
-	if (tree->left) {
-		huffman_tree_walk(tree->left, map, string);
-		string = GE_string_rem_char(string);
-	}
-
-	if (tree->right) {
-		huffman_tree_walk(tree->right, map, string);
-		string = GE_string_rem_char(string);
-	}
-
-	if (tree->data.utf8_char[0] != '\0') {
-		memcpy(tree->data.string, string->str, string->len+1);
-		tree->data.len = string->len;
-
-		bucket = hash(tree->data.utf8_char);
-
-		if (map[bucket] != NULL) {
-			cur = map[bucket];
-			while (cur->next)
-				cur = cur->next;
-			cur->next = &tree->data;
-		} else
-			map[bucket] = &tree->data;
-	}
-
-	return map;
-}
 
 /*
  * HC_map_init: Initialise array for char map.
@@ -75,7 +30,7 @@ Data **map_create(Data **map, HC_HuffmanNode **tree, const unsigned state)
 
 	String *str = NULL;
 	str = GE_string_init(str);
-	huffman_tree_walk(*tree, map, str);
+	DS_huffman_tree_get_binary(*tree, str, map);
 	GE_string_free(str);
 
 	if (is_set(state, PRINT)) {

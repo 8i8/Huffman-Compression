@@ -1,5 +1,8 @@
 #include <stdlib.h>
+#include <string.h>
 #include "general/GE_state.h"
+#include "general/GE_string.h"
+#include "general/GE_hash.h"
 #include "data_structures/DS_huffman_node.h"
 #include "huffman/HC_priority_queue.h"
 #include "huffman/HC_print.h"
@@ -150,16 +153,17 @@ HC_HuffmanNode *DS_huffman_tree_pop(HC_HuffmanNode **list)
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
- * build_huffman_tree: Create a binary tree from the given linkedlist.
+ * build_ordered_binary_tree: Create an ordered binary tree from the given
+ * linkedlist.
  */
-HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **tree, const unsigned state)
+HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **tree, const unsigned state)
 {
 	HC_HuffmanNode *new, *one, *two;
 	Data data;
 	DS_huffman_data_init(&data);
 
 	if (is_set(state, VERBOSE))
-		printf("Build huffman tree.\n");
+		printf("Build binary tree.\n");
 
 	while ((*tree)->next)
 	{
@@ -194,9 +198,53 @@ HC_HuffmanNode **build_huffman_tree(HC_HuffmanNode **tree, const unsigned state)
 }
 
 /*
- * HC_huffman_tree_free: Free huffman tree memory.
+ * DS_huffman_tree_get_binary: Recursive function to walk tree and retrieve the
+ * binary data.
  */
-int HC_huffman_tree_free(HC_HuffmanNode **tree)
+Data **DS_huffman_tree_get_binary(
+					HC_HuffmanNode *tree,
+					String* string,
+					Data** map)
+{
+	int bucket;
+	Data *cur;
+
+	if (tree->bit)
+		if ((string = GE_string_add_char(string, tree->bit)) == NULL)
+			return NULL;
+
+	if (tree->left) {
+		DS_huffman_tree_get_binary(tree->left, string, map);
+		string = GE_string_rem_char(string);
+	}
+
+	if (tree->right) {
+		DS_huffman_tree_get_binary(tree->right, string, map);
+		string = GE_string_rem_char(string);
+	}
+
+	if (tree->data.utf8_char[0] != '\0') {
+		memcpy(tree->data.string, string->str, string->len+1);
+		tree->data.len = string->len;
+
+		bucket = hash(tree->data.utf8_char);
+
+		if (map[bucket] != NULL) {
+			cur = map[bucket];
+			while (cur->next)
+				cur = cur->next;
+			cur->next = &tree->data;
+		} else
+			map[bucket] = &tree->data;
+	}
+
+	return map;
+}
+
+/*
+ * DS_huffman_tree_free: Free huffman tree memory.
+ */
+int DS_huffman_tree_free(HC_HuffmanNode **tree)
 {
 	if (*tree == NULL) {
 		fprintf(stderr, "%s(): tree node is NULL.\n", __func__);
@@ -206,9 +254,9 @@ int HC_huffman_tree_free(HC_HuffmanNode **tree)
 		fprintf(stderr, "%s(): Priority queue nodes still exist.\n", __func__);
 
 	if ((*tree)->left)
-		HC_huffman_tree_free(&(*tree)->left);
+		DS_huffman_tree_free(&(*tree)->left);
 	if ((*tree)->right)
-		HC_huffman_tree_free(&(*tree)->right);
+		DS_huffman_tree_free(&(*tree)->right);
 
 	free(*tree);
 

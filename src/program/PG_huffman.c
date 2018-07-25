@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 		/* Create huffman tree, if COMPRESS is set start at 1 else start at 0,
 		 * the first argument is used as the file output when required */
 		create_priority_queue(&tree, io, state);
-		build_huffman_tree(&tree, state);
+		build_ordered_binary_tree(&tree, state);
 
 		/* Create hash map to binary representation of char */
 		map_create(map, &tree, state);

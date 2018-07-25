@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "general/GE_state.h"
+#include "general/GE_utf8.h"
 #include "data_structures/DS_mergesort.h"
 #include "data_structures/DS_huffman_tree.h"
 #include "data_structures/DS_huffman_node.h"
-#include "huffman/HC_utf8.h"
 #include "huffman/HC_print.h"
 
 /*
