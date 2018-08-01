@@ -64,9 +64,9 @@ int HC_map_add(void *m, void *d)
 }
 
 /*
- * map_read_char_to_binary: Returns binary value for char from the given map.
+ * HC_map_lookup_data: Returns binary value for char from the given map.
  */
-char *map_read_char_to_binary(Data **map, char *c)
+Data *HC_map_lookup_data(Data **map, char *c)
 {
 	int bucket = hash(c);
 	Data *cur;
@@ -78,27 +78,7 @@ char *map_read_char_to_binary(Data **map, char *c)
 	if (strcmp(cur->utf8_char, c))
 		return NULL;
 	else
-		return cur->string;
-}
-
-/*
- * map_read_char_to_binary_len: Returns the length of the binary value for the given char.
- */
-size_t map_read_char_to_binary_len(Data **map, char *c)
-{
-	return map[hash(c)]->len;
-
-	int bucket = hash(c);
-	Data *cur;
-	cur = map[bucket];
-
-	while ((cur->next != NULL) && strcmp(cur->utf8_char, c))
-		cur = cur->next;
-
-	if (strcmp(cur->utf8_char, c))
-		return 0;
-	else
-		return cur->len;
+		return cur;
 }
 
 /*

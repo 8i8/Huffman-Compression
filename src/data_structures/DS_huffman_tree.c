@@ -9,7 +9,7 @@
 #include "huffman/HC_print.h"
 
 /*
- * DS_huffman_tree_new_node: Internal function for creating new list nodes.
+ * DS_huffman_tree_new_node: Function for creating new linkedlist type nodes.
  */
 HC_HuffmanNode *DS_huffman_tree_new_node(Data data)
 {

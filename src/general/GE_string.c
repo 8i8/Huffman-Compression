@@ -100,6 +100,18 @@ String *GE_string_concat(String *Str, char *string, int len)
 }
 
 /*
+ * GE_string_reset: Empty the string.
+ */
+String *GE_string_reset(String *Str)
+{
+	Str->ptr = Str->str;
+	*Str->ptr = '\0';
+	Str->len = 0;
+
+	return Str;
+}
+
+/*
  * GE_string_free: Destroy string.
  */
 void GE_string_free(String *Str)

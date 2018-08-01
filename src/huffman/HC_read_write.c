@@ -14,6 +14,7 @@
  * write_map_to_file: Write the frequency of each used characters repetition
  * used in the encoding of the file to the start of the file, so as to allow
  * for the recreation of the same Huffman tree for decompression.
+ * TODO NEXT
  */
 void write_map_to_file(Data **map, FILE *out)
 {
@@ -32,7 +33,7 @@ void write_map_to_file(Data **map, FILE *out)
 			GE_buffer_fwrite("\t", 1, 1, buf);
 			GE_buffer_fwrite(map[i]->utf8_char, 1,
 					strlen(map[i]->utf8_char), buf);
-			GE_buffer_fwrite(" ~ ", 1, 3, buf);
+			GE_buffer_fwrite(" ", 1, 1, buf);
 			sprintf(num, "%lu", map[i]->frq);
 			GE_buffer_fwrite(num, 1, strlen(num), buf);
 			GE_buffer_fwrite("\n", 1, 1, buf);
@@ -42,7 +43,7 @@ void write_map_to_file(Data **map, FILE *out)
 					GE_buffer_fwrite("\t", 1, 1, buf);
 					GE_buffer_fwrite(map[i]->utf8_char, 1,
 							strlen(map[i]->utf8_char), buf);
-					GE_buffer_fwrite(" ~ ", 1, 3, buf);
+					GE_buffer_fwrite(" ", 1, 1, buf);
 					sprintf(num, "%lu", map[i]->frq);
 					GE_buffer_fwrite(num, 1, strlen(num), buf);
 					GE_buffer_fwrite("\n", 1, 1, buf);
@@ -83,15 +84,16 @@ static void write_bit(
 }
 
 /*
- * compress_file: Write compressed file.
+ * encode_file: Write compressed file.
  */
-unsigned compress_file(Data **map, F_Buf **io, const unsigned state)
+unsigned encode_file(Data **map, F_Buf **io, const unsigned state)
 {
 	unsigned bit_count, utf8_count;
 	char byte;
+	Data *data;
 
 	char c, *ptr, utf8_char[5], *bin;
-	size_t len, i, j;
+	size_t i, j;
 	ptr = utf8_char;
 
 	bit_count = byte = utf8_count = 0;
@@ -103,16 +105,22 @@ unsigned compress_file(Data **map, F_Buf **io, const unsigned state)
 		GE_buffer_on(io[i]);
 		while ((c = GE_buffer_fgetc(io[i])) != EOF && utf8_count < 4)
 		{
-			/* Get char for the lenght of what is possibly a multi-byte
-			 * character */
-			while ((*ptr++ = c) && (utf8_count = utf8_countdown(c)) && utf8_count < 4)
-				c = GE_buffer_fgetc(io[i]);
+			/* Get a character from the file buffer, test for
+			 * multibyte char, if postive get n char from the
+			 * buffer to compleete the character. */
+			while ((*ptr++ = c)
+					&& (utf8_count || (utf8_count = utf8_len(c)))
+					&& utf8_count < 4)
+				c = GE_buffer_fgetc(io[i]), utf8_count--;
 
 			*ptr = '\0';
 
-			bin = map_read_char_to_binary(map, utf8_char);
-			len = map_read_char_to_binary_len(map, utf8_char);
-			for (j = 0; j < len; j++, bin++)
+			/* Retreive huffman coding */
+			if ((data = HC_map_lookup_data(map, utf8_char)) == NULL)
+				fprintf(stderr, "%s: hashmap error.\n", __func__);
+			bin = data->string;
+
+			for (j = 0; j < data->len; j++, bin++)
 				write_bit(io[0], bin[0], &byte, &bit_count);
 
 			ptr = utf8_char;
@@ -126,9 +134,11 @@ unsigned compress_file(Data **map, F_Buf **io, const unsigned state)
 	}
 
 	/* Add EOF char */
-	bin = map_read_char_to_binary(map, "EOF");
-	len = map_read_char_to_binary_len(map, utf8_char);
-	for (i = 0; i < len; i++, bin++)
+	if((data = HC_map_lookup_data(map, "EOF")) == NULL)
+		fprintf(stderr, "%s: hashmap error.\n", __func__);
+	bin = data->string;
+
+	for (i = 0; i < data->len; i++, bin++)
 		write_bit(io[0], bin[0], &byte, &bit_count);
 
 	/* Pad any remaining bits in the last byte with zeroes */
@@ -159,34 +169,58 @@ FILE *read_compressed_file(FILE *in, FILE *out)
 }
 
 /*
- * decompress_file: Read and then decompress compressed file. Analyze file
+ * decode_file: Read and then decompress compressed file. Analyze file
  * stream with lexer to decompress the file.
- * TODO NEXT
+ * TODO NOW Decompress printed, next step ...
  */
-unsigned decompress_file(HC_HuffmanNode **list, F_Buf **io, unsigned state)
+unsigned decode_file(HC_HuffmanNode **list, F_Buf **io, unsigned state)
 {
-	LE_lexer_init();
 	char c;
 	size_t i;
+	LE_lexer_init();
 
 	if (is_set(state, VERBOSE))
 		printf("Decompress file.\n");
 
-	for (i = is_set(state, DECOMPRESS); i < MAX_FILES && io[i]; i++) {
-		while (io[i] && (c = fgetc(io[i]->fp)) != EOF)
-		{
-			/* Read frequency map from file start */
-			state_set(state, LE_get_token(io[0]->fp, c, state));
+	GE_buffer_on(io[0]);
 
+	for (i = 0; i < MAX_FILES && io[i]; i++) {
+		GE_buffer_on(io[i]);
+		while (io[i] && (c = GE_buffer_fgetc(io[i])) != EOF)
+		{
+			/* Set the state */
+			if ((state = LE_get_token(io[0], c, state)) == 0) {
+				fprintf(stderr, "%s: Token failed.\n", __func__);
+				state_set(state, ERROR);
+				break;
+			}
+
+			/* Read and build the huffman tree fron the frequancy
+			 * map */
 			if (is_set(state, LEX_MAP))
-				build_priority_queue_from_file(list, io);
+			{
+				if (is_set(state, VERBOSE))
+					printf("LEX_MAP\n");
+				state = priority_queue_decompression(list, io[i], state);
+				/* Skip over the end of line */
+				c = GE_buffer_fgetc(io[i]);
+			}
+
+			/* Decomprewss the file */
 			else if (is_set(state, LEX_DECOMPRESS))
+			{
+				if (is_set(state, VERBOSE))
+					printf("LEX_DECOMPRESS\n");
 				read_compressed_file(io[i]->fp, io[0]->fp);
-			else
+			} else
 				break;
 		}
+		GE_buffer_rewind(io[i]);
+		GE_buffer_off(io[i]);
 	}
 
+	GE_buffer_empty(io[0]);
+	GE_buffer_off(io[0]);
 	LE_lexer_free();
 
 	return state;

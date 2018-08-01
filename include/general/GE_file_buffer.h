@@ -64,6 +64,16 @@ F_Buf *GE_buffer_empty(F_Buf *buf);
 int GE_buffer_fgetc(F_Buf *buf);
 
 /*
+ * GE_buffer_skip: Skip over n cahr in the buffer.
+ */
+int GE_buffer_skip(F_Buf *buf, unsigned num);
+
+/*
+ * GE_buffer_ungetc: Push back unused character.
+ */
+int GE_buffer_ungetc(int c, F_Buf *buf);
+
+/*
  * GE_buffer_free: Free all memory associated with a F_Buf struct.
  */
 void GE_buffer_free(F_Buf *buf);

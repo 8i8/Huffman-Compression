@@ -12,8 +12,11 @@ int epilogue(F_Buf **io, HC_HuffmanNode **tree, Data **map, const unsigned state
 {
 	size_t i = 0;
 
-	DS_huffman_tree_free(tree);
-	free(map);
+	if (*tree)
+		DS_huffman_tree_free(tree);
+
+	if (map)
+		free(map);
 
 	while (io[i] != NULL)
 		free(io[i++]);

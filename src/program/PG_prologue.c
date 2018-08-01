@@ -42,12 +42,12 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 						break;
 				}
 			}
-			argv++;
+			++argv, --argc;
 		}
 
 		/* Open a file with binary write enabled, to write the compressed data
 		 * too */
-		if (file < MAX_FILES && argc && is_set(state, COMPRESS) && file == 0) {
+		if (argc && file < MAX_FILES && is_set(state, COMPRESS)) {
 			if ((fp = fopen(*argv++, "wb")) == NULL) {
 				fprintf(stderr, "file read error: %s\n", *argv);
 				free(io[file]);
@@ -61,8 +61,8 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 
 		/* Open a file with text write enabled, to write the decompressed data
 		 * too */
-		if (file < MAX_FILES && argc && is_set(state, DECOMPRESS) && file == 0) {
-			if ((fp = fopen(*argv++, "w")) == NULL) {
+		if (argc && file < MAX_FILES && is_set(state, DECOMPRESS)) {
+			if ((fp = fopen(*argv++, "r")) == NULL) {
 				fprintf(stderr, "file read error: %s\n", *argv);
 				free(io[file]);
 				return state_set(state, ERROR);
@@ -75,14 +75,16 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 
 		/* Open a readable file for every argument trailing the options given
 		 * and the initial write file */
-		if (file < MAX_FILES && argc && (fp = fopen(*argv, "r")) == NULL) {
-			fprintf(stderr, "file read error: %s\n", *argv);
-			return state_set(state, ERROR);
-		} else if (file == MAX_FILES) {
-			fwrite("file limit exceeded.", 1, 20, stderr);
-			return state_set(state, ERROR);
-		} else
-			--argc, io[file++] = GE_buffer_init(fp);
+		if (argc && file < MAX_FILES) {
+			if ((fp = fopen(*argv++, "r")) == NULL) {
+				fprintf(stderr, "file read error: %s\n", *argv);
+				return state_set(state, ERROR);
+			} else if (file == MAX_FILES) {
+				fwrite("file limit exceeded.", 1, 20, stderr);
+				return state_set(state, ERROR);
+			} else
+				--argc, io[file++] = GE_buffer_init(fp);
+		}
 
 	}
 

@@ -21,44 +21,13 @@ static unsigned utf8_bytes(unsigned char c)
 }
 
 /*
- * utf8_test: Test for utf-8 char. Return 0 if a normal ASCII char or the
- * length if it is a multi-byte char.
+ * utf8_len: Return the length of a multibyte char, 0 if not multybyte.
  */
-unsigned utf8_test(char c)
+unsigned utf8_len(char c)
 {
 	if (MULTIBYTE)
 		return utf8_bytes(c);
 	else
 		return 0;
-}
-
-/*
- * utf8_len: Return the length of a multibyte char.
- */
-unsigned utf8_len(char c)
-{
-	if (MULTIBYTE)
-		return utf8_bytes(c) + 1;
-	else
-		return 1;
-}
-
-/*
- * utf8_countdown: Test for utf-8 char. Return 0 if a normal ASCII char is
- * encountered; Return 0 whilst in the process of counting a multibyte char,
- * having first established its length.
- */
-unsigned utf8_countdown(char c)
-{
-	static short unsigned count;
-
-	if (count)
-		return --count;
-
-	else if (MULTIBYTE) {
-		count = utf8_bytes(c);
-		return count;
-	}
-	return 0;
 }
 

@@ -25,48 +25,69 @@ void LE_lexer_free(void)
 
 /*
  * LE_get_token: Returns a state on reading a token.
- * TODO NEXT
+ * TODO NOW seems to be ok
  */
-unsigned LE_get_token(FILE *fp, char c, unsigned state)
+unsigned LE_get_token(F_Buf *buf, char c, unsigned state)
 {
 	int off, token;
         off = token = 0;
 
-	while (isspace(c)) 
-		c = fgetc(fp);
-
 	/* If not a token then push back and return*/
-	if (c != '<') {
-		ungetc(c, fp);	
-		return state;
-	}
+	if (c != '<')
+		return 0;
 
-	while (c != '>' && c != EOF)
+	String *str = NULL;
+	str = GE_string_init(str);
+
+	/* Read a token */
+	while (c != '>' && (c = GE_buffer_fgetc(buf)) != '>' && c != EOF)
 	{
 		while (isspace(c)) 
-			c = fgetc(fp);
+			c = GE_buffer_fgetc(buf);
 
 		if (c == '/')
-			off = 1;
+			off = 1, c = GE_buffer_fgetc(buf);
 
-		String *str = malloc(sizeof(String));
+		while (isspace(c)) 
+			c = GE_buffer_fgetc(buf);
 
-		while (isalnum((c = fgetc(fp))))
+		if (isalnum(c)) {
+
 			GE_string_add_char(str, c);
 
-		state_set(token, LE_check_token(str->str));
+			while (isalnum((c = GE_buffer_fgetc(buf))))
+				GE_string_add_char(str, c);
 
-		free(str);
+			if ((token = LE_check_token(str->str)) == 0)
+				fprintf(stderr, "%s: Token not found.\n", __func__);
 
-		if (off)
-			state_unset(state, token);
-		else
-			state_set(state, token);
+			while (isspace(c)) 
+				c = GE_buffer_fgetc(buf);
+
+			if (c == '/')
+				off = 1, c = GE_buffer_fgetc(buf);
+
+			while (isspace(c)) 
+				c = GE_buffer_fgetc(buf);
+	
+			if (off)
+				state_unset(state, token);
+			else
+				state_set(state, token);
+
+			GE_string_reset(str);
+
+		} else
+			GE_buffer_ungetc(c, buf);
+
 	}
+
+	GE_string_free(str);
+
 
 	if (c == '>' || c == EOF)
 		return state;
 	else
-		return 	LE_get_token(fp, c, state);
+		return 	LE_get_token(buf, c, state);
 }
 

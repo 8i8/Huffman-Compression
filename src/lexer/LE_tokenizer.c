@@ -11,7 +11,7 @@
 static Token **token_table;
 
 /*
- * token_to_tree: Add a new token to binary tree after hash collision.
+ * token_to_tree: Add a new token to the binary tree after a hash collision.
  */
 static void token_to_tree(Token *tree, Token *new_token)
 {
@@ -67,15 +67,15 @@ int LE_token_init(void)
 	if ((token_table = calloc(TABLE_LEN, sizeof(Token))) == NULL)
 		return 1;
 
-	token_add("map", 0 & LEX_MAP);
-	token_add("comp", 0 & LEX_DECOMPRESS);
+	token_add("map", LEX_MAP);
+	token_add("comp", LEX_DECOMPRESS);
 
 	return 0;
 }
 
 /*
- * check_tree: Recursive function that walks the binary tree of hash collision
- * in the token hash map, looking for the given token.
+ * check_tree: Recursive function that walks the binary tree created in the
+ * case of hash collisions, looking for the given token.
  */
 int check_tree(Token *tree, char *check)
 {
@@ -87,11 +87,9 @@ int check_tree(Token *tree, char *check)
 	if (res < 0)
 		if (tree->left)
 			return check_tree(tree->left, check);
-
 	if (res > 0)
 		if (tree->right)
 			return check_tree(tree->right, check);
-
 	return 0;
 }
 

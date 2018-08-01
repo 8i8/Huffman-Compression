@@ -4,6 +4,8 @@
 
 #define BUF   BUFFER_SIZE - 1      /* Buffer with a margin */
 
+int back = 1;                      /* Stop ungetc of nore than one c */
+
 /*
  * GE_buffer_array_init: Initialise and return an array of pointers to file
  * buffers.
@@ -23,6 +25,7 @@ F_Buf *GE_buffer_init(FILE *fp)
 	buf->fp = fp;
 	buf->eof = 0;
 	buf->buf = buf->read = buf->ptr = buf->end = NULL;
+	back = 0;
 	return buf;
 }
 
@@ -64,6 +67,7 @@ F_Buf *GE_buffer_fill(F_Buf *buf)
 {
 	size_t len, written;
 	len = written = 0;
+	back = 0;
 	/* If the buffer is at its end, back to the start */
 	if (buf->ptr == buf->end)
 		buf->ptr = buf->read = buf->buf;
@@ -109,6 +113,7 @@ F_Buf *GE_buffer_empty(F_Buf *buf)
 {
 	fwrite(buf->buf, 1, buf->ptr - buf->buf, buf->fp);
 	buf->ptr = buf->buf;
+	back = 0;
 	return buf;
 }
 
@@ -118,12 +123,44 @@ F_Buf *GE_buffer_empty(F_Buf *buf)
  */
 int GE_buffer_fgetc(F_Buf *buf)
 {
-	if (buf->read < buf->ptr || *buf->read == EOF )
+	if (buf->read < buf->ptr || *buf->read == EOF ) {
+		back = 1;
+		return *buf->read++;
+	} else
+		buf = GE_buffer_fill(buf);
+
+	return GE_buffer_fgetc(buf);
+}
+
+/*
+ * GE_buffer_skip: Skip over n cahr in the buffer.
+ */
+int GE_buffer_skip(F_Buf *buf, unsigned num)
+{
+	size_t i;
+	for (i = 0; i < num && (buf->read < buf->ptr || *buf->read == EOF); i++)
+		buf->read++;
+	back = 1;
+
+	if (i == num)
 		return *buf->read++;
 	else
 		buf = GE_buffer_fill(buf);
 
-	return GE_buffer_fgetc(buf);
+	return GE_buffer_skip(buf, num - i);
+}
+
+/*
+ * GE_buffer_ungetc: Push back unused character.
+ */
+int GE_buffer_ungetc(int c, F_Buf *buf)
+{
+	if (buf->read > buf->buf)
+		buf->read--;
+	else if (back)
+		ungetc(c, buf->fp), back--;
+
+	return 0;
 }
 
 /*

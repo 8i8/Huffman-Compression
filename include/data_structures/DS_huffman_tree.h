@@ -2,7 +2,7 @@
 #include "general/GE_file_buffer.h"
 #include "general/GE_string.h"
 
-/* DS_huffman_tree_new_node: Internal function for creating new list nodes */
+/* DS_huffman_tree_new_node: Function for creating new linkedlist type nodes */
 HC_HuffmanNode *DS_huffman_tree_new_node(Data data);
 
 /* DS_huffman_tree_add: Create the next node in the list and add data */

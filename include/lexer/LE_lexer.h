@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "general/GE_file_buffer.h"
 
 #define TOKEN_MAX 256
 
@@ -9,5 +10,5 @@ void LE_lexer_init(void);
 void LE_lexer_free(void);
 
 /* LE_get_token: Returns a state on reading a token */
-unsigned LE_get_token(FILE *fp, char c, unsigned status);
+unsigned LE_get_token(F_Buf *buf, char c, unsigned status);
 

@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "general/GE_state.h"
 #include "general/GE_utf8.h"
+#include "lexer/LE_lexer.h"
 #include "data_structures/DS_mergesort.h"
 #include "data_structures/DS_huffman_tree.h"
 #include "data_structures/DS_huffman_node.h"
@@ -55,18 +57,19 @@ static HC_HuffmanNode **insert_or_count(
 }
 
 /*
- * compile_frequency_list: Sort alphabetically and keep count of the
- * occurrences of each character.
+ * frequency_list_compression: Sort alphabetically and keep count of each
+ * occurrences of every character used.
  */
-static HC_HuffmanNode **compile_frequency_list(
+static HC_HuffmanNode **frequency_list_compression(
 						HC_HuffmanNode **list,
 						F_Buf **io,
 						const unsigned state)
 {
 	char c, *ptr;
-	size_t i;
+	size_t i, utf8_count;
 	Data data;
 	DS_huffman_data_init(&data);
+	utf8_count = 0;
 
 	for (i = is_set(state, COMPRESS); i < MAX_FILES && io[i]; i++) {
 		GE_buffer_on(io[i]);
@@ -74,9 +77,11 @@ static HC_HuffmanNode **compile_frequency_list(
 		{
 			ptr = data.utf8_char;
 
-			/* Add char and check for multi-byte character */
-			while ((*ptr++ = c) && utf8_countdown(c))
-				c = GE_buffer_fgetc(io[i]);
+			/* Add char, check if multi-byte character */
+			while ((*ptr++ = c)
+					&& (utf8_count || (utf8_count = utf8_len(c)))
+					&& utf8_count < 4)
+				c = GE_buffer_fgetc(io[i]), utf8_count--;
 
 			*ptr = '\0';
 			data.frq = 1;
@@ -96,87 +101,138 @@ static HC_HuffmanNode **compile_frequency_list(
 }
 
 /*
- * compile_frequency_list_decomp: Compile a frequency list from the
+ * frequency_list_decompression: Compile a frequency list from the
  * table at the start of a compressed file.
- * TODO this function has not been tested.
+ * TODO NOW the count being given seems to be wrong
  */
-static HC_HuffmanNode **compile_frequency_list_decomp(
+static unsigned frequency_list_decompression(
 							HC_HuffmanNode **list,
-							F_Buf **io)
+							F_Buf *buf,
+							unsigned state)
 {
-	Data data;
-	char c, *ptr;
-	size_t i;
+	char c = 0;
+	size_t utf8_count;
+	utf8_count = 0;
 
-	/* Scan document */
-	for (i = 0; i < MAX_FILES && io[i]; i++) {
-		GE_buffer_on(io[i]);
-		while ((c = GE_buffer_fgetc(io[i])) != EOF)
-		{
-			ptr = data.utf8_char;
-			/* Get char for the length of the multi-byte character */
-			while ((*ptr++ = c) && utf8_countdown(c))
-				c = GE_buffer_fgetc(io[i]);
-			*ptr++ = c;
-			*ptr = '\0';
-			data.frq = 1;
-			insert_or_count(list, data, FN_data_strcmp);
+	Data d, *data;
+	data = &d;
+	DS_huffman_data_init(data);
+	String *str = NULL;
+	str = GE_string_init(str);
+
+	/* Get and remove line end */
+	GE_buffer_skip(buf, 1);
+
+	//while (is_set(state, LEX_MAP))
+	while (is_set(state, LEX_MAP))
+	{
+		/* remove tab */
+		c = GE_buffer_fgetc(buf);
+
+		/* get char */
+		while (GE_string_add_char(str, c)
+				&& (utf8_count || (utf8_count = utf8_len(c)))
+				&& utf8_count < 4)
+			c = GE_buffer_fgetc(buf), utf8_count--;
+		/* Deal with EOF character */
+		if ((c = GE_buffer_fgetc(buf)) == 'O') {
+			GE_string_add_char(str, c);
+			c = GE_buffer_fgetc(buf);
+			GE_string_add_char(str, c);
+			c = GE_buffer_fgetc(buf);
 		}
 
-		/* Add EOF char */
-		memcpy(data.utf8_char, "EOF", 4), data.frq = 0;
-		insert_or_count(list, data, FN_data_strcmp);
+		/* Write char to data struct */
+		memcpy(data->utf8_char, str->str, str->len+1);
+		GE_string_reset(str);
 
-		GE_buffer_rewind(io[i]);
-		GE_buffer_off(io[i]);
+		/* Check for utf-8 errors */
+		if (utf8_count > 4)
+			fprintf(stderr, "%s: utf8_countdown error.\n", __func__);
+
+		/* next is a space, skip it */
+		c = GE_buffer_fgetc(buf);
+
+		/* Get frequency */
+		while (isalnum(c)) {
+			GE_string_add_char(str, c);
+			c = GE_buffer_fgetc(buf);
+		}
+
+		/* Write frq to data struct */
+		data->frq = strtol(str->str, &(str->ptr), 10);
+		GE_string_reset(str);
+
+		/* remove line end */
+		c = GE_buffer_fgetc(buf);
+
+		/* Add to huffman linkedlist */
+		DS_huffman_tree_add(list, *data);
+
+		/* Check for a to end the list */
+		if (c == '<')
+			state = LE_get_token(buf, c, state);
 	}
 
-	return list;
+	GE_string_free(str);
+
+	return state;
 }
 
 /*
- * create_priority_queue: Compile a frequency list for all characters in the
+ * priority_queue_compression: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue.
  */
-HC_HuffmanNode **create_priority_queue(
+unsigned priority_queue_compression(
 					HC_HuffmanNode **list,
-					F_Buf **buf,
+					F_Buf **io,
 					const unsigned state)
 {
 	if (is_set(state, VERBOSE))
 		fwrite("Create priority queue.\n", 1, 23, stdout);
 
-	/* Count */
-	if (compile_frequency_list(list, buf, state) == NULL)
-		fprintf(stderr, "%s(): error compile_frequency_list failed.\n", __func__);
+	/* Get char count */
+	if (frequency_list_compression(list, io, state) == NULL)
+		fprintf(stderr, "%s(): error frequency_list_compression failed.\n", __func__);
 
 	/* Sort by frequency */
 	if (DS_mergesort(list, FN_data_frqcmp) == NULL)
 		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
 
 	if (is_set(state, PRINT)) {
-		fwrite("print frequeancy map.\n", 1, 22, stdout);
+		fwrite("print frequency map.\n", 1, 22, stdout);
 		print_frequency_map(*list);
 	}
 
-	return list;
+	return state;
 }
 
 /*
- * build_priority_queue_from_file: Retrieve the frequency mapping from the
+ * priority_queue_decompression: Retrieve the frequency mapping from the
  * beginning of a compressed file and make it into a list, sort the list into a
  * priority queue.
  */
-HC_HuffmanNode **build_priority_queue_from_file(
+unsigned priority_queue_decompression(
 							HC_HuffmanNode **list,
-							F_Buf **io)
+							F_Buf *buf,
+							unsigned state)
 {
+	if (is_set(state, VERBOSE))
+		fwrite("Create priority queue.\n", 1, 23, stdout);
+
 	/* Get char count */
-	list = compile_frequency_list_decomp(list, io);
+	if ((state = frequency_list_decompression(list, buf, state)) == 0)
+		fprintf(stderr, "%s(): error frequency_list_decompression failed.\n", __func__);
 
 	/* Sort by frequency */
-	list = DS_mergesort(list, FN_data_frqcmp);
+	if (DS_mergesort(list, FN_data_frqcmp) == NULL)
+		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
 
-	return list;
+	if (is_set(state, PRINT)) {
+		fwrite("print frequency map.\n", 1, 22, stdout);
+		print_frequency_map(*list);
+	}
+
+	return state;
 }
 

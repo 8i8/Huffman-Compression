@@ -46,6 +46,11 @@ String *GE_string_rem_char(String *Str);
 String *GE_string_concat(String *Str, char *string, int len);
 
 /*
+ * GE_string_reset: Set string to 0.
+ */
+String *GE_string_reset(String *Str);
+
+/*
  * GE_string_free: Destroy string.
  */
 void GE_string_free(String *Str);
