@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "general/GE_file_buffer.h"
+#include "general/GE_state.h"
+#include "general/GE_string.h"
 
 #define BUF   BUFFER_SIZE - 1      /* Buffer with a margin */
 
@@ -18,16 +20,63 @@ F_Buf **GE_buffer_array_init(void)
 /*
  * GE_buffer_init: Initialise a FILE buffer.
  */
-F_Buf *GE_buffer_init(FILE *fp)
+F_Buf *GE_buffer_init(FILE *fp, char *name)
 {
 	F_Buf *buf;
 	buf = malloc(sizeof(F_Buf));
+	memcpy(buf->name, name, strlen(name)+1);
 	buf->fp = fp;
 	buf->eof = 0;
 	buf->buf = buf->read = buf->ptr = buf->end = NULL;
 	back = 0;
 	return buf;
 }
+
+/*
+ * open_file: Open a file.
+ * TODO NEXT add a file over write question answer.
+ */
+unsigned GE_open_file(char *name, F_Buf **io, char *mode, unsigned state)
+{
+	FILE *fp;
+	int i;
+	//char *c;
+	//String *str = NULL;
+
+	for (i = 0; i < MAX_FILES && io[i]; i++)
+		;
+
+	if (i >= MAX_FILES) {
+		fprintf(stderr, "%s: file limit of %d files exceeded.", __func__, MAX_FILES);
+		return state_set(state, ERROR);
+	}
+
+	/* Before opening for writing, check if the file already exists */
+	//TODO NEXT write overwrite protection
+	//if (!is_set(state, FORCE) && (c = strchr(mode, 'w')) && c[0] == 'w')
+	//	if ((fp = fopen(name, mode)) != NULL) {
+	//		GE_string_init(str);
+	//		fprintf(stdout, "Overwrite %s ? [y/n] ", name);
+	//		GE_string_input(str, "%s");
+	//		if (str->str[0] == 'n') {
+	//			printf("Program closed.\n");
+	//			GE_string_free(str);
+	//			return state_set(state, ERROR);
+	//		}
+	//		GE_string_free(str);
+	//	}
+
+	/* Open file and store if successful */
+	if ((fp = fopen(name, mode)) == NULL) {
+		fprintf(stderr, "file read error: %s\n", name);
+		state_set(state, ERROR);
+		return state_set(state, ERROR);
+	} else
+		io[i]= GE_buffer_init(fp, name);;
+
+	return 0;
+}
+
 
 /*
  * GE_buffer_on: allocate memory for file buffer.
@@ -108,6 +157,7 @@ F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf)
 
 /*
  * GE_buffer_empty: Write buffer content to file pointer.
+ * TODO NOW How is this function valid?
  */
 F_Buf *GE_buffer_empty(F_Buf *buf)
 {

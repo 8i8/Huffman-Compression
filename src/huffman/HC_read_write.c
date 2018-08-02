@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "data_structures/DS_huffman_node.h"
+#include "data_structures/DS_huffman_tree.h"
 #include "huffman/HC_map_char.h"
 #include "huffman/HC_priority_queue.h"
 #include "lexer/LE_lexer.h"
@@ -16,15 +17,13 @@
  * for the recreation of the same Huffman tree for decompression.
  * TODO NEXT
  */
-void write_map_to_file(Data **map, FILE *out)
+void write_map_to_file(Data **map, F_Buf *buf)
 {
-	F_Buf *buf = NULL;
 	char *num, *pt_num;
 	size_t i;
 	Data *cur;
 
 	pt_num = num = malloc(256);
-	buf = GE_buffer_init(out);
 	GE_buffer_on(buf);
 	GE_buffer_fwrite("<map>\n", 1, 6, buf);
 
@@ -57,7 +56,6 @@ void write_map_to_file(Data **map, FILE *out)
 	GE_buffer_fwrite("</map>\n", 1, 7, buf);
 	GE_buffer_empty(buf);
 	GE_buffer_off(buf);
-	GE_buffer_free(buf);
 }
 
 /*
@@ -158,8 +156,16 @@ unsigned encode_file(Data **map, F_Buf **io, const unsigned state)
 }
 
 /*
+ * read_file_meta_data: Readin file name and compression type.
+ */
+//int read_file_meta_data(F_Buf *buf)
+//{
+//}
+
+/*
  * read_compressed_file: Read the compressed file and write the decompressed
  * data to the output file.
+ * TODO NOW write this function
  */
 FILE *read_compressed_file(FILE *in, FILE *out)
 {
@@ -171,56 +177,51 @@ FILE *read_compressed_file(FILE *in, FILE *out)
 /*
  * decode_file: Read and then decompress compressed file. Analyze file
  * stream with lexer to decompress the file.
- * TODO NOW Decompress printed, next step ...
+ * TODO NOW how many files are read and how?
  */
 unsigned decode_file(HC_HuffmanNode **list, F_Buf **io, unsigned state)
 {
 	char c;
-	size_t i;
 	LE_lexer_init();
 
 	if (is_set(state, VERBOSE))
 		printf("Decompress file.\n");
 
 	GE_buffer_on(io[0]);
-
-	for (i = 0; i < MAX_FILES && io[i]; i++) {
-		GE_buffer_on(io[i]);
-		while (io[i] && (c = GE_buffer_fgetc(io[i])) != EOF)
-		{
-			/* Set the state */
-			if ((state = LE_get_token(io[0], c, state)) == 0) {
-				fprintf(stderr, "%s: Token failed.\n", __func__);
-				state_set(state, ERROR);
-				break;
-			}
-
-			/* Read and build the huffman tree fron the frequancy
-			 * map */
-			if (is_set(state, LEX_MAP))
-			{
-				if (is_set(state, VERBOSE))
-					printf("LEX_MAP\n");
-				state = priority_queue_decompression(list, io[i], state);
-				/* Skip over the end of line */
-				c = GE_buffer_fgetc(io[i]);
-			}
-
-			/* Decomprewss the file */
-			else if (is_set(state, LEX_DECOMPRESS))
-			{
-				if (is_set(state, VERBOSE))
-					printf("LEX_DECOMPRESS\n");
-				read_compressed_file(io[i]->fp, io[0]->fp);
-			} else
-				break;
+	while (io[0] && (c = GE_buffer_fgetc(io[0])) != EOF)
+	{
+		/* Set the state */
+		if ((state = LE_get_token(io[0], c, state)) == 0) {
+			fprintf(stderr, "%s: Token failed.\n", __func__);
+			state_set(state, ERROR);
+			break;
 		}
-		GE_buffer_rewind(io[i]);
-		GE_buffer_off(io[i]);
-	}
 
-	GE_buffer_empty(io[0]);
+		if (is_set(state, LEX_META_DATA))
+		{
+			; //read_file_meta_data(io[0], &name);
+		}
+
+		/* Read and build the Huffman tree from the frequency
+		 * map */
+		if (is_set(state, LEX_MAP))
+		{
+			state = priority_queue_decompression(list, io[0], state);
+			/* Skip over the end of line */
+			c = GE_buffer_fgetc(io[0]);
+			build_ordered_binary_tree(list, state);
+		}
+
+		/* Decompress the file */
+		else if (is_set(state, LEX_DECOMPRESS))
+		{
+			read_compressed_file(io[0]->fp, io[0]->fp);
+		} else
+			break;
+	}
+	GE_buffer_rewind(io[0]);
 	GE_buffer_off(io[0]);
+
 	LE_lexer_free();
 
 	return state;

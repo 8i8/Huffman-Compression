@@ -4,6 +4,7 @@
 #define _file_buffer_
 typedef struct _file_buffer {
 	FILE *fp;
+	char name[255];
 	char *buf;
 	char *ptr;
 	char *read;
@@ -24,7 +25,12 @@ F_Buf **GE_buffer_array_init(void);
 /*
  * GE_buffer_init: Initialise a FILE buffer.
  */
-F_Buf *GE_buffer_init(FILE *fp);
+F_Buf *GE_buffer_init(FILE *fp, char *name);
+
+/*
+ * open_file: Open a file.
+ */
+unsigned GE_open_file(char *name, F_Buf **io, char *mode, unsigned state);
 
 /*
  * GE_buffer_on: allocate memory for file buffer.

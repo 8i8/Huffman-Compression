@@ -101,11 +101,11 @@ static HC_HuffmanNode **frequency_list_compression(
 }
 
 /*
- * frequency_list_decompression: Compile a frequency list from the
+ * extract_frequency_list: Compile a frequency list from the
  * table at the start of a compressed file.
  * TODO NOW the count being given seems to be wrong
  */
-static unsigned frequency_list_decompression(
+static unsigned extract_frequency_list(
 							HC_HuffmanNode **list,
 							F_Buf *buf,
 							unsigned state)
@@ -208,9 +208,9 @@ unsigned priority_queue_compression(
 }
 
 /*
- * priority_queue_decompression: Retrieve the frequency mapping from the
- * beginning of a compressed file and make it into a list, sort the list into a
- * priority queue.
+ * priority_queue_decompression: Retrieve the frequency map from the beginning
+ * of a compressed file and make it into a list, sort the list into a priority
+ * queue.
  */
 unsigned priority_queue_decompression(
 							HC_HuffmanNode **list,
@@ -221,8 +221,8 @@ unsigned priority_queue_decompression(
 		fwrite("Create priority queue.\n", 1, 23, stdout);
 
 	/* Get char count */
-	if ((state = frequency_list_decompression(list, buf, state)) == 0)
-		fprintf(stderr, "%s(): error frequency_list_decompression failed.\n", __func__);
+	if ((state = extract_frequency_list(list, buf, state)) == 0)
+		fprintf(stderr, "%s(): error extract_frequency_list failed.\n", __func__);
 
 	/* Sort by frequency */
 	if (DS_mergesort(list, FN_data_frqcmp) == NULL)

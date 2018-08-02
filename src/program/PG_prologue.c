@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #include "data_structures/DS_huffman_node.h"
 #include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
@@ -10,7 +11,6 @@
  */
 unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 {
-	FILE *fp;
 	char c;
 	int file;
 
@@ -24,6 +24,9 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 					case 'c':
 						state_unset(state, DECOMPRESS);
 						state_set(state, COMPRESS);
+						break;
+					case 'f':
+						state_set(state, FORCE);
 						break;
 					case 'm':
 						state_set(state, MONO);
@@ -47,45 +50,23 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 
 		/* Open a file with binary write enabled, to write the compressed data
 		 * too */
-		if (argc && file < MAX_FILES && is_set(state, COMPRESS)) {
-			if ((fp = fopen(*argv++, "wb")) == NULL) {
-				fprintf(stderr, "file read error: %s\n", *argv);
-				free(io[file]);
-				return state_set(state, ERROR);
-			} else if (file == MAX_FILES) {
-				fwrite("file limit exceeded.", 1, 20, stderr);
-				return state_set(state, ERROR);
-			} else
-				--argc, io[file++] = GE_buffer_init(fp);
-		} 
+
+		/* Open a file for writing an archive */
+		if (argc && is_set(state, COMPRESS))
+			if ((state = GE_open_file(*argv, io, "wb", state)) == 0)
+				--argc, ++file, ++argv;
+
+		/* Open a readable file for every argument following the options given
+		 * and the initial write file */
+		if (argc && is_set(state, COMPRESS))
+			if ((state = GE_open_file(*argv, io, "r", state)) == 0)
+				--argc, ++file, ++argv;
 
 		/* Open a file with text write enabled, to write the decompressed data
 		 * too */
-		if (argc && file < MAX_FILES && is_set(state, DECOMPRESS)) {
-			if ((fp = fopen(*argv++, "r")) == NULL) {
-				fprintf(stderr, "file read error: %s\n", *argv);
-				free(io[file]);
-				return state_set(state, ERROR);
-			} else if (file == MAX_FILES) {
-				fwrite("file limit exceeded.", 1, 20, stderr);
-				return state_set(state, ERROR);
-			} else
-				--argc, io[file++] = GE_buffer_init(fp);
-		} 
-
-		/* Open a readable file for every argument trailing the options given
-		 * and the initial write file */
-		if (argc && file < MAX_FILES) {
-			if ((fp = fopen(*argv++, "r")) == NULL) {
-				fprintf(stderr, "file read error: %s\n", *argv);
-				return state_set(state, ERROR);
-			} else if (file == MAX_FILES) {
-				fwrite("file limit exceeded.", 1, 20, stderr);
-				return state_set(state, ERROR);
-			} else
-				--argc, io[file++] = GE_buffer_init(fp);
-		}
-
+		if (argc && is_set(state, DECOMPRESS))
+			if ((state = GE_open_file(*argv, io, "rb", state)) == 0)
+				--argc, ++file, ++argv;
 	}
 
 	return state;

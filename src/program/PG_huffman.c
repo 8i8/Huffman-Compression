@@ -45,18 +45,18 @@ int main(int argc, char *argv[])
 		/* Make priority queue from the input file of character
 		 * frequncy and then construct an ordered binary tree from that
 		 * queue */
-		state = priority_queue_compression(&tree, io, state);
+		priority_queue_compression(&tree, io, state);
 		build_ordered_binary_tree(&tree, state);
 
 		/* Create hash map to binary representation of char */
 		map_create(map, &tree, state);
 
-		write_map_to_file(map, io[0]->fp);
+		write_map_to_file(map, io[0]);
 		encode_file(map, io, state);
 	}
 
 	if (is_set(state, DECOMPRESS)) {
-		decode_file(&tree, io, state);
+		state = decode_file(&tree, io, state);
 	}
 
 	if (is_set(state, ERROR))

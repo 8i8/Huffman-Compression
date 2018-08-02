@@ -23,6 +23,11 @@ String *GE_string_init(String *Str);
 String *GE_string_len(String *Str, size_t len);
 
 /*
+ * GE_string_input: Write to the string from stdin.
+ */
+//String *GE_string_input(String *Str, char *format);
+
+/*
  * GE_string_set: Set the buffer memory to and adiquate size and then copy the
  * given string into the struct, set also the string pointer to the begining of
  * the allocated memory address.

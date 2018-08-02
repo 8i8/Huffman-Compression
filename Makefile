@@ -2,6 +2,7 @@ SRCS = $(wildcard src/*/*.c)
 HEADR = $(wildcard include/*/*.h)
 TSRCS = $(wildcard tests/*.c)
 OBJ = $(SRCS:.c=.o)
+CC = gcc
 
 CFLAGS += -Wall -Wextra -pedantic
 #CFLAGS += -Werror
@@ -11,7 +12,7 @@ CFLAGS += -I./include
 
 .PHONY: clean distclean
 
-compress: $(OBJ)
+tartar: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:

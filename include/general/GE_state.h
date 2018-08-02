@@ -1,14 +1,15 @@
 
-#define COMPRESS       (1 <<  1)  /* 00000000010 */
-#define MONO           (1 <<  2)  /* 00000000100 */
-#define ERROR          (1 <<  3)  /* 00000001000 */
-#define PRINT          (1 <<  4)  /* 00000010000 */
-#define VERBOSE        (1 <<  5)  /* 00000100000 */
-#define LEX_MAP        (1 <<  6)  /* 00001000000 */
-#define LEX_DECOMPRESS (1 <<  7)  /* 00010000000 */
-#define LEX_IN         (1 <<  8)  /* 00100000000 */
-#define LEX_OUT        (1 <<  9)  /* 01000000000 */
-#define DECOMPRESS     (1 << 10)  /* 10000000000 */
+#define DECOMPRESS     (1 <<  1)
+#define COMPRESS       (1 <<  2)
+#define VERBOSE        (1 <<  3)
+#define FORCE          (1 <<  4)
+#define MONO           (1 <<  5)
+#define PRINT          (1 <<  6)
+#define ERROR          (1 <<  7)
+#define LEX_META_DATA  (1 <<  8)
+#define LEX_MAP        (1 <<  9)
+#define LEX_DECOMPRESS (1 << 10)
+#define LEX_OUT        (1 << 11)
 
 #define state_init()              0
 #define state_set(state, flag)	  (state |= flag)
