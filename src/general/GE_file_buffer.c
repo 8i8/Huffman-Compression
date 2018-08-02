@@ -34,43 +34,40 @@ F_Buf *GE_buffer_init(FILE *fp, char *name)
 
 /*
  * open_file: Open a file.
- * TODO NEXT add a file over write question answer.
  */
-unsigned GE_open_file(char *name, F_Buf **io, char *mode, unsigned state)
+unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state)
 {
 	FILE *fp;
 	int i;
-	//char *c;
-	//String *str = NULL;
+	char *pt;
+	String *str = NULL;
 
 	for (i = 0; i < MAX_FILES && io[i]; i++)
 		;
 
 	if (i >= MAX_FILES) {
 		fprintf(stderr, "%s: file limit of %d files exceeded.", __func__, MAX_FILES);
-		return state_set(state, ERROR);
+		return 1;
 	}
 
 	/* Before opening for writing, check if the file already exists */
-	//TODO NEXT write overwrite protection
-	//if (!is_set(state, FORCE) && (c = strchr(mode, 'w')) && c[0] == 'w')
-	//	if ((fp = fopen(name, mode)) != NULL) {
-	//		GE_string_init(str);
-	//		fprintf(stdout, "Overwrite %s ? [y/n] ", name);
-	//		GE_string_input(str, "%s");
-	//		if (str->str[0] == 'n') {
-	//			printf("Program closed.\n");
-	//			GE_string_free(str);
-	//			return state_set(state, ERROR);
-	//		}
-	//		GE_string_free(str);
-	//	}
+	if (!is_set(state, FORCE) && (pt = strchr(mode, 'w')) && pt[0] == 'w') {
+		str = GE_string_init(str);
+		if ((fp = fopen(name, mode)) != NULL) {
+			fprintf(stdout, "Overwrite %s ? [y/n] ", name);
+			GE_string_getchar(str);
+			if (str->str[0] != 'y') {
+				GE_string_free(str);
+				return 1;
+			}
+		}
+		GE_string_free(str);
+	}
 
 	/* Open file and store if successful */
 	if ((fp = fopen(name, mode)) == NULL) {
 		fprintf(stderr, "file read error: %s\n", name);
-		state_set(state, ERROR);
-		return state_set(state, ERROR);
+		return 1;
 	} else
 		io[i]= GE_buffer_init(fp, name);;
 
@@ -156,10 +153,9 @@ F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf)
 }
 
 /*
- * GE_buffer_empty: Write buffer content to file pointer.
- * TODO NOW How is this function valid?
+ * GE_buffer_fwrite: Write buffer content to file pointer.
  */
-F_Buf *GE_buffer_empty(F_Buf *buf)
+F_Buf *GE_buffer_fwrite(F_Buf *buf)
 {
 	fwrite(buf->buf, 1, buf->ptr - buf->buf, buf->fp);
 	buf->ptr = buf->buf;

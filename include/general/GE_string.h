@@ -23,9 +23,9 @@ String *GE_string_init(String *Str);
 String *GE_string_len(String *Str, size_t len);
 
 /*
- * GE_string_input: Write to the string from stdin.
+ * GE_string_getchar: Get char from stdin.
  */
-//String *GE_string_input(String *Str, char *format);
+String *GE_string_getchar(String *Str);
 
 /*
  * GE_string_set: Set the buffer memory to and adiquate size and then copy the

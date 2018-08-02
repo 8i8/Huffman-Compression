@@ -33,28 +33,17 @@ String *GE_string_len(String *Str, size_t len)
 	return Str;
 }
 
-//char *input_helper(char *str, ...)
-//{
-//	va_list va;
-//	va_start(va, str);
-//	printf("%d", fscanf(stdin, str, &va));
-//	va_end(va);
-//	fflush(stdin);
-//
-//	return str;
-//}
-//
-// TODO NEXT write a comand line input
-///*
-// * GE_string_input: Write to the string from stdin.
-// */
-//String *GE_string_input(String *Str, char *format)
-//{
-//
-//	Str->ptr = input_helper(Str->ptr, format);
-//
-//	return Str;
-//}
+/*
+ * GE_string_getchar: Get char from stdin.
+ */
+String *GE_string_getchar(String *Str)
+{
+	char c;
+	while ((c = getchar()) != '\n' && c != EOF)
+		GE_string_add_char(Str, c);
+
+	return Str;
+}
 
 /*
  * GE_string_set: Set the buffer memory to and adequate size and then copy the

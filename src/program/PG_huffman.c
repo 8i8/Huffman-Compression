@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	state = prologue(argc, argv, io, state);
 
 	/* If required, write compressed data */
-	if (is_set(state, COMPRESS)) {
+	if (is_set(state, COMPRESS) && !is_set(state, ESC)) {
 
 		/* Make priority queue from the input file of character
 		 * frequncy and then construct an ordered binary tree from that
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 		encode_file(map, io, state);
 	}
 
-	if (is_set(state, DECOMPRESS)) {
+	if (is_set(state, DECOMPRESS) && !is_set(state, ESC)) {
 		state = decode_file(&tree, io, state);
 	}
 

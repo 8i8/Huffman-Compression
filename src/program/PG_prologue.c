@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
-#include "data_structures/DS_huffman_node.h"
 #include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
 
@@ -12,9 +8,6 @@
 unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 {
 	char c;
-	int file;
-
-	file = 0;
 
 	while (--argc > 0) {
 		if ((*++argv)[0] == '-') {
@@ -45,28 +38,34 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 						break;
 				}
 			}
-			++argv, --argc;
+			--argc, ++argv;
 		}
 
-		/* Open a file with binary write enabled, to write the compressed data
-		 * too */
-
 		/* Open a file for writing an archive */
-		if (argc && is_set(state, COMPRESS))
-			if ((state = GE_open_file(*argv, io, "wb", state)) == 0)
-				--argc, ++file, ++argv;
+		if (argc && is_set(state, COMPRESS)) {
+			if (GE_open_file(*argv, io, "wb", state))
+				return state_set(state, ESC);
+			else
+				--argc, ++argv;
+		}
 
 		/* Open a readable file for every argument following the options given
 		 * and the initial write file */
-		if (argc && is_set(state, COMPRESS))
-			if ((state = GE_open_file(*argv, io, "r", state)) == 0)
-				--argc, ++file, ++argv;
+		if (argc && is_set(state, COMPRESS)) {
+			if (GE_open_file(*argv, io, "r", state))
+				return state_set(state, ESC);
+			else
+				--argc, ++argv;
+		}
 
 		/* Open a file with text write enabled, to write the decompressed data
 		 * too */
-		if (argc && is_set(state, DECOMPRESS))
-			if ((state = GE_open_file(*argv, io, "rb", state)) == 0)
-				--argc, ++file, ++argv;
+		if (argc && is_set(state, DECOMPRESS)) {
+			if (GE_open_file(*argv, io, "rb", state))
+				return state_set(state, ESC);
+			else
+				--argc, ++argv;
+		}
 	}
 
 	return state;

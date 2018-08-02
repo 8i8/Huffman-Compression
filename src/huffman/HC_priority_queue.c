@@ -103,7 +103,6 @@ static HC_HuffmanNode **frequency_list_compression(
 /*
  * extract_frequency_list: Compile a frequency list from the
  * table at the start of a compressed file.
- * TODO NOW the count being given seems to be wrong
  */
 static unsigned extract_frequency_list(
 							HC_HuffmanNode **list,

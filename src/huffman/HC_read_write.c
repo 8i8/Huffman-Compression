@@ -15,7 +15,7 @@
  * write_map_to_file: Write the frequency of each used characters repetition
  * used in the encoding of the file to the start of the file, so as to allow
  * for the recreation of the same Huffman tree for decompression.
- * TODO NEXT
+ * TODO NEXT seperate out writing into a fulction.
  */
 void write_map_to_file(Data **map, F_Buf *buf)
 {
@@ -54,7 +54,7 @@ void write_map_to_file(Data **map, F_Buf *buf)
 	free(pt_num);
 
 	GE_buffer_fwrite("</map>\n", 1, 7, buf);
-	GE_buffer_empty(buf);
+	GE_buffer_fwrite(buf);
 	GE_buffer_off(buf);
 }
 
@@ -146,7 +146,7 @@ unsigned encode_file(Data **map, F_Buf **io, const unsigned state)
 	}
 
 	GE_buffer_fwrite("\n</comp>\n", 1, 9, io[0]);
-	GE_buffer_empty(io[0]);
+	GE_buffer_fwrite(io[0]);
 	GE_buffer_off(io[0]);
 
 	if (is_set(state, VERBOSE))
@@ -177,7 +177,7 @@ FILE *read_compressed_file(FILE *in, FILE *out)
 /*
  * decode_file: Read and then decompress compressed file. Analyze file
  * stream with lexer to decompress the file.
- * TODO NOW how many files are read and how?
+ * TODO NOW get file name and open file for writing.
  */
 unsigned decode_file(HC_HuffmanNode **list, F_Buf **io, unsigned state)
 {

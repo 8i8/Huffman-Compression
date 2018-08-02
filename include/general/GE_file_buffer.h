@@ -28,9 +28,9 @@ F_Buf **GE_buffer_array_init(void);
 F_Buf *GE_buffer_init(FILE *fp, char *name);
 
 /*
- * open_file: Open a file.
+ * open_file: Open a file and add it to the F_Buf array.
  */
-unsigned GE_open_file(char *name, F_Buf **io, char *mode, unsigned state);
+unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state);
 
 /*
  * GE_buffer_on: allocate memory for file buffer.
@@ -59,9 +59,9 @@ F_Buf *GE_buffer_fill(F_Buf *buf);
 F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf);
 
 /*
- * GE_buffer_empty: Write buffer content to file pointer.
+ * GE_buffer_fwrite: Write buffer content to file pointer.
  */
-F_Buf *GE_buffer_empty(F_Buf *buf);
+F_Buf *GE_buffer_fwrite(F_Buf *buf);
 
 /*
  * GE_buffer_getc: Returns the next char from the buffer, refilling when

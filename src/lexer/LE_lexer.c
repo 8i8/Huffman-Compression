@@ -25,7 +25,6 @@ void LE_lexer_free(void)
 
 /*
  * LE_get_token: Returns a state on reading a token.
- * TODO NOW seems to be ok
  */
 unsigned LE_get_token(F_Buf *buf, char c, unsigned state)
 {
