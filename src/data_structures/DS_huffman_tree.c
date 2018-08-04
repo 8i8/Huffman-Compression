@@ -117,7 +117,6 @@ HC_HuffmanNode **DS_huffman_tree_insert_ordered(
 	if ((freq((void*)new, (void*)*list)) <= 0)
 		start = new;
 	else
-
 		start = *list;
 
 	while (*list && (*list)->next && (freq((void*)new, (void*)(*list)->next) > 0))
@@ -127,6 +126,53 @@ HC_HuffmanNode **DS_huffman_tree_insert_ordered(
 	(*list)->next = new;
 	list = &start;
 	
+	return list;
+}
+
+/*
+ * DS_huffman_tree_insert_or_count: If the char does not yet exist in the char map,
+ * insert it in alphabetical order. If it exists already, add one to the count
+ * for that character.
+ */
+HC_HuffmanNode **DS_huffman_tree_insert_or_count(
+						HC_HuffmanNode **list,
+						Data data,
+						int(*func)(void*, void*))
+{
+	int test;
+	HC_HuffmanNode *rtn;
+
+	if (list == NULL) {
+		fprintf(stderr, "%s: NULL pointer.", __func__);
+		return NULL;
+	} else if (*list == NULL) {
+		*list = DS_huffman_tree_new_node(data);
+		return list;
+	}
+
+	rtn = *list;
+
+	while (*list != NULL)
+	{
+		if ((test = (*func)((void*)&data, (void*)&(*list)->data)) < 0) {
+			if ((DS_huffman_tree_insert(list, data)) == NULL) {
+				fprintf(stderr, "%s: ", __func__);
+				return NULL;
+			}
+			break;
+		} else if (test == 0) {
+			(*list)->data.frq++;
+			break;
+		} else if (test > 0)
+			list = &(*list)->next;
+		if (*list == NULL) {
+			DS_huffman_tree_add(list, data);
+			break;
+		}
+	}
+
+	list = &rtn;
+
 	return list;
 }
 
@@ -158,13 +204,13 @@ HC_HuffmanNode *DS_huffman_tree_pop(HC_HuffmanNode **list)
  * build_ordered_binary_tree: Create an ordered binary tree from the given
  * linkedlist.
  */
-HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **tree, const unsigned state)
+HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 {
 	HC_HuffmanNode *new, *one, *two;
 	Data data;
 	DS_huffman_data_init(&data);
 
-	if (is_set(state, VERBOSE))
+	if (is_set(st_prg, VERBOSE))
 		printf("Build binary tree.\n");
 
 	while ((*tree)->next)
@@ -192,7 +238,7 @@ HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **tree, const unsigned
 			*tree = new;
 	}
 
-	if (is_set(state, PRINT)) {
+	if (is_set(st_prg, PRINT)) {
 		printf("Print huffman tree.\n");
 		print_huffman_tree(*tree);
 	}

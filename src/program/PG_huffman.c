@@ -30,40 +30,40 @@ int main(int argc, char *argv[])
 	HC_HuffmanNode *tree = NULL;
 	Data **map = NULL;
 	F_Buf **io = NULL;
-	unsigned state;
+	int st_prg;
 
-	state = state_init();
+	st_prg = state_init();
 	map = HC_map_init();
 	io = GE_buffer_array_init();
 
 	/* Get command line input and set program state */
-	state = prologue(argc, argv, io, state);
+	st_prg = prologue(argc, argv, io, st_prg);
 
 	/* If required, write compressed data */
-	if (is_set(state, COMPRESS) && !is_set(state, ESC)) {
+	if (is_set(st_prg, COMPRESS) && !is_set(st_prg, ESC)) {
 
 		/* Make priority queue from the input file of character
 		 * frequncy and then construct an ordered binary tree from that
 		 * queue */
-		priority_queue_compression(&tree, io, state);
-		build_ordered_binary_tree(&tree, state);
+		compression_metadata(&tree, io, st_prg);
+		build_ordered_binary_tree(&tree, st_prg);
 
 		/* Create hash map to binary representation of char */
-		map_create(map, &tree, state);
+		map_create(map, &tree, st_prg);
 
 		write_map_to_file(map, io[0]);
-		encode_file(map, io, state);
+		encode_file(map, io, st_prg);
 	}
 
-	if (is_set(state, DECOMPRESS) && !is_set(state, ESC)) {
-		state = decode_file(&tree, io, state);
+	if (is_set(st_prg, DECOMPRESS) && !is_set(st_prg, ESC)) {
+		st_prg = decompress_archive(&tree, io, st_prg);
 	}
 
-	if (is_set(state, ERROR))
+	if (is_set(st_prg, ERROR))
 		fprintf(stderr, "%s: state error signaled.", __func__);
 
 	/* Clean up */
-	epilogue(io, &tree, map, state);
+	epilogue(io, &tree, map, st_prg);
 
 	return 0;
 }

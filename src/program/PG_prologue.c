@@ -5,7 +5,7 @@
  * prologue: Deal with all args at the program start and in consequence set the
  * programs initial state.
  */
-unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
+int prologue(int argc, char *argv[], F_Buf **io, int st_prg)
 {
 	char c;
 
@@ -15,24 +15,24 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 				switch (c)
 				{
 					case 'c':
-						state_unset(state, DECOMPRESS);
-						state_set(state, COMPRESS);
+						state_unset(st_prg, DECOMPRESS);
+						state_set(st_prg, COMPRESS);
 						break;
 					case 'f':
-						state_set(state, FORCE);
+						state_set(st_prg, FORCE);
 						break;
 					case 'm':
-						state_set(state, MONO);
+						state_set(st_prg, MONO);
 						break;
 					case 'p':
-						state_set(state, PRINT);
+						state_set(st_prg, PRINT);
 						break;
 					case 'v':
-						state_set(state, VERBOSE);
+						state_set(st_prg, VERBOSE);
 						break;
 					case 'x':
-						state_unset(state, COMPRESS);
-						state_set(state, DECOMPRESS);
+						state_unset(st_prg, COMPRESS);
+						state_set(st_prg, DECOMPRESS);
 						break;
 					default :
 						break;
@@ -42,32 +42,32 @@ unsigned prologue(int argc, char *argv[], F_Buf **io, unsigned state)
 		}
 
 		/* Open a file for writing an archive */
-		if (argc && is_set(state, COMPRESS)) {
-			if (GE_open_file(*argv, io, "wb", state))
-				return state_set(state, ESC);
+		if (argc && is_set(st_prg, COMPRESS)) {
+			if (GE_open_file(*argv, io, "wb", st_prg))
+				return state_set(st_prg, ESC);
 			else
 				--argc, ++argv;
 		}
 
 		/* Open a readable file for every argument following the options given
 		 * and the initial write file */
-		if (argc && is_set(state, COMPRESS)) {
-			if (GE_open_file(*argv, io, "r", state))
-				return state_set(state, ESC);
+		if (argc && is_set(st_prg, COMPRESS)) {
+			if (GE_open_file(*argv, io, "r", st_prg))
+				return state_set(st_prg, ESC);
 			else
 				--argc, ++argv;
 		}
 
 		/* Open a file with text write enabled, to write the decompressed data
 		 * too */
-		if (argc && is_set(state, DECOMPRESS)) {
-			if (GE_open_file(*argv, io, "rb", state))
-				return state_set(state, ESC);
+		if (argc && is_set(st_prg, DECOMPRESS)) {
+			if (GE_open_file(*argv, io, "rb", st_prg))
+				return state_set(st_prg, ESC);
 			else
 				--argc, ++argv;
 		}
 	}
 
-	return state;
+	return st_prg;
 }
 

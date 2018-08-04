@@ -1,5 +1,4 @@
 #include "data_structures/DS_huffman_node.h"
-#include "huffman/HC_print.h"
 #include "general/GE_hash.h"
 
 /*

@@ -23,9 +23,9 @@ Data **HC_map_init(void)
 /*
  * map_create: Create char map from Huffman tree.
  */
-Data **map_create(Data **map, HC_HuffmanNode **tree, const unsigned state)
+Data **map_create(Data **map, HC_HuffmanNode **tree, const int st_prg)
 {
-	if (is_set(state, VERBOSE))
+	if (is_set(st_prg, VERBOSE))
 		printf("Make character hashmap.\n");
 
 	String *str = NULL;
@@ -33,7 +33,7 @@ Data **map_create(Data **map, HC_HuffmanNode **tree, const unsigned state)
 	DS_huffman_tree_extract_encoding(*tree, str, map);
 	GE_string_free(str);
 
-	if (is_set(state, PRINT)) {
+	if (is_set(st_prg, PRINT)) {
 		printf("Print char map.\n");
 		print_char_map(map);
 	}

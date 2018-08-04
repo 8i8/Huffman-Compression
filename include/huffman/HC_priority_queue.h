@@ -1,20 +1,20 @@
 #include "data_structures/DS_huffman_node.h"
 #include "general/GE_file_buffer.h"
 
-/* priority_queue_compression: Compile a frequency list for all characters in the
+/* compression_metadata: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue */
-unsigned priority_queue_compression(
+unsigned compression_metadata(
 						HC_HuffmanNode **list,
 						F_Buf **io,
-						const unsigned state);
+						const int state);
 
-/* priority_queue_decompression: Retrieve the frequency mapping from the
+/* decompression_priority_queue: Retrieve the frequency mapping from the
  * beginning of a compressed file and make it into a list, sort the list into a
  * priority queue */
-unsigned priority_queue_decompression(
+unsigned decompression_priority_queue(
 						HC_HuffmanNode **list,
 						F_Buf *buf,
-						unsigned state);
+						int state);
 
 /* print_frequency: Output the frequency map */
 void print_frequency(HC_HuffmanNode *list);

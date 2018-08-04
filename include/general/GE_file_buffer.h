@@ -61,7 +61,7 @@ F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf);
 /*
  * GE_buffer_fwrite: Write buffer content to file pointer.
  */
-F_Buf *GE_buffer_fwrite(F_Buf *buf);
+F_Buf *GE_buffer_fwrite_FILE(F_Buf *buf);
 
 /*
  * GE_buffer_getc: Returns the next char from the buffer, refilling when

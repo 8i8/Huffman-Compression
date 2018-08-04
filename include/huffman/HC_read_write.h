@@ -1,10 +1,10 @@
 #include <stdio.h>
 
 /* encode_file: Write compressed file */
-unsigned encode_file(Data **map, F_Buf **io, const unsigned state);
+int encode_file(Data **map, F_Buf **io, const int st_prg);
 
-/* decode_file: Read and decompress compressed file */
-unsigned decode_file(HC_HuffmanNode **list, F_Buf **io, unsigned state);
+/* decompress_archive: Read and decompress compressed file */
+int decompress_archive(HC_HuffmanNode **list, F_Buf **io, const int st_prg);
 
 /* write_map_to_file: Write the frequency of each used characters repetition used
  * in the encoding of the file to the start of the file, so as to allow for the

@@ -10,60 +10,13 @@
 #include "huffman/HC_print.h"
 
 /*
- * insert_or_count: If the char does not yet exist in the char map,
- * insert it in alphabetical order. If it exists already, add one to the count
- * for that character.
- */
-static HC_HuffmanNode **insert_or_count(
-						HC_HuffmanNode **list,
-						Data data,
-						int(*func)(void*, void*))
-{
-	int test;
-	HC_HuffmanNode *rtn;
-
-	if (list == NULL) {
-		fprintf(stderr, "%s: NULL pointer.", __func__);
-		return NULL;
-	} else if (*list == NULL) {
-		*list = DS_huffman_tree_new_node(data);
-		return list;
-	}
-
-	rtn = *list;
-
-	while (*list != NULL)
-	{
-		if ((test = (*func)((void*)&data, (void*)&(*list)->data)) < 0) {
-			if ((DS_huffman_tree_insert(list, data)) == NULL) {
-				fprintf(stderr, "%s: ", __func__);
-				return NULL;
-			}
-			break;
-		} else if (test == 0) {
-			(*list)->data.frq++;
-			break;
-		} else if (test > 0)
-			list = &(*list)->next;
-		if (*list == NULL) {
-			DS_huffman_tree_add(list, data);
-			break;
-		}
-	}
-
-	list = &rtn;
-
-	return list;
-}
-
-/*
- * frequency_list_compression: Sort alphabetically and keep count of each
+ * compression_frequency_list: Sort alphabetically and keep count of each
  * occurrences of every character used.
  */
-static HC_HuffmanNode **frequency_list_compression(
+static HC_HuffmanNode **compression_frequency_list(
 						HC_HuffmanNode **list,
 						F_Buf **io,
-						const unsigned state)
+						const int st_prg)
 {
 	char c, *ptr;
 	size_t i, utf8_count;
@@ -71,11 +24,15 @@ static HC_HuffmanNode **frequency_list_compression(
 	DS_huffman_data_init(&data);
 	utf8_count = 0;
 
-	for (i = is_set(state, COMPRESS); i < MAX_FILES && io[i]; i++) {
+	for (i = is_set(st_prg, COMPRESS); i < MAX_FILES && io[i]; i++) {
 		GE_buffer_on(io[i]);
 		while ((c = GE_buffer_fgetc(io[i])) != EOF)
 		{
 			ptr = data.utf8_char;
+
+			//TODO NOW is this required still?
+			//if (isspace(c))
+			//	*ptr++ = '\\';
 
 			/* Add char, check if multi-byte character */
 			while ((*ptr++ = c)
@@ -85,29 +42,28 @@ static HC_HuffmanNode **frequency_list_compression(
 
 			*ptr = '\0';
 			data.frq = 1;
-			insert_or_count(list, data, FN_data_strcmp);
+			DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
 		}
 
 		/* Add EOF char */
 		memcpy(data.utf8_char, "EOF", 4), data.frq = 1;
-		insert_or_count(list, data, FN_data_strcmp);
+		DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
 
 		rewind(io[i]->fp);
 		GE_buffer_off(io[i]);
 	}
 
-
 	return list;
 }
 
 /*
- * extract_frequency_list: Compile a frequency list from the
+ * decompression_frequency_list: Compile a frequency list from the
  * table at the start of a compressed file.
  */
-static unsigned extract_frequency_list(
+static int decompression_frequency_list(
 							HC_HuffmanNode **list,
 							F_Buf *buf,
-							unsigned state)
+							int st_lex)
 {
 	char c = 0;
 	size_t utf8_count;
@@ -122,17 +78,22 @@ static unsigned extract_frequency_list(
 	/* Get and remove line end */
 	GE_buffer_skip(buf, 1);
 
-	//while (is_set(state, LEX_MAP))
-	while (is_set(state, LEX_MAP))
+	while (is_set(st_lex, LEX_MAP))
 	{
 		/* remove tab */
 		c = GE_buffer_fgetc(buf);
 
-		/* get char */
+		/* escape char */
+ 		// TODO NOW: char written into tree node here.
+		//if (isspace(c))
+		//	GE_string_add_char(str, '\\');
+
+		/* get utf-8 char */
 		while (GE_string_add_char(str, c)
 				&& (utf8_count || (utf8_count = utf8_len(c)))
 				&& utf8_count < 4)
 			c = GE_buffer_fgetc(buf), utf8_count--;
+
 		/* Deal with EOF character */
 		if ((c = GE_buffer_fgetc(buf)) == 'O') {
 			GE_string_add_char(str, c);
@@ -170,68 +131,60 @@ static unsigned extract_frequency_list(
 
 		/* Check for a to end the list */
 		if (c == '<')
-			state = LE_get_token(buf, c, state);
+			st_lex = LE_get_token(buf, c, st_lex);
 	}
 
 	GE_string_free(str);
 
-	return state;
+	return st_lex;
 }
 
 /*
- * priority_queue_compression: Compile a frequency list for all characters in the
+ * compression_metadata: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue.
  */
-unsigned priority_queue_compression(
+int compression_metadata(
 					HC_HuffmanNode **list,
 					F_Buf **io,
-					const unsigned state)
+					const int st_prg)
 {
-	if (is_set(state, VERBOSE))
+	if (is_set(st_prg, VERBOSE))
 		fwrite("Create priority queue.\n", 1, 23, stdout);
 
 	/* Get char count */
-	if (frequency_list_compression(list, io, state) == NULL)
-		fprintf(stderr, "%s(): error frequency_list_compression failed.\n", __func__);
+	if (compression_frequency_list(list, io, st_prg) == NULL)
+		fprintf(stderr, "%s(): error compression_frequency_list failed.\n", __func__);
 
 	/* Sort by frequency */
 	if (DS_mergesort(list, FN_data_frqcmp) == NULL)
 		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
 
-	if (is_set(state, PRINT)) {
+	if (is_set(st_prg, PRINT)) {
 		fwrite("print frequency map.\n", 1, 22, stdout);
 		print_frequency_map(*list);
 	}
 
-	return state;
+	return st_prg;
 }
 
 /*
- * priority_queue_decompression: Retrieve the frequency map from the beginning
+ * decompression_priority_queue: Retrieve the frequency map from the beginning
  * of a compressed file and make it into a list, sort the list into a priority
  * queue.
  */
-unsigned priority_queue_decompression(
+int decompression_priority_queue(
 							HC_HuffmanNode **list,
 							F_Buf *buf,
-							unsigned state)
+							int st_lex)
 {
-	if (is_set(state, VERBOSE))
-		fwrite("Create priority queue.\n", 1, 23, stdout);
-
 	/* Get char count */
-	if ((state = extract_frequency_list(list, buf, state)) == 0)
-		fprintf(stderr, "%s(): error extract_frequency_list failed.\n", __func__);
+	if ((st_lex = decompression_frequency_list(list, buf, st_lex)) == 0)
+		fprintf(stderr, "%s(): error decompression_frequency_list failed.\n", __func__);
 
 	/* Sort by frequency */
 	if (DS_mergesort(list, FN_data_frqcmp) == NULL)
 		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
 
-	if (is_set(state, PRINT)) {
-		fwrite("print frequency map.\n", 1, 22, stdout);
-		print_frequency_map(*list);
-	}
-
-	return state;
+	return st_lex;
 }
 

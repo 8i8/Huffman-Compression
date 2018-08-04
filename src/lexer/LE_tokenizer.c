@@ -68,7 +68,7 @@ int LE_token_init(void)
 		return 1;
 
 	token_add("map", LEX_MAP);
-	token_add("comp", LEX_DECOMPRESS);
+	token_add("comp", LEX_DECOMP);
 
 	return 0;
 }

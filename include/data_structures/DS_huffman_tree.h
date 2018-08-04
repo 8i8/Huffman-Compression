@@ -17,12 +17,20 @@ HC_HuffmanNode **DS_huffman_tree_insert_ordered(
 						HC_HuffmanNode*newList,
 						int(*func)(void*, void*));
 
+/* DS_huffman_tree_insert_or_count: If the char does not yet exist in the char map,
+ * insert it in alphabetical order. If it exists already, add one to the count
+ * for that character */
+HC_HuffmanNode **DS_huffman_tree_insert_or_count(
+						HC_HuffmanNode **list,
+						Data data,
+						int(*func)(void*, void*));
+
 /* DS_huffman_tree_pop: Pop the first node and return a pointer to the new list
  * address. */
 HC_HuffmanNode *DS_huffman_tree_pop(HC_HuffmanNode **list);
 
 /* build_ordered_binary_tree: Create a binary tree from the given linked list */
-HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **list, const unsigned state);
+HC_HuffmanNode **build_ordered_binary_tree(HC_HuffmanNode **list, const int state);
 
 /* DS_huffman_tree_extract_encoding: Recursive function to walk tree and retrieve the
  * binary data */

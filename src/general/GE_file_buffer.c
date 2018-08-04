@@ -155,7 +155,7 @@ F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf)
 /*
  * GE_buffer_fwrite: Write buffer content to file pointer.
  */
-F_Buf *GE_buffer_fwrite(F_Buf *buf)
+F_Buf *GE_buffer_fwrite_FILE(F_Buf *buf)
 {
 	fwrite(buf->buf, 1, buf->ptr - buf->buf, buf->fp);
 	buf->ptr = buf->buf;

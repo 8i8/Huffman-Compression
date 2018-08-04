@@ -7,10 +7,18 @@ CC = gcc
 CFLAGS += -Wall -Wextra -pedantic
 #CFLAGS += -Werror
 CFLAGS += -g
-CFLAGS += -fsanitize=address -fno-omit-frame-pointer
+CFLAGS += -fsanitize=address
+CFLAGS += -fno-omit-frame-pointer
+CFLAGS += -fsanitize=undefined
+CFLAGS += -fsanitize=float-divide-by-zero
+CFLAGS += -fno-sanitize-recover
 CFLAGS += -I./include
 
 .PHONY: clean distclean
+
+ifndef VERBOSE
+.SILENT:
+endif
 
 tartar: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $^

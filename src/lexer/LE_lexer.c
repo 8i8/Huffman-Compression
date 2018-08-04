@@ -24,69 +24,79 @@ void LE_lexer_free(void)
 }
 
 /*
+ * in_or_out: Returns the state of a search for a specified char having removed
+ * whitespace.
+ */
+static inline char in_or_out(F_Buf *buf, char c, char in, int *off)
+{
+	while (isspace(c) && c != EOF) 
+		c = GE_buffer_fgetc(buf);
+
+	if (c == in)
+		*off = 1, c = GE_buffer_fgetc(buf);
+
+	while (isspace(c) && c != EOF) 
+		c = GE_buffer_fgetc(buf);
+
+	return c;
+}
+
+/*
  * LE_get_token: Returns a state on reading a token.
  */
-unsigned LE_get_token(F_Buf *buf, char c, unsigned state)
+int LE_get_token(F_Buf *buf, char c, int st_lex)
 {
+	String *str = NULL;
 	int off, token;
         off = token = 0;
+
+	/* Brutal, eat File until a token is found */
+	while (c != '<' && c != EOF) 
+		c = GE_buffer_fgetc(buf);
 
 	/* If not a token then push back and return*/
 	if (c != '<')
 		return 0;
 
-	String *str = NULL;
+	/* String to temporarily store the newly retrieved token */
 	str = GE_string_init(str);
 
-	/* Read a token */
+	/* Read */
 	while (c != '>' && (c = GE_buffer_fgetc(buf)) != '>' && c != EOF)
 	{
-		while (isspace(c)) 
-			c = GE_buffer_fgetc(buf);
+		c = in_or_out(buf, c, '/', &off);
 
-		if (c == '/')
-			off = 1, c = GE_buffer_fgetc(buf);
+		/* valid ? */
+		if (!isalnum(c)) {
+			GE_buffer_ungetc(c, buf);
+			fprintf(stderr, "%s: Invalid token non alpha numeric character.\n", __func__);
+			return 0;
+		}
 
-		while (isspace(c)) 
-			c = GE_buffer_fgetc(buf);
-
-		if (isalnum(c)) {
-
+		/* Read token, must be ASCII char */
+		while (isalnum((c = GE_buffer_fgetc(buf))))
 			GE_string_add_char(str, c);
 
-			while (isalnum((c = GE_buffer_fgetc(buf))))
-				GE_string_add_char(str, c);
+		/* Does the token exist? */
+		if ((token = LE_check_token(str->str)) == 0)
+			fprintf(stderr, "%s: Token not found.\n", __func__);
 
-			if ((token = LE_check_token(str->str)) == 0)
-				fprintf(stderr, "%s: Token not found.\n", __func__);
+		c = in_or_out(buf, c, '/', &off);
 
-			while (isspace(c)) 
-				c = GE_buffer_fgetc(buf);
+		/* Set/unset the token */
+		if (off)
+			state_unset(st_lex, token);
+		else
+			state_set(st_lex, token);
 
-			if (c == '/')
-				off = 1, c = GE_buffer_fgetc(buf);
-
-			while (isspace(c)) 
-				c = GE_buffer_fgetc(buf);
-	
-			if (off)
-				state_unset(state, token);
-			else
-				state_set(state, token);
-
-			GE_string_reset(str);
-
-		} else
-			GE_buffer_ungetc(c, buf);
-
+		GE_string_reset(str);
 	}
 
 	GE_string_free(str);
 
-
 	if (c == '>' || c == EOF)
-		return state;
+		return st_lex;
 	else
-		return 	LE_get_token(buf, c, state);
+		return LE_get_token(buf, c, st_lex);
 }
 
