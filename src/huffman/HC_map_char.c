@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "huffman/HC_map_char.h"
-#include "data_structures/DS_huffman_node.h"
+#include "data_structures/DS_huffman_tree.h"
 #include "data_structures/DS_huffman_tree.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
 #include "general/GE_hash.h"
+#include "general/GE_print.h"
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Huffman coding into hash map.
@@ -21,9 +22,9 @@ Data **HC_map_init(void)
 }
 
 /*
- * map_create: Create char map from Huffman tree.
+ * hashmap_binary_out: Create char map from Huffman tree.
  */
-Data **map_create(Data **map, HC_HuffmanNode **tree, const int st_prg)
+Data **hashmap_binary_out(Data **map, HC_HuffmanNode **tree, const int st_prg)
 {
 	if (is_set(st_prg, VERBOSE))
 		printf("Make character hashmap.\n");
@@ -42,7 +43,7 @@ Data **map_create(Data **map, HC_HuffmanNode **tree, const int st_prg)
 }
 
 /*
- * HC_map_add: Add data struct to binary data hashmap.
+ * HC_map_add: Add data struct to hashmap.
  */
 int HC_map_add(void *m, void *d)
 {

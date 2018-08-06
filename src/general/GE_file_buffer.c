@@ -28,6 +28,7 @@ F_Buf *GE_buffer_init(FILE *fp, char *name)
 	buf->fp = fp;
 	buf->eof = 0;
 	buf->buf = buf->read = buf->ptr = buf->end = NULL;
+	buf->tab_depth = 0;
 	back = 0;
 	return buf;
 }
@@ -73,7 +74,6 @@ unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state)
 
 	return 0;
 }
-
 
 /*
  * GE_buffer_on: allocate memory for file buffer.

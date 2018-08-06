@@ -9,6 +9,7 @@ typedef struct _file_buffer {
 	char *ptr;
 	char *read;
 	char *end;
+	int tab_depth;
 	int eof;
 } F_Buf;
 #endif

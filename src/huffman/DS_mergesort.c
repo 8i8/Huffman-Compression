@@ -183,7 +183,8 @@ static HC_HuffmanNode **mergesort(
 	}
 
 	/* Clip the end of the list to stop an infinite loop, if the last node
-	 * came from the middle of the list, it will have an address in next */
+	 * came from the middle of the list, it will have an address that
+	 * remains in next */
 	tail->next = NULL;
 
 	/* If more than one merge has been made, continue. If only one merge or

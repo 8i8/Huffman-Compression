@@ -1,4 +1,4 @@
-#include "data_structures/DS_huffman_node.h"
+#include "data_structures/DS_huffman_tree.h"
 #include "general/GE_hash.h"
 
 /*

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include "lexer/LE_tokenizer.h"
 #include "lexer/LE_lexer.h"
+#include "lexer/LE_xml.h"
 #include "general/GE_string.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
@@ -24,75 +24,21 @@ void LE_lexer_free(void)
 }
 
 /*
- * in_or_out: Returns the state of a search for a specified char having removed
- * whitespace.
- */
-static inline char in_or_out(F_Buf *buf, char c, char in, int *off)
-{
-	while (isspace(c) && c != EOF) 
-		c = GE_buffer_fgetc(buf);
-
-	if (c == in)
-		*off = 1, c = GE_buffer_fgetc(buf);
-
-	while (isspace(c) && c != EOF) 
-		c = GE_buffer_fgetc(buf);
-
-	return c;
-}
-
-/*
- * LE_get_token: Returns a state on reading a token.
+ * LE_get_token: Returns state on reading a token, will read recursivly untill
+ * the end of element indicator is reached.
  */
 int LE_get_token(F_Buf *buf, char c, int st_lex)
 {
-	String *str = NULL;
-	int off, token;
-        off = token = 0;
-
-	/* Brutal, eat File until a token is found */
-	while (c != '<' && c != EOF) 
-		c = GE_buffer_fgetc(buf);
-
-	/* If not a token then push back and return*/
-	if (c != '<')
+	/* Skip whitespace upto the next '<' */
+	if ((c = LE_xml_goto_token(buf, c)) == 0) {
+		fprintf(stderr, "%s: Expected a token.\n", __func__);
 		return 0;
-
-	/* String to temporarily store the newly retrieved token */
-	str = GE_string_init(str);
-
-	/* Read */
-	while (c != '>' && (c = GE_buffer_fgetc(buf)) != '>' && c != EOF)
-	{
-		c = in_or_out(buf, c, '/', &off);
-
-		/* valid ? */
-		if (!isalnum(c)) {
-			GE_buffer_ungetc(c, buf);
-			fprintf(stderr, "%s: Invalid token non alpha numeric character.\n", __func__);
-			return 0;
-		}
-
-		/* Read token, must be ASCII char */
-		while (isalnum((c = GE_buffer_fgetc(buf))))
-			GE_string_add_char(str, c);
-
-		/* Does the token exist? */
-		if ((token = LE_check_token(str->str)) == 0)
-			fprintf(stderr, "%s: Token not found.\n", __func__);
-
-		c = in_or_out(buf, c, '/', &off);
-
-		/* Set/unset the token */
-		if (off)
-			state_unset(st_lex, token);
-		else
-			state_set(st_lex, token);
-
-		GE_string_reset(str);
 	}
 
-	GE_string_free(str);
+	if ((c = LE_xml_read_token(buf, c, &st_lex)) == 0) {
+		fprintf(stderr, "%s: Invalid token.\n", __func__);
+		return 0;
+	}
 
 	if (c == '>' || c == EOF)
 		return st_lex;

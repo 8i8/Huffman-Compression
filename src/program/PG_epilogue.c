@@ -2,7 +2,7 @@
 #include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
 #include "data_structures/DS_huffman_tree.h"
-#include "data_structures/DS_huffman_node.h"
+#include "data_structures/DS_huffman_tree.h"
 #include "huffman/HC_map_char.h"
 
 /*

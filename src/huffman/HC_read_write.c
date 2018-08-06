@@ -1,65 +1,53 @@
 #include <string.h>
 #include <stdlib.h>
+#include <libgen.h>
 #include <ctype.h>
-#include "data_structures/DS_huffman_node.h"
+#include "data_structures/DS_huffman_tree.h"
 #include "data_structures/DS_huffman_tree.h"
 #include "huffman/HC_map_char.h"
 #include "huffman/HC_priority_queue.h"
-#include "huffman/HC_print.h"
-#include "lexer/LE_lexer.h"
 #include "general/GE_utf8.h"
 #include "general/GE_state.h"
 #include "general/GE_hash.h"
 #include "general/GE_string.h"
+#include "general/GE_print.h"
 #include "general/GE_file_buffer.h"
+#include "lexer/LE_xml.h"
 
 /*
- * write_char_map: Write the map as a dictionary format.
- * TODO NOW: char map written to file here, rewrite this this functionality as
- * JSON.
+ * metadata_write_file_name: Write file name in the archive meta data at the
+ * given tab indenatation.
  */
-static inline void write_char_map(
-					Data *map,
-					F_Buf *buf,
-					char *num,
-					char * const pt)
+void metadata_write_file_name(F_Buf *buf)
 {
-	GE_buffer_fwrite("\t", 1, 1, buf);
-	GE_buffer_fwrite(map->utf8_char, 1,
-			strlen(map->utf8_char), buf);
-	GE_buffer_fwrite(" ", 1, 1, buf);
-	sprintf(num, "%lu", map->frq);
-	GE_buffer_fwrite(num, 1, strlen(num), buf);
-	GE_buffer_fwrite("\n", 1, 1, buf);
-	num = pt;
+	GE_buffer_on(buf);
+	LE_xml_element_item(buf, basename(buf->name), "name");
+	GE_buffer_fwrite_FILE(buf);
+	GE_buffer_off(buf);
 }
 
 /*
- * write_map_to_file: Write the frequency of each used characters number of
+ * metadata_write_map: Write the frequency of each used characters number of
  * repetitions, used in the encoding of the file to the start of the file, so
  * as to allow for the recreation of the same Huffman tree for decompression.
  */
-void write_map_to_file(Data **map, F_Buf *buf)
+void metadata_write_map(Data **map, F_Buf *buf)
 {
-	char *num, *ptr;
 	size_t i;
 	Data *cur;
 
-	ptr = num = malloc(256);
 	GE_buffer_on(buf);
-	GE_buffer_fwrite("<map>\n", 1, 6, buf);
+	LE_xml_element_open(buf, "map");
 
 	for (i = 0; i < MAP_LEN; i++)
 		if (map[i] != NULL) {
-			write_char_map(map[i], buf, num, ptr);
+			LE_xml_element_map(buf, map[i]->utf8_char, map[i]->string);
 			if ((cur = map[i]->next))
 				while ((cur = cur->next))
-					write_char_map(map[i], buf, num, ptr);
+					LE_xml_element_map(buf, map[i]->utf8_char, map[i]->string);
 		}
 	
-	free(ptr);
-
-	GE_buffer_fwrite("</map>\n", 1, 7, buf);
+	LE_xml_element_close(buf, "map");
 	GE_buffer_fwrite_FILE(buf);
 	GE_buffer_off(buf);
 }
@@ -88,9 +76,9 @@ static void write_bit(
 }
 
 /*
- * encode_file: Write compressed file.
+ * archive_write_file: Write compressed file.
  */
-int encode_file(Data **map, F_Buf **io, const int st_prg)
+int archive_write_file(Data **map, F_Buf **io, const int st_prg)
 {
 	unsigned bit_count, utf8_count;
 	unsigned char byte;
@@ -103,7 +91,7 @@ int encode_file(Data **map, F_Buf **io, const int st_prg)
 	bit_count = byte = utf8_count = 0;
 
 	GE_buffer_on(io[0]);
-	GE_buffer_fwrite("<comp>\n", 1, 8, io[0]);
+	LE_xml_element_open(io[0], "comp");
 
 	//TODO NEXT is this a good use of state; Is it even required?
 	for (i = is_set(st_prg, COMPRESS); i < MAX_FILES && io[i]; i++)
@@ -152,7 +140,7 @@ int encode_file(Data **map, F_Buf **io, const int st_prg)
 		 GE_buffer_fwrite((char*)&byte, 1, 1, io[0]);
 	}
 
-	GE_buffer_fwrite("\n</comp>\n", 1, 9, io[0]);
+	LE_xml_element_close(io[0], "comp");
 	GE_buffer_fwrite_FILE(io[0]);
 	GE_buffer_off(io[0]);
 
@@ -174,34 +162,34 @@ int encode_file(Data **map, F_Buf **io, const int st_prg)
  * decompress_mono: Open an archive encoded with one single character map made
  * from all the files.
  */
-static int decompress_mono(HC_HuffmanNode **list, F_Buf **io, int st_prg, int st_lex)
-{
-	char c;
-	if (is_set(st_lex, LEX_META))
-	{
-		if (is_set(st_prg, VERBOSE))
-			fwrite("Opening archive metadata.\n", 1, 23, stdout);
-
-		/* If there is no file specified as an output for an appended
-		 * file, open a file with the name given in the archives meta
-		 * data. */
-		if (!io[1])
-			GE_open_file(NULL, io, "wb", st_lex);
-
-		st_lex = decompression_priority_queue(list, io[0], st_lex);
-		/* Skip over the end of line */
-		c = GE_buffer_fgetc(io[0]);
-		build_ordered_binary_tree(list, st_lex);
-
-		if (is_set(st_prg, PRINT)) {
-			fwrite("print frequency map.\n", 1, 22, stdout);
-			print_frequency_map(*list);
-		}
-
-	}
-
-	return st_lex;
-}
+//static int decompress_mono(HC_HuffmanNode **list, F_Buf **io, int st_prg, int st_lex)
+//{
+//	if (is_set(st_lex, LEX_META))
+//	{
+//		if (is_set(st_prg, VERBOSE))
+//			fwrite("Opening archive metadata.\n", 1, 27, stdout);
+//
+//		/* If there is no file specified as an output for an appended
+//		 * file, open a file with the name given in the archives meta
+//		 * data. */
+//		// TODO NOW get fole name first
+//		//if (!io[1])
+//		//	GE_open_file(NULL, io, "wb", st_lex);
+//
+//		st_lex = decompression_priority_queue(list, io[0], st_lex);
+//		/* Skip over the end of line */
+//		//c = GE_buffer_fgetc(io[0]);
+//		ordered_binary_tree(list, st_lex);
+//
+//		if (is_set(st_prg, PRINT)) {
+//			fwrite("print frequency map.\n", 1, 22, stdout);
+//			print_frequency_map(*list);
+//		}
+//
+//	}
+//
+//	return st_lex;
+//}
 
 ///*
 // * decompress_multi: Open a multi file archive encoded with a differnt map for
@@ -217,7 +205,7 @@ static int decompress_mono(HC_HuffmanNode **list, F_Buf **io, int st_prg, int st
 //		st_lex = decompression_priority_queue(list, io[0], st_lex);
 //		/* Skip over the end of line */
 //		c = GE_buffer_fgetc(io[0]);
-//		build_ordered_binary_tree(list, st_lex);
+//		ordered_binary_tree(list, st_lex);
 //	}
 //
 //	/* Decompress the file */
@@ -227,43 +215,4 @@ static int decompress_mono(HC_HuffmanNode **list, F_Buf **io, int st_prg, int st
 //	}
 //	return st_lex;
 //}
-
-/*
- * decompress_archive: Read and then decompress compressed file. Analyze file
- * stream with lexer to decompress the file.
- * TODO NOW get file name and open file for writing.
- */
-int decompress_archive(HC_HuffmanNode **list, F_Buf **io, const int st_prg)
-{
-	char c;
-	/* Lexer state */
-	int st_lex = 0;
-	LE_lexer_init();
-
-	if (is_set(st_prg, VERBOSE))
-		printf("Opening archive.\n");
-
-	GE_buffer_on(io[0]);
-	while (io[0] && (c = GE_buffer_fgetc(io[0])) != EOF)
-	{
-		/* Set the state */
-		if ((st_lex = LE_get_token(io[0], c, st_lex)) == 0) {
-			fprintf(stderr, "%s: Token failed.\n", __func__);
-			state_set(st_lex, ERROR);
-			break;
-		}
-
-		if (is_set(st_lex, MONO))
-			decompress_mono(list, io, st_prg, st_lex);
-
-	//	else (is_set(st_lex, MULTI))
-	//		decompress_multi(io, st_lex);
-	}
-	GE_buffer_rewind(io[0]);
-	GE_buffer_off(io[0]);
-
-	LE_lexer_free();
-
-	return st_lex;
-}
 

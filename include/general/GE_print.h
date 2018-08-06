@@ -1,4 +1,4 @@
-#include "data_structures/DS_huffman_node.h"
+#include "data_structures/DS_huffman_tree.h"
 
 /*
  * print_frequency_map: Output the frequency map, if any treenodes exist print

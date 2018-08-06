@@ -3,11 +3,11 @@
 #include <ctype.h>
 #include "general/GE_state.h"
 #include "general/GE_utf8.h"
+#include "general/GE_print.h"
 #include "lexer/LE_lexer.h"
 #include "data_structures/DS_mergesort.h"
 #include "data_structures/DS_huffman_tree.h"
-#include "data_structures/DS_huffman_node.h"
-#include "huffman/HC_print.h"
+#include "data_structures/DS_huffman_tree.h"
 
 /*
  * compression_frequency_list: Sort alphabetically and keep count of each
@@ -140,11 +140,12 @@ static int decompression_frequency_list(
 }
 
 /*
- * compression_metadata: Compile a frequency list for all characters in the
- * document, sort that list into a priority queue.
+ * priority_queue: Compile a frequency list for all characters in the
+ * document, sort that list to make a priority queue.
  */
-int compression_metadata(
+int priority_queue(
 					HC_HuffmanNode **list,
+
 					F_Buf **io,
 					const int st_prg)
 {

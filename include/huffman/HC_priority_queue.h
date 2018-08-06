@@ -1,9 +1,9 @@
-#include "data_structures/DS_huffman_node.h"
+#include "data_structures/DS_huffman_tree.h"
 #include "general/GE_file_buffer.h"
 
-/* compression_metadata: Compile a frequency list for all characters in the
+/* priority_queue: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue */
-unsigned compression_metadata(
+unsigned priority_queue(
 						HC_HuffmanNode **list,
 						F_Buf **io,
 						const int state);
