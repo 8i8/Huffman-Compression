@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "general/GE_string.h"
+#include "general/GE_error.h"
 
 /*
  * GD_string_init: Initiate a simple string struct that has a growth function.
@@ -66,7 +67,7 @@ String *GE_string_set(String *Str, char *str)
 String *GE_string_add_char(String *Str, char c)
 {
 	if (Str == NULL) {
-		fprintf(stderr, "%s:() Str is NULL.\n", __func__);
+		FAIL("recieved NULL");
 		return NULL;
 	}
 

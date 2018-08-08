@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "general/GE_file_buffer.h"
+#include "general/GE_error.h"
 #include "general/GE_state.h"
 #include "general/GE_string.h"
 
 #define BUF   BUFFER_SIZE - 1      /* Buffer with a margin */
 
-int back = 1;                      /* Stop ungetc of nore than one c */
+static int back = 1;               /* Stop ungetc of nore than one c */
 
 /*
  * GE_buffer_array_init: Initialise and return an array of pointers to file
@@ -47,7 +48,7 @@ unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state)
 		;
 
 	if (i >= MAX_FILES) {
-		fprintf(stderr, "%s: file limit of %d files exceeded.", __func__, MAX_FILES);
+		FAIL("file limit exceeded");
 		return 1;
 	}
 
@@ -67,7 +68,7 @@ unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state)
 
 	/* Open file and store if successful */
 	if ((fp = fopen(name, mode)) == NULL) {
-		fprintf(stderr, "file read error: %s\n", name);
+		FAIL("file read failed");
 		return 1;
 	} else
 		io[i]= GE_buffer_init(fp, name);;

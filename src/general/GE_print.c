@@ -1,4 +1,4 @@
-#include "data_structures/DS_huffman_tree.h"
+#include "huffman/HC_huffman_tree.h"
 #include "general/GE_hash.h"
 
 /*
@@ -8,7 +8,7 @@ static void print_node(HC_HuffmanNode *node)
 {
 	printf("%s ", node->data.utf8_char);
 	if (node->data.len)
-		printf("%s ", node->data.string);
+		printf("%s ", node->data.binary);
 	printf("%lu\n", node->data.frq);
 
 }
@@ -94,17 +94,17 @@ void print_huffman_tree(HC_HuffmanNode *tree)
 /*
  * print_char_map: Print out the char map made by the Huffman tree.
  */
-void print_char_map(Data **map)
+void print_char_map(Data *map)
 {
 	size_t i;
-	Data *cur;
+	Data cur;
 	for (i = 0; i < MAP_LEN; i++)
-		if (map[i]) {
-			printf("%s %s\n", map[i]->utf8_char, map[i]->string);
-			cur = map[i]->next;
-			while (cur) {
-				printf("%s %s\n", cur->utf8_char, cur->string);
-				cur = map[i]->next;
+		if (map[i].binary[0] != '\0') {
+			printf("%s %s\n", map[i].utf8_char, map[i].binary);
+			cur = *map[i].next;
+			while (cur.binary[0] != '\0') {
+				printf("%s %s\n", cur.utf8_char, cur.binary);
+				cur = *map[i].next;
 			}
 		}
 }

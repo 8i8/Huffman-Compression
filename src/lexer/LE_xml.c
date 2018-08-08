@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include "lexer/LE_tokenizer.h"
+#include "general/GE_error.h"
 #include "general/GE_file_buffer.h"
 #include "general/GE_utf8.h"
 #include "general/GE_state.h"
@@ -150,7 +151,7 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 		/* valid ? */
 		if (!isalnum(c)) {
 			GE_buffer_ungetc(c, buf);
-			fprintf(stderr, "%s: Invalid token non alpha numeric character.\n", __func__);
+			FAIL("Invalid token non alpha numeric character");
 			return 0;
 		}
 
@@ -164,7 +165,7 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 
 		/* Does the token exist? */
 		if ((token = LE_check_token(str)) == 0)
-			fprintf(stderr, "%s: Token not found.\n", __func__);
+			FAIL("Token not found");
 
 		c = in_or_out(buf, c, '/', &off);
 

@@ -1,4 +1,4 @@
-#include "data_structures/DS_mergesort.h"
+#include "huffman/HC_mergesort.h"
 
 static HC_HuffmanNode* advance_and_cut(HC_HuffmanNode *list, size_t len)
 {
@@ -199,21 +199,23 @@ static HC_HuffmanNode **mergesort(
  *  Two mergesorts for comparison.
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-HC_HuffmanNode **DS_mergesort(HC_HuffmanNode **list, int(*comp)(void*, void*))
+HC_HuffmanNode **HC_mergesort(HC_HuffmanNode **list, int(*comp)(void*, void*))
 {
 	/* Doh! Nothing to see here, please move along. */
-	if (list == NULL || *list == NULL || (*list)->next == NULL)
+	if (list == NULL || *list == NULL || (*list)->next == NULL) {
 		return NULL;
+	}
 
 	/* Set the ball rolling with a merge length of one node */
 	return mergesort(list, 1, comp);
 }
 
-HC_HuffmanNode **DS_mergesort_cut(HC_HuffmanNode **list, int(*comp)(void*, void*))
+HC_HuffmanNode **HC_mergesort_cut(HC_HuffmanNode **list, int(*comp)(void*, void*))
 {
 	/* Doh! Nothing to see here, please move along. */
-	if (list == NULL || *list == NULL || (*list)->next == NULL)
+	if (list == NULL || *list == NULL || (*list)->next == NULL) {
 		return NULL;
+	}
 
 	/* Set the ball rolling with a merge length of one node */
 	return mergesort_cut(list, 1, comp);

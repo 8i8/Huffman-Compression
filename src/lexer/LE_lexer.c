@@ -3,6 +3,7 @@
 #include "lexer/LE_tokenizer.h"
 #include "lexer/LE_lexer.h"
 #include "lexer/LE_xml.h"
+#include "general/GE_error.h"
 #include "general/GE_string.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
@@ -31,12 +32,12 @@ int LE_get_token(F_Buf *buf, char c, int st_lex)
 {
 	/* Skip whitespace upto the next '<' */
 	if ((c = LE_xml_goto_token(buf, c)) == 0) {
-		fprintf(stderr, "%s: Expected a token.\n", __func__);
+		FAIL("Expected a token");
 		return 0;
 	}
 
 	if ((c = LE_xml_read_token(buf, c, &st_lex)) == 0) {
-		fprintf(stderr, "%s: Invalid token.\n", __func__);
+		FAIL("Invalid token");
 		return 0;
 	}
 

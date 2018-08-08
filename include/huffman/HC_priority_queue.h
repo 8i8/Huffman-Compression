@@ -1,11 +1,15 @@
-#include "data_structures/DS_huffman_tree.h"
+#include "huffman/HC_huffman_tree.h"
 #include "general/GE_file_buffer.h"
 
-/* priority_queue: Compile a frequency list for all characters in the
+/* FN_data_strcmp: Compare Data one and two, the value should be a single char and
+ * the result alphabetical order as per the ASCII char numbering system */
+int FN_data_strcmp(void *v1, void *v2);
+
+/* frequency_list_compression: Compile a frequency list for all characters in the
  * document, sort that list into a priority queue */
-unsigned priority_queue(
+unsigned frequency_list_compression(
 						HC_HuffmanNode **list,
-						F_Buf **io,
+						F_Buf *buf,
 						const int state);
 
 /* decompression_priority_queue: Retrieve the frequency mapping from the

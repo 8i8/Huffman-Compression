@@ -1,66 +1,73 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "general/GE_error.h"
 #include "general/GE_state.h"
 #include "general/GE_utf8.h"
 #include "general/GE_print.h"
 #include "lexer/LE_lexer.h"
-#include "data_structures/DS_mergesort.h"
-#include "data_structures/DS_huffman_tree.h"
-#include "data_structures/DS_huffman_tree.h"
+#include "huffman/HC_mergesort.h"
+#include "huffman/HC_huffman_tree.h"
 
 /*
- * compression_frequency_list: Sort alphabetically and keep count of each
- * occurrences of every character used.
+ * FN_data_strcmp: Compare Data one and two, the value should be a single char and
+ * the result alphabetical order as per the ASCII char numbering system.
  */
-static HC_HuffmanNode **compression_frequency_list(
+int FN_data_strcmp(void *v1, void *v2)
+{
+	Data *d1, *d2;
+	d1 = (Data*) v1;
+	d2 = (Data*) v2;
+
+	return strcmp(d1->utf8_char, d2->utf8_char);
+}
+
+/*
+ * frequency_list_from_text: Sort alphabetically and keep count of each
+ * occurrences of every character used.
+ * TODO NOW char is written into data struct here.
+ */
+static HC_HuffmanNode **frequency_list_from_text(
 						HC_HuffmanNode **list,
-						F_Buf **io,
-						const int st_prg)
+						F_Buf *buf)
 {
 	char c, *ptr;
-	size_t i, utf8_count;
+	size_t utf8_count;
 	Data data;
-	DS_huffman_data_init(&data);
+	data = HC_data_init();
 	utf8_count = 0;
 
-	for (i = is_set(st_prg, COMPRESS); i < MAX_FILES && io[i]; i++) {
-		GE_buffer_on(io[i]);
-		while ((c = GE_buffer_fgetc(io[i])) != EOF)
-		{
-			ptr = data.utf8_char;
+	GE_buffer_on(buf);
+	while ((c = GE_buffer_fgetc(buf)) != EOF)
+	{
+		ptr = data.utf8_char;
 
-			//TODO NOW is this required still?
-			//if (isspace(c))
-			//	*ptr++ = '\\';
+		/* Add char, check if multi-byte character */
+		while ((*ptr++ = c)
+				&& (utf8_count || (utf8_count = utf8_len(c)))
+				&& utf8_count < 4)
+			c = GE_buffer_fgetc(buf), utf8_count--;
 
-			/* Add char, check if multi-byte character */
-			while ((*ptr++ = c)
-					&& (utf8_count || (utf8_count = utf8_len(c)))
-					&& utf8_count < 4)
-				c = GE_buffer_fgetc(io[i]), utf8_count--;
-
-			*ptr = '\0';
-			data.frq = 1;
-			DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
-		}
-
-		/* Add EOF char */
-		memcpy(data.utf8_char, "EOF", 4), data.frq = 1;
+		*ptr = '\0';
+		data.frq = 1;
 		DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
-
-		rewind(io[i]->fp);
-		GE_buffer_off(io[i]);
 	}
+
+	/* Add EOF char */
+	memcpy(data.utf8_char, "EOF", 4), data.frq = 1;
+	DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
+
+	rewind(buf->fp);
+	GE_buffer_off(buf);
 
 	return list;
 }
 
 /*
- * decompression_frequency_list: Compile a frequency list from the
+ * frequency_list_from_metadata: Compile a frequency list from the
  * table at the start of a compressed file.
  */
-static int decompression_frequency_list(
+static int frequency_list_from_metadata(
 							HC_HuffmanNode **list,
 							F_Buf *buf,
 							int st_lex)
@@ -69,9 +76,7 @@ static int decompression_frequency_list(
 	size_t utf8_count;
 	utf8_count = 0;
 
-	Data d, *data;
-	data = &d;
-	DS_huffman_data_init(data);
+	Data data = HC_data_init();
 	String *str = NULL;
 	str = GE_string_init(str);
 
@@ -82,11 +87,6 @@ static int decompression_frequency_list(
 	{
 		/* remove tab */
 		c = GE_buffer_fgetc(buf);
-
-		/* escape char */
- 		// TODO NOW: char written into tree node here.
-		//if (isspace(c))
-		//	GE_string_add_char(str, '\\');
 
 		/* get utf-8 char */
 		while (GE_string_add_char(str, c)
@@ -103,12 +103,12 @@ static int decompression_frequency_list(
 		}
 
 		/* Write char to data struct */
-		memcpy(data->utf8_char, str->str, str->len+1);
+		memcpy(data.utf8_char, str->str, str->len+1);
 		GE_string_reset(str);
 
 		/* Check for utf-8 errors */
 		if (utf8_count > 4)
-			fprintf(stderr, "%s: utf8_countdown error.\n", __func__);
+			FAIL("utf8_countdown error");
 
 		/* next is a space, skip it */
 		c = GE_buffer_fgetc(buf);
@@ -120,14 +120,14 @@ static int decompression_frequency_list(
 		}
 
 		/* Write frq to data struct */
-		data->frq = strtol(str->str, &(str->ptr), 10);
+		data.frq = strtol(str->str, &(str->ptr), 10);
 		GE_string_reset(str);
 
 		/* remove line end */
 		c = GE_buffer_fgetc(buf);
 
 		/* Add to huffman linkedlist */
-		DS_huffman_tree_add(list, *data);
+		DS_huffman_tree_add(list, data);
 
 		/* Check for a to end the list */
 		if (c == '<')
@@ -143,25 +143,20 @@ static int decompression_frequency_list(
  * priority_queue: Compile a frequency list for all characters in the
  * document, sort that list to make a priority queue.
  */
-int priority_queue(
-					HC_HuffmanNode **list,
-
-					F_Buf **io,
-					const int st_prg)
+int frequency_list_compression(
+							HC_HuffmanNode **list,
+							F_Buf *buf,
+							const int st_prg)
 {
 	if (is_set(st_prg, VERBOSE))
-		fwrite("Create priority queue.\n", 1, 23, stdout);
+		fprintf(stdout, "Create priority queue %s.\n", buf->name);
 
 	/* Get char count */
-	if (compression_frequency_list(list, io, st_prg) == NULL)
-		fprintf(stderr, "%s(): error compression_frequency_list failed.\n", __func__);
-
-	/* Sort by frequency */
-	if (DS_mergesort(list, FN_data_frqcmp) == NULL)
-		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
+	if (frequency_list_from_text(list, buf) == NULL)
+		FAIL("frequency list failed");
 
 	if (is_set(st_prg, PRINT)) {
-		fwrite("print frequency map.\n", 1, 22, stdout);
+		fprintf(stdout, "print frequency map %s.\n", buf->name);
 		print_frequency_map(*list);
 	}
 
@@ -179,12 +174,12 @@ int decompression_priority_queue(
 							int st_lex)
 {
 	/* Get char count */
-	if ((st_lex = decompression_frequency_list(list, buf, st_lex)) == 0)
-		fprintf(stderr, "%s(): error decompression_frequency_list failed.\n", __func__);
+	if ((st_lex = frequency_list_from_metadata(list, buf, st_lex)) == 0)
+		FAIL("metadata frequency list failed");
 
 	/* Sort by frequency */
-	if (DS_mergesort(list, FN_data_frqcmp) == NULL)
-		fprintf(stderr, "%s(): error mergesort failed.\n", __func__);
+	if (HC_mergesort(list, FN_data_frqcmp) == NULL)
+		FAIL("mergesort failed");
 
 	return st_lex;
 }

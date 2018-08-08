@@ -1,4 +1,4 @@
-#include "data_structures/DS_huffman_tree.h"
+#include "huffman/HC_huffman_tree.h"
 
 /*
  * print_frequency_map: Output the frequency map, if any treenodes exist print
@@ -15,4 +15,4 @@ void print_huffman_tree(HC_HuffmanNode *tree);
 /*
  * print_char_map: Print out the char map made by the Huffman tree.
  */
-void print_char_map(Data **map);
+void print_char_map(Data *map);

@@ -2,11 +2,12 @@
 #include "general/GE_string.h"
 #include <stdio.h>
 
+//TODO NOW data struct here
 #ifndef _data_
 #define _data_
 typedef struct _data {
 	char utf8_char[5];
-	char string[128];
+	char binary[128];
 	size_t len;
 	size_t frq;
 	struct _data *next;
@@ -25,11 +26,10 @@ typedef struct _hc_huffman_node {
 #endif
 
 /* DS_huffman_data_init: Initalize an empty Data struct */
-Data *DS_huffman_data_init(Data *map);
+//Data *DS_huffman_data_init(Data *map);
 
-/* FN_data_strcmp: Compare Data one and two, the value should be a single char and
- * the result alphabetical order as per the ASCII char numbering system */
-int FN_data_strcmp(void *v1, void *v2);
+/* HC_data_init: Returns a data struct with all values set to 0 */
+Data HC_data_init(void);
 
 /* FN_data_frqcmp: Compare Data one and two, the value should be a number, sort
  * into numerical order, highest first. If d1 s greater than d2 return a
@@ -69,14 +69,14 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **list, const int state);
 
 /* DS_huffman_tree_extract_encoding: Recursive function to walk tree and retrieve the
  * binary data */
-Data **DS_huffman_tree_extract_encoding(
+int DS_huffman_tree_extract_encoding(
 						HC_HuffmanNode *tree,
-						String* string,
-						Data** map);
+						String *string,
+						Data *map);
+
+/* DS_huffman_tree_clear: Clear tree before reuse */
+int DS_huffman_tree_clear(HC_HuffmanNode **tree);
 
 /* DS_huffman_tree_free: Free huffman tree memory */
 int DS_huffman_tree_free(HC_HuffmanNode **tree);
-
-/* print_huffman_tree: Print out huffman tree */
-void print_huffman_tree(HC_HuffmanNode *tree);
 
