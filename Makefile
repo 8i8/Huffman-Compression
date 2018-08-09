@@ -29,5 +29,5 @@ clean:
 distclean: clean
 	rm -f compress a.out scratch*
 
-$(OBJ): Makefile $(HEADR)
+$(OBJ): Makefile
 

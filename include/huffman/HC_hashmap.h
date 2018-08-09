@@ -1,5 +1,7 @@
 #include "huffman/HC_huffman_tree.h"
 
+#define MAP_LEN 256
+
 /* HC_map_init: Initialise array for char map */
 Data *HC_map_init(Data *map);
 

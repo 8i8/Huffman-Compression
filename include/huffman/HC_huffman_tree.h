@@ -2,7 +2,6 @@
 #include "general/GE_string.h"
 #include <stdio.h>
 
-//TODO NOW data struct here
 #ifndef _data_
 #define _data_
 typedef struct _data {

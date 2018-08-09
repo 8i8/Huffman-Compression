@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "huffman/HC_map_char.h"
+#include "huffman/HC_hashmap.h"
 #include "huffman/HC_huffman_tree.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
@@ -25,7 +25,8 @@ Data *HC_map_init(Data *map)
 }
 
 /*
- * hashmap_for_compression: Create char map from Huffman tree.
+ * hashmap_for_compression: Fills char hash table from an ordered binary tree
+ * with each characters binary representation.
  */
 void hashmap_for_compression(Data *map, HC_HuffmanNode **tree, const int st_prg)
 {
@@ -44,7 +45,7 @@ void hashmap_for_compression(Data *map, HC_HuffmanNode **tree, const int st_prg)
 }
 
 /*
- * HC_map_add_node: Add a new map node after hash collision.
+ * HC_map_add_node: Add a new map node in the case of a hash collision.
  */
 int HC_map_add_node(Data *map, int bucket, Data new_node)
 {
@@ -57,6 +58,7 @@ int HC_map_add_node(Data *map, int bucket, Data new_node)
 
 	if ((cur->next = malloc(sizeof(Data))) == NULL)
 		FAIL("malloc failed");
+
 	*cur->next = new_node;
 
 	return 0;
@@ -72,8 +74,8 @@ Data HC_map_lookup_data(Data *map, char *c)
 	cur = map[bucket];
 
 	if (map[bucket].next != NULL) {
-			while ((cur.next != NULL) && strcmp(cur.utf8_char, c))
-				cur = *cur.next;
+		while ((cur.next != NULL) && strcmp(cur.utf8_char, c))
+			cur = *cur.next;
 
 		if (strcmp(cur.utf8_char, c))
 			return HC_data_init();

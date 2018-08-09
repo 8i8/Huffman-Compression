@@ -25,7 +25,6 @@ int FN_data_strcmp(void *v1, void *v2)
 /*
  * frequency_list_from_text: Sort alphabetically and keep count of each
  * occurrences of every character used.
- * TODO NOW char is written into data struct here.
  */
 static HC_HuffmanNode **frequency_list_from_text(
 						HC_HuffmanNode **list,
@@ -131,7 +130,7 @@ static int frequency_list_from_metadata(
 
 		/* Check for a to end the list */
 		if (c == '<')
-			st_lex = LE_get_token(buf, c, st_lex);
+			st_lex = LE_get_token(buf, c, &st_lex);
 	}
 
 	GE_string_free(str);

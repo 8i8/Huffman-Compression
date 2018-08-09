@@ -3,7 +3,7 @@
 #include <libgen.h>
 #include <ctype.h>
 #include "huffman/HC_huffman_tree.h"
-#include "huffman/HC_map_char.h"
+#include "huffman/HC_hashmap.h"
 #include "huffman/HC_priority_queue.h"
 #include "general/GE_error.h"
 #include "general/GE_utf8.h"
@@ -13,17 +13,21 @@
 #include "general/GE_print.h"
 #include "general/GE_file_buffer.h"
 #include "lexer/LE_xml.h"
+#include "lexer/LE_lexer.h"
 
 /*
  * metadata_write_file_name: Write file name in the archive meta data at the
  * given tab indenatation.
  */
-void metadata_write_file_name(F_Buf *buf)
+void metadata_write_file_name(F_Buf *read, F_Buf *write, const int st_prg)
 {
-	GE_buffer_on(buf);
-	LE_xml_element_item(buf, basename(buf->name), "name");
-	GE_buffer_fwrite_FILE(buf);
-	GE_buffer_off(buf);
+	if (is_set(st_prg, VERBOSE))
+		printf("archive metadata, file name written");
+
+	GE_buffer_on(write);
+	LE_xml_element_item(write, basename(read->name), "name");
+	GE_buffer_fwrite_FILE(write);
+	GE_buffer_off(write);
 }
 
 /*
@@ -31,21 +35,30 @@ void metadata_write_file_name(F_Buf *buf)
  * repetitions, used in the encoding of the file to the start of the file, so
  * as to allow for the recreation of the same Huffman tree for decompression.
  */
-void metadata_write_map(Data *map, F_Buf *buf)
+void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)
 {
 	size_t i;
 	Data cur;
+
+	if (is_set(st_prg, VERBOSE))
+		printf("metadata writing map.\n");
 
 	GE_buffer_on(buf);
 	LE_xml_element_open(buf, "map");
 
 	for (i = 0; i < MAP_LEN; i++)
 		if (map[i].binary[0] != '\0') {
-			LE_xml_element_map(buf, map[i].utf8_char, map[i].binary);
+			LE_xml_element_map(
+								buf,
+								map[i].utf8_char,
+								map[i].binary);
 			if (map[i].next != NULL) {
 				cur = *map[i].next;
 				while (cur.next != NULL) {
-					LE_xml_element_map(buf, map[i].utf8_char, map[i].binary);
+					LE_xml_element_map(
+								buf,
+								map[i].utf8_char,
+								map[i].binary);
 					cur = *cur.next;
 				}
 			}
@@ -99,6 +112,9 @@ int compression_write_file(
 
 	bit_count = byte = utf8_count = 0;
 
+	if (is_set(st_prg, VERBOSE))
+		printf("Compresseing file %s.\n", buf_read->name);
+
 	GE_buffer_on(buf_write);
 	LE_xml_element_open(buf_write, "comp");
 
@@ -151,9 +167,62 @@ int compression_write_file(
 	GE_buffer_fwrite_FILE(buf_write);
 	GE_buffer_off(buf_write);
 
-	if (is_set(st_prg, VERBOSE))
-		printf("Compressed file written.\n");
-
 	return err;
 }
+
+/*
+ * metadata_read_map: Create a hashmap from the char binary pairs in the files metadata.
+ * TODO NOW lexing reading needs cleaning up.
+ */
+int metadata_read_map(F_Buf **io, Data *map, int st_lex, const int st_prg)
+{
+	char c = ' ';
+	char *ptr_bin, *ptr_utf8;
+	Data data;
+	ptr_bin = data.binary;
+	ptr_utf8 = data.utf8_char;
+
+	if (is_set(st_prg, VERBOSE))
+		printf("Reading archive metadata, map.\n");
+
+	while (io[0] && is_set(st_lex, LEX_MAP) && c != EOF)
+	{
+		if ((c = LE_get_token(io[0], c, &st_lex)) == 0)
+			FAIL("Token failed");
+
+		if (is_set(st_lex, LEX_CHAR))
+		{
+			/* Read utf-8 char */
+			c = LE_get_utf8_char(io[0], ptr_utf8);
+
+			/* read binary representation */
+			c = LE_get_string(io[0], c, ptr_bin);
+
+			/* Store the data */
+			map[hash(data.binary)] = data;
+		}
+	}
+
+	return st_lex;
+}
+
+/*
+ * metadata_read_filename: Read the filename from the archive metadata.
+ */
+String metadata_read_filename(F_Buf *buf, String str, const int st_prg)
+{
+	char c = ' ';
+
+	if (is_set(st_prg, VERBOSE))
+		printf("Reading archive metadata, file name.\n");
+
+	while ((c = GE_buffer_fgetc(buf)) != '<' && c != EOF)
+		GE_string_add_char(&str, c);
+
+	return str;
+}
+
+//int write_text_file(F_Buf **io, Data *map)
+//{
+//}
 

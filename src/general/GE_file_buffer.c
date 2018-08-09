@@ -37,7 +37,7 @@ F_Buf *GE_buffer_init(FILE *fp, char *name)
 /*
  * open_file: Open a file.
  */
-unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state)
+unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int st_prg)
 {
 	FILE *fp;
 	int i;
@@ -53,7 +53,7 @@ unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state)
 	}
 
 	/* Before opening for writing, check if the file already exists */
-	if (!is_set(state, FORCE) && (pt = strchr(mode, 'w')) && pt[0] == 'w') {
+	if (!is_set(st_prg, FORCE) && (pt = strchr(mode, 'w')) && pt[0] == 'w') {
 		str = GE_string_init(str);
 		if ((fp = fopen(name, mode)) != NULL) {
 			fprintf(stdout, "Overwrite %s ? [y/n] ", name);

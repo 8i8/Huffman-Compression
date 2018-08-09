@@ -7,7 +7,12 @@
 #include "general/GE_utf8.h"
 #include "general/GE_state.h"
 
-#define STR_LEN 255
+#define STR_LEN 255  /* Max length of a token */
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  write xml objects
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 static int check_len(char *str)
 {
@@ -100,17 +105,23 @@ F_Buf *LE_xml_element_item(F_Buf *buf, char *item, char *tag)
 	return buf;
 }	
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  Parse xml objects
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 /*
  * LE_xml_goto_token: Move forwards allong the file stream to the next token.
  */
 char LE_xml_goto_token(F_Buf *buf, char c)
 {
-	while (isspace(c)) 
+	/* Brutal read untill a < token is found, assumes that a token will be
+	 * the next relevent information on the stream */
+	while (c != '<' && c != EOF)
 		c = GE_buffer_fgetc(buf);
 
 	/* If not a token then push back and return*/
 	if (c != '<')
-		return 0;
+		FAIL("Expected a token");
 
 	return c;
 }
@@ -165,7 +176,7 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 
 		/* Does the token exist? */
 		if ((token = LE_check_token(str)) == 0)
-			FAIL("Token not found");
+			FAIL("Token not found in hashtable");
 
 		c = in_or_out(buf, c, '/', &off);
 
@@ -178,7 +189,8 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 		ptr = str;
 		*ptr = '\0';
 	}
-
+	if (c == EOF)
+		FAIL("EOF reached");
 	return c;
 }
 

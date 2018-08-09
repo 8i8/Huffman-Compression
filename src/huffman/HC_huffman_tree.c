@@ -7,7 +7,7 @@
 #include "general/GE_print.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
-#include "huffman/HC_map_char.h"
+#include "huffman/HC_hashmap.h"
 
 /*
  * DS_huffman_data_init: Initalize an empty Data struct.
@@ -293,7 +293,6 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 /*
  * DS_huffman_tree_extract_encoding: Recursive function to walk tree and
  * extract binary data for encoding.
- * TODO NOW map written here.
  */
 int DS_huffman_tree_extract_encoding(
 					HC_HuffmanNode *tree,

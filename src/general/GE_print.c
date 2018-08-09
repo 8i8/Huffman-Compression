@@ -1,5 +1,5 @@
 #include "huffman/HC_huffman_tree.h"
-#include "general/GE_hash.h"
+#include "huffman/HC_hashmap.h"
 
 /*
  * print_node: Print one node.
