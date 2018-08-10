@@ -1,6 +1,6 @@
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
-#include "huffman/HC_hash_table.h"
+#include "huffman/HC_hashtable.h"
 
 /*
  * huffman: Run main program code.

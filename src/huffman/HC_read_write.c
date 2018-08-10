@@ -3,7 +3,7 @@
 #include <libgen.h>
 #include <ctype.h>
 #include "huffman/HC_huffman_tree.h"
-#include "huffman/HC_hash_table.h"
+#include "huffman/HC_hashtable.h"
 #include "huffman/HC_priority_queue.h"
 #include "general/GE_error.h"
 #include "general/GE_utf8.h"
@@ -109,7 +109,7 @@ int compression_write_file(
 	int bucket, err;
 	bucket = err = 0;
 
-	char c, *ptr, utf8_char[5], *bin;
+	char c, *ptr, utf8_char[UTF8_LEN], *bin;
 	size_t i, j;
 	ptr = utf8_char;
 
@@ -135,7 +135,7 @@ int compression_write_file(
 		*ptr = '\0';
 
 		/* Retreive huffman coding */
-		bucket = hash(utf8_char);
+		bucket = hash(utf8_char[UTF8_LEN]);
 		if (map[bucket].binary[0] == '\0')
 			FAIL("hashmap");
 		bin = map[bucket].binary;
@@ -150,8 +150,9 @@ int compression_write_file(
 	if (utf8_count > 4)
 		FAIL("utf8_countdown");
 
+	char eof[4] = "EOF";
 	/* Add EOF char */
-	bucket = hash("EOF");
+	bucket = hash(eof[4]);
 	if (map[bucket].binary[0] == '\0')
 		FAIL("hashmap");
 	bin = map[bucket].binary;
@@ -174,13 +175,13 @@ int compression_write_file(
 }
 
 /*
- * metadata_read_map: Create a hashmap from the char binary pairs in the files metadata.
+ * metadata_read_create_table: Create a hash table using the key value pairs
+ * retreived from the archive metadata.
  */
-int metadata_read_map(F_Buf **io, Data *map, int st_lex, const int st_prg)
+int metadata_read_create_table(F_Buf **io, Data *map, int st_lex, const int st_prg)
 {
 	char c = ' ';
 	char *ptr_bin, *ptr_utf8;
-	int bucket;
 	Data data;
 	data = HC_data_init();
 	ptr_bin = data.binary;
@@ -194,6 +195,7 @@ int metadata_read_map(F_Buf **io, Data *map, int st_lex, const int st_prg)
 		if ((c = LE_get_token(io[0], c, &st_lex)) == 0)
 			FAIL("Token failed");
 
+ 		// TODO NOW hash table for inflation created here
 		if (is_set(st_lex, LEX_CHAR))
 		{
 			/* Read utf-8 char */
@@ -203,11 +205,7 @@ int metadata_read_map(F_Buf **io, Data *map, int st_lex, const int st_prg)
 			c = LE_get_string(io[0], c, ptr_bin);
 
 			/* Store the data */
-			bucket = hash(data.binary);
-			if (map[bucket].next)
-				HC_hash_table_add_value(map, bucket, data);
-			else
-				map[bucket] = data;
+			HC_hashtable_add_binary_key(map, *(data.binary), *(data.utf8_char));
 		}
 	}
 
@@ -278,7 +276,7 @@ int decompress_write_text_file(
 		/* Look up the string in its current state in the hash tabel,
 		 * when a char is found the strig is reset */
 		// TODO NOW hash table is finding the string '0'
-		data = HC_hash_table_lookup_string(map, "0");
+		data = HC_hashtable_lookup_string(map, *(str->str));
 		if (data.utf8_char[0] != '\0')
 		{
 			GE_buffer_fwrite(

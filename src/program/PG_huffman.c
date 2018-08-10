@@ -6,7 +6,7 @@
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
 #include "huffman/HC_mergesort.h"
-#include "huffman/HC_hash_table.h"
+#include "huffman/HC_hashtable.h"
 #include "huffman/HC_read_write.h"
 #include "lexer/LE_lexer.h"
 #include "general/GE_print.h"
@@ -27,7 +27,7 @@ void hashmap_for_compression(Data *map, HC_HuffmanNode **tree, const int st_prg)
 
 	if (is_set(st_prg, PRINT)) {
 		printf("Print char map.\n");
-		print_char_map(map);
+		print_hashtable(map);
 	}
 }
 
@@ -43,7 +43,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 	int i, st_lex;
         i = st_lex = 0;
 	Data map[MAP_LEN];
-	HC_hash_table_init(map);
+	HC_hashtable_init(map);
 	String str;
 
 	if (is_set(st_prg, VERBOSE))
@@ -60,7 +60,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 
 		/* Decompress that thing */
 		if (is_set(st_lex, LEX_MAP))
-			st_lex = metadata_read_map(io, map, st_lex, st_prg);
+			st_lex = metadata_read_create_table(io, map, st_lex, st_prg);
 		else if (is_set(st_lex, LEX_FILENAME)) {
 			str = GE_string_stack_init(str);
 			str = metadata_read_filename(io[0], str, &st_lex, st_prg);
@@ -80,7 +80,7 @@ int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 {
 	int i;
 	Data map[MAP_LEN];
-	HC_hash_table_init(map);
+	HC_hashtable_init(map);
 
 	for (i = 1; i < MAX_FILES && io[i]; i++) {
 		frequency_list_compression(tree, io[i], st_prg);
@@ -94,7 +94,7 @@ int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 		metadata_write_file_name(io[0], io[1], st_prg);
 		compression_write_file(map, io[0], io[1], st_prg);
 		DS_huffman_tree_clear(tree);
-		HC_hash_table_clear(map);
+		HC_hashtable_clear(map);
 	}
 
 	return st_prg;
@@ -104,7 +104,7 @@ int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 {
 	int i;
 	Data map[MAP_LEN];
-	HC_hash_table_init(map);
+	HC_hashtable_init(map);
 
 	/* Make priority queue from the input file's character count and then
 	 * construct an ordered binary tree from that queue, and then finaly a
@@ -132,7 +132,7 @@ int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 		compression_write_file(map, io[i], io[0], st_prg);
 	}
 
-	HC_hash_table_clear(map);
+	HC_hashtable_clear(map);
 
 	return st_prg;
 }

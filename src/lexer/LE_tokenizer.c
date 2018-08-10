@@ -38,7 +38,7 @@ static void token_to_tree(Token *tree, Token *new_token)
 /*
  * token_add: Add a new token to the hashmap.
  */
-static int token_add(char *token, int flag)
+static int token_add(char token, int flag)
 {
 	int bucket = hash(token);
 	Token *new_token;
@@ -46,7 +46,7 @@ static int token_add(char *token, int flag)
 	if ((new_token = malloc(sizeof(Token))) == NULL)
 		return 1;
 
-	new_token->id = strdup(token);
+	new_token->id = strdup(&token);
 	new_token->flag = flag;
 	new_token->left = NULL;
 	new_token->right = NULL;
@@ -67,11 +67,16 @@ int LE_token_init(void)
 	if ((token_table = calloc(TABLE_LEN, sizeof(Token))) == NULL)
 		return 1;
 
-	token_add("map", LEX_MAP);
-	token_add("comp", LEX_DECOMPRESS);
-	token_add("name", LEX_FILENAME);
-	token_add("ch", LEX_CHAR);
-	token_add("break", DECOMPRESS);
+	char map[4] = "map";
+	char comp[5] = "comp";
+	char name[5] = "name";
+	char ch[3] = "ch";
+
+
+	token_add(map[4], LEX_MAP);
+	token_add(comp[5], LEX_DECOMPRESS);
+	token_add(name[5], LEX_FILENAME);
+	token_add(ch[3], LEX_CHAR);
 
 	return 0;
 }
@@ -80,9 +85,9 @@ int LE_token_init(void)
  * check_tree: Recursive function that walks the binary tree created in the
  * case of hash collisions, looking for the given token.
  */
-int check_tree(Token *tree, char *check)
+int check_tree(Token *tree, char check)
 {
-	int res = strcmp(tree->id, check);
+	int res = strcmp(tree->id, &check);
 
 	if (res == 0)
 		return tree->flag;
@@ -100,7 +105,7 @@ int check_tree(Token *tree, char *check)
  * LE_check_token: Check token_table for the given token, if it is found
  * return the stored flag, else return 0.
  */
-int LE_check_token(char *token)
+int LE_check_token(char token)
 {
 	int bucket = hash(token);
 	Token *current;

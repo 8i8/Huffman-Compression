@@ -7,7 +7,7 @@
 #include "general/GE_print.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
-#include "huffman/HC_hash_table.h"
+#include "huffman/HC_hashtable.h"
 
 /*
  * DS_huffman_data_init: Initalize an empty Data struct.
@@ -295,9 +295,9 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
  * extract binary data for encoding.
  */
 int DS_huffman_tree_extract_encoding(
-					HC_HuffmanNode *tree,
-					String* string,
-					Data *map)
+						HC_HuffmanNode *tree,
+						String* string,
+						Data *map)
 {
 	/* Add binary bit data to string */
 	if (tree->bit)
@@ -310,27 +310,17 @@ int DS_huffman_tree_extract_encoding(
 		string = GE_string_rem_char(string);
 	}
 
-	/* Branch left, adds '1' */
+	/* Branch right, adds '1' */
 	if (tree->right) {
 		DS_huffman_tree_extract_encoding(tree->right, string, map);
 		string = GE_string_rem_char(string);
 	}
 
 	/* Fill data struct and insert into hash map */
-	if (tree->data.utf8_char[0] != '\0') {
-		int bucket = hash(tree->data.utf8_char);
-		if (map[bucket].binary[0] != '\0') {
-			Data new_node;
-			memcpy(new_node.binary, string->str, string->len+1);
-			memcpy(new_node.utf8_char, tree->data.utf8_char, 5);
-			new_node.len = string->len;
-			HC_hash_table_add_value(map, bucket, new_node);
-		} else {
-			memcpy(map[bucket].binary, string->str, string->len+1);
-			memcpy(map[bucket].utf8_char, tree->data.utf8_char, 5);
-			map[bucket].len = string->len;
-		}
-	}
+	//TODO NOW hash table created from text file data
+	if (tree->data.utf8_char[0] != '\0')
+		HC_hashtable_add_utf8_key(map, *(tree->data.utf8_char), *(string->str));
+
 	return 0;
 }
 
@@ -342,8 +332,7 @@ int DS_huffman_tree_clear(HC_HuffmanNode **tree)
 	if (*tree == NULL) {
 		FAIL("tree node is NULL");
 		return 1;
-	}
-	else if ((*tree)->next != NULL)
+	} else if ((*tree)->next != NULL)
 		FAIL("Priority queue nodes still exist");
 
 	if ((*tree)->left) {

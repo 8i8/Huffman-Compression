@@ -2,11 +2,14 @@
 #include "general/GE_string.h"
 #include <stdio.h>
 
+#define UTF8_LEN 5
+#define BIN_MAX 128	/* Max depth of ordered binary tree, binary string */
+
 #ifndef _data_
 #define _data_
 typedef struct _data {
-	char utf8_char[5];
-	char binary[128];
+	char utf8_char[UTF8_LEN];
+	char binary[BIN_MAX];
 	size_t len;
 	size_t frq;
 	struct _data *next;

@@ -28,9 +28,9 @@ int decompress_archive(F_Buf **io, const int st_prg);
 void metadata_write_map(Data map[], F_Buf *buf, const int st_prg);
 
 /*
- * metadata_read_map: Create a hashmap from the char binary pairs in the files metadata.
+ * metadata_read_create_table: Create a hashmap from the char binary pairs in the files metadata.
  */
-int metadata_read_map(F_Buf **io, Data *map, int st_lex, const int st_prg);
+int metadata_read_create_table(F_Buf **io, Data *map, int st_lex, const int st_prg);
 
 /*
  * metadata_read_filename: Read the filename from the archive metadata.

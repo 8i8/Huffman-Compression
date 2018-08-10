@@ -1,5 +1,5 @@
 #include "huffman/HC_huffman_tree.h"
-#include "huffman/HC_hash_table.h"
+#include "huffman/HC_hashtable.h"
 
 /*
  * print_node: Print one node.
@@ -92,19 +92,21 @@ void print_huffman_tree(HC_HuffmanNode *tree)
 }
 
 /*
- * print_char_map: Print out the char map made by the Huffman tree.
+ * print_hashtable: Print out the char map made by the Huffman tree.
  */
-void print_char_map(Data *map)
+void print_hashtable(Data *map)
 {
 	size_t i;
-	Data cur;
+	Data *cur;
 	for (i = 0; i < MAP_LEN; i++)
 		if (map[i].binary[0] != '\0') {
 			printf("%s %s\n", map[i].utf8_char, map[i].binary);
-			cur = *map[i].next;
-			while (cur.binary[0] != '\0') {
-				printf("%s %s\n", cur.utf8_char, cur.binary);
-				cur = *map[i].next;
+			if (map[i].next) {
+				cur = map[i].next;
+				while (cur->binary[0] != '\0') {
+					printf("%s %s\n", cur->utf8_char, cur->binary);
+					cur = cur->next;
+				}
 			}
 		}
 }

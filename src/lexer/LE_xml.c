@@ -7,7 +7,7 @@
 #include "general/GE_utf8.h"
 #include "general/GE_state.h"
 
-#define STR_LEN 255  /* Max length of a token */
+#define TOKEN_LEN 255  /* Max length of a token */
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -18,7 +18,7 @@ static int check_len(char *str)
 {
 	int len;
 	len = strlen(str);
-	assert(len < STR_LEN);
+	assert(len < TOKEN_LEN);
 	return len;
 }
 
@@ -44,7 +44,7 @@ static char *make_close_tag(char *str, char *element)
 F_Buf *LE_xml_element_open(F_Buf *buf, char *token)
 {
 	int i;
-	char str[STR_LEN] = { '\0' };
+	char str[TOKEN_LEN] = { '\0' };
 	for (i = 0; i < buf->tab_depth; i++)
 		strcat(str, "\t");
 	make_open_tag(str, token);
@@ -60,7 +60,7 @@ F_Buf *LE_xml_element_open(F_Buf *buf, char *token)
 F_Buf *LE_xml_element_close(F_Buf *buf, char *token)
 {
 	int i;
-	char str[STR_LEN] = { '\0' };
+	char str[TOKEN_LEN] = { '\0' };
 	buf->tab_depth--;
 	for (i = 0; i < buf->tab_depth; i++)
 		strcat(str, "\t");
@@ -76,7 +76,7 @@ F_Buf *LE_xml_element_close(F_Buf *buf, char *token)
 F_Buf *LE_xml_element_map(F_Buf *buf, char *st1, char *st2)
 {
 	int i;
-	char str[STR_LEN] = { '\0' };
+	char str[TOKEN_LEN] = { '\0' };
 	for (i = 0; i < buf->tab_depth; i++)
 		strcat(str, "\t");
 	strcat(str, "<ch>");
@@ -94,7 +94,7 @@ F_Buf *LE_xml_element_map(F_Buf *buf, char *st1, char *st2)
 F_Buf *LE_xml_element_item(F_Buf *buf, char *item, char *tag)
 {
 	int i;
-	char str[STR_LEN] = { '\0' };
+	char str[TOKEN_LEN] = { '\0' };
 	for (i = 0; i < buf->tab_depth; i++)
 		strcat(str, "\t");
 	make_open_tag(str, tag);
@@ -149,7 +149,7 @@ static char in_or_out(F_Buf *buf, char c, char in, int *off)
  */
 char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 {
-	char *ptr, str[STR_LEN] = { '\0' };
+	char *ptr, str[TOKEN_LEN] = { '\0' };
 	int utf8_count, off, token;
 	utf8_count = off = token = 0;
 	ptr = str;
@@ -175,7 +175,7 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 		}
 
 		/* Does the token exist? */
-		if ((token = LE_check_token(str)) == 0)
+		if ((token = LE_check_token(str[ptr-&str[0]+1])) == 0)
 			FAIL("Token not found in hashtable");
 
 		c = in_or_out(buf, c, '/', &off);
