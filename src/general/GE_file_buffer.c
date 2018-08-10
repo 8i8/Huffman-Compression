@@ -134,6 +134,11 @@ F_Buf *GE_buffer_fill(F_Buf *buf)
  */
 F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf)
 {
+	if (buf == NULL)
+		FAIL("F_Buf: NULL pointer recieved");
+	else if (buf->ptr == NULL)
+		FAIL("F_Buf->ptr: NULL pointer recieved");
+
 	size_t space, len;
 	space = BUF - (buf->ptr - buf->buf);
 	len = size * num;

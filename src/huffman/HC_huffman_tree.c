@@ -7,7 +7,7 @@
 #include "general/GE_print.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
-#include "huffman/HC_hashmap.h"
+#include "huffman/HC_hash_table.h"
 
 /*
  * DS_huffman_data_init: Initalize an empty Data struct.
@@ -255,7 +255,7 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 	data = HC_data_init();
 
 	if (is_set(st_prg, VERBOSE))
-		printf("Build binary tree.\n");
+		printf("metadata: buildiing binary tree.\n");
 
 	while ((*tree)->next)
 	{
@@ -283,7 +283,7 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 	}
 
 	if (is_set(st_prg, PRINT)) {
-		printf("Print huffman tree.\n");
+		printf("print: huffman tree.\n");
 		print_huffman_tree(*tree);
 	}
 
@@ -324,7 +324,7 @@ int DS_huffman_tree_extract_encoding(
 			memcpy(new_node.binary, string->str, string->len+1);
 			memcpy(new_node.utf8_char, tree->data.utf8_char, 5);
 			new_node.len = string->len;
-			HC_map_add_node(map, bucket, new_node);
+			HC_hash_table_add_value(map, bucket, new_node);
 		} else {
 			memcpy(map[bucket].binary, string->str, string->len+1);
 			memcpy(map[bucket].utf8_char, tree->data.utf8_char, 5);

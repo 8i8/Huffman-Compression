@@ -35,4 +35,13 @@ int metadata_read_map(F_Buf **io, Data *map, int st_lex, const int st_prg);
 /*
  * metadata_read_filename: Read the filename from the archive metadata.
  */
-String metadata_read_filename(F_Buf *buf, String str, const int st_prg);
+String metadata_read_filename(F_Buf *buf, String str, int *st_lex, const int st_prg);
+
+/*
+ * decompress_write_text_file: Inflate a text file from the given arvhive.
+ */
+int decompress_write_text_file(
+						F_Buf *buf_read,
+						F_Buf *buf_write,
+						Data *map,
+						const int st_prg);

@@ -19,7 +19,7 @@
 #include "general/GE_file_buffer.h"
 #include "huffman/HC_priority_queue.h"
 #include "huffman/HC_huffman_tree.h"
-#include "huffman/HC_hashmap.h"
+#include "huffman/HC_hash_table.h"
 #include "program/PG_prologue.h"
 #include "program/PG_huffman.h"
 #include "program/PG_epilogue.h"

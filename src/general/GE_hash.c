@@ -1,4 +1,4 @@
-#include "huffman/HC_hashmap.h"
+#include "huffman/HC_hash_table.h"
 
 /*
  * hash: Hash value for string s

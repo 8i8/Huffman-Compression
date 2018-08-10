@@ -64,7 +64,6 @@ char LE_get_token(F_Buf *buf, char c, int *st_lex)
 /*
  * LE_get_utf8_char: Get the next utf-8 char from the file setream return it as
  * a string, requires a string of at least 5 bytes.
- * TODO NOW get utf8 char
  */
 char LE_get_utf8_char(F_Buf *buf, char *ptr)
 {
@@ -75,9 +74,8 @@ char LE_get_utf8_char(F_Buf *buf, char *ptr)
 	 * the intire string of char */
 	while ((*ptr++ = c)
 			&& (utf8_count || (utf8_count = utf8_len(c)))
-			&& utf8_count < 3) {
+			&& utf8_count < 3)
 		c = GE_buffer_fgetc(buf), utf8_count--;
-	}
 
 	if (utf8_count > 3)
 		FAIL("utf-8 character read failed");
@@ -92,8 +90,8 @@ char LE_get_utf8_char(F_Buf *buf, char *ptr)
 }
 
 /*
- * LE_get_string: Get the next word upto the next whitespace or EOF.
- * TODO NOW get binary string
+ * LE_get_string: Get the next word up until the next whitespace or EOF
+ * character, return that character.
  */
 char LE_get_string(F_Buf *buf, char c, char *str)
 {

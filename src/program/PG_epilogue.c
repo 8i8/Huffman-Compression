@@ -2,7 +2,7 @@
 #include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
 #include "huffman/HC_huffman_tree.h"
-#include "huffman/HC_hashmap.h"
+#include "huffman/HC_hash_table.h"
 
 /*
  * epilogue: Free all memory and close files.
