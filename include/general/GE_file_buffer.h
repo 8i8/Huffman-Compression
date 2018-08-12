@@ -8,14 +8,19 @@ typedef struct _file_buffer {
 	char *buf;
 	char *ptr;
 	char *read;
+	char *hold;
 	char *end;
 	int tab_depth;
 	int eof;
+	int st_buf;
 } F_Buf;
 #endif
 
-#define BUFFER_SIZE     20000
 #define MAX_FILES       20
+#define BUFFER_SIZE     4000  /* Should be relativly small, here at around the
+				 size of th linux pagefile, absolutly should be
+				 lower than the systems available ram and never
+				 anywhere near the value of a 32 bit int. */
 
 /*
  * GE_buffer_array_init: Initialise and return an array of pointers to file
@@ -79,6 +84,21 @@ int GE_buffer_skip(F_Buf *buf, unsigned num);
  * GE_buffer_ungetc: Push back unused character.
  */
 int GE_buffer_ungetc(int c, F_Buf *buf);
+
+/*
+ * GE_buffer_pushback_mark: Set mark for a potential pushback.
+ */
+int GE_buffer_pushback_mark(F_Buf *buf);
+
+/*
+ * GE_pushback_unmark: Remove previously placed pushback point.
+ */
+int GE_buffer_pushback_unmark(F_Buf *buf);
+
+/*
+ * GE_buffer_pushback_goto: Return to pushback marker.
+ */
+int GE_buffer_pushback_goto(F_Buf *buf);
 
 /*
  * GE_buffer_free: Free all memory associated with a F_Buf struct.

@@ -10,7 +10,8 @@
 typedef struct _data {
 	char utf8_char[UTF8_LEN];
 	char binary[BIN_MAX];
-	size_t len;
+	unsigned short len_char;
+	unsigned short len_bin;
 	size_t frq;
 	struct _data *next;
 } Data;

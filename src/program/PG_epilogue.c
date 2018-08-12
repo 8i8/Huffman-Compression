@@ -14,8 +14,8 @@ int epilogue(F_Buf **io, HC_HuffmanNode **tree)
 	if (*tree)
 		DS_huffman_tree_free(tree);
 
-	while (io[i] != NULL)
-		free(io[i++]);
+	for (i = 0; i < MAX_FILES && io[i] != NULL; i++)
+		free(io[i]);
 
 	free(io);
 

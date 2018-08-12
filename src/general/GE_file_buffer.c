@@ -1,13 +1,20 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
 #include "general/GE_file_buffer.h"
 #include "general/GE_error.h"
 #include "general/GE_state.h"
 #include "general/GE_string.h"
 
-#define BUF   BUFFER_SIZE - 1      /* Buffer with a margin */
+// TODO NEXT Add a system of FILE type to the internal buffer state.
 
-static int back = 1;               /* Stop ungetc of nore than one c */
+#define BUF   BUFFER_SIZE - 1      /* Buffer with a margin fo stop issues with
+				      the end of buffer overflow  and the null
+				      terminator */
+#define BUF_BACK_AVAIL  (1 <<  0)
+#define BUF_HOLD        (1 <<  1)
+#define BUF_EXISTS      (1 <<  2)
+#define BUF_UNGETC      (1 <<  3)
 
 /*
  * GE_buffer_array_init: Initialise and return an array of pointers to file
@@ -29,8 +36,9 @@ F_Buf *GE_buffer_init(FILE *fp, char *name)
 	buf->fp = fp;
 	buf->eof = 0;
 	buf->buf = buf->read = buf->ptr = buf->end = NULL;
+	buf->hold = NULL;
 	buf->tab_depth = 0;
-	back = 0;
+	buf->st_buf = state_init();
 	return buf;
 }
 
@@ -41,32 +49,42 @@ unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int st_prg)
 {
 	FILE *fp;
 	int i;
-	char *pt;
 	String *str = NULL;
 
+	/* Next available slot */
 	for (i = 0; i < MAX_FILES && io[i]; i++)
 		;
 
+	/* To many */
 	if (i >= MAX_FILES) {
 		FAIL("file limit exceeded");
 		return 1;
 	}
 
-	/* Before opening for writing, check if the file already exists */
-	if (!is_set(st_prg, FORCE) && (pt = strchr(mode, 'w')) && pt[0] == 'w') {
+	/* Ask first before overwriting */
+	if (!is_set(st_prg, FORCE) 
+						&& (!strcmp(mode, "w") 
+						|| !strcmp(mode, "wb") 
+						|| !strcmp(mode, "r+")))
+	{
 		str = GE_string_init(str);
-		if ((fp = fopen(name, mode)) != NULL) {
+
+		if ((fp = fopen(name, "r")) != NULL)
+		{
 			fprintf(stdout, "Overwrite %s ? [y/n] ", name);
 			GE_string_getchar(str);
 			if (str->str[0] != 'y') {
+				fclose(fp);
 				GE_string_free(str);
 				return 1;
 			}
-		}
+		} else
+			FAIL("File open failed");
+
 		GE_string_free(str);
 	}
 
-	/* Open file and store if successful */
+	/* Open file */
 	if ((fp = fopen(name, mode)) == NULL) {
 		FAIL("file read failed");
 		return 1;
@@ -83,6 +101,7 @@ F_Buf *GE_buffer_on(F_Buf *buf)
 {
 	buf->read = buf->ptr = buf->buf = malloc(BUFFER_SIZE);
 	buf->end = buf->buf + BUF;
+	state_set(buf->st_buf, BUF_EXISTS);
 	return buf;
 }
 
@@ -93,6 +112,7 @@ F_Buf *GE_buffer_off(F_Buf *buf)
 {
 	free(buf->buf);
 	buf->buf = buf->ptr = buf->end = NULL;
+	state_unset(buf->st_buf, BUF_EXISTS);
 	return buf;
 }
 
@@ -103,6 +123,7 @@ F_Buf *GE_buffer_rewind(F_Buf *buf)
 {
 	buf->eof = 0;
 	rewind(buf->fp);
+	state_unset(buf->st_buf, BUF_BACK_AVAIL);
 	return buf;
 }
 
@@ -114,10 +135,16 @@ F_Buf *GE_buffer_fill(F_Buf *buf)
 {
 	size_t len, written;
 	len = written = 0;
-	back = 0;
+
+	state_unset(buf->st_buf, BUF_UNGETC);
+	state_unset(buf->st_buf, BUF_BACK_AVAIL);
+
 	/* If the buffer is at its end, back to the start */
-	if (buf->ptr == buf->end)
+	if (buf->ptr == buf->end) {
 		buf->ptr = buf->read = buf->buf;
+		state_unset(buf->st_buf, BUF_BACK_AVAIL);
+	}
+
 	len = BUF - (buf->ptr - buf->buf);
 
 	written = fread(buf->ptr, 1, len, buf->fp);
@@ -165,18 +192,20 @@ F_Buf *GE_buffer_fwrite_FILE(F_Buf *buf)
 {
 	fwrite(buf->buf, 1, buf->ptr - buf->buf, buf->fp);
 	buf->ptr = buf->buf;
-	back = 0;
+	state_unset(buf->st_buf, BUF_BACK_AVAIL);
 	return buf;
 }
 
 /*
  * GE_buffer_getc: Returns the next char from the buffer, refilling when
  * required.
+ * TODO NEXT is there any way around these state changes fgetc?
  */
 int GE_buffer_fgetc(F_Buf *buf)
 {
 	if (buf->read < buf->ptr || *buf->read == EOF ) {
-		back = 1;
+		state_unset(buf->st_buf, BUF_UNGETC);
+		state_set(buf->st_buf, BUF_BACK_AVAIL);
 		return *buf->read++;
 	} else
 		buf = GE_buffer_fill(buf);
@@ -185,14 +214,15 @@ int GE_buffer_fgetc(F_Buf *buf)
 }
 
 /*
- * GE_buffer_skip: Skip over n cahr in the buffer.
+ * GE_buffer_skip: Skip over n char in the buffer.
  */
 int GE_buffer_skip(F_Buf *buf, unsigned num)
 {
 	size_t i;
 	for (i = 0; i < num && (buf->read < buf->ptr || *buf->read == EOF); i++)
 		buf->read++;
-	back = 1;
+	state_unset(buf->st_buf, BUF_UNGETC);
+	state_set(buf->st_buf, BUF_BACK_AVAIL);
 
 	if (i == num)
 		return *buf->read++;
@@ -203,16 +233,78 @@ int GE_buffer_skip(F_Buf *buf, unsigned num)
 }
 
 /*
- * GE_buffer_ungetc: Push back unused character.
+ * GE_buffer_ungetc: Push back unused character, can be used untill the buffer
+ * reaches its entry point, fron where only one more push can be assured, the
+ * distance from the read head to the buffer start is returned.
+ * TODO NEXT ungetc added is it working here? This needs to be tested.
  */
 int GE_buffer_ungetc(int c, F_Buf *buf)
 {
-	if (buf->read > buf->buf)
-		buf->read--;
-	else if (back)
-		ungetc(c, buf->fp), back--;
+	ptrdiff_t diff;
+	if ((diff = buf->read - buf->buf) > 0) {
+		if (--buf->read && --diff == 0)
+			state_unset(buf->st_buf, BUF_BACK_AVAIL);
+		return diff;
+	}
+
+	if (!is_set(buf->st_buf, BUF_UNGETC)) {
+		state_set(buf->st_buf, BUF_UNGETC);
+		return ungetc(c, buf->fp);
+	} else {
+		WARNING("ungetc: only one pushed back char is assured");
+		return ungetc(c, buf->fp);
+	}
 
 	return 0;
+}
+
+/*
+ * GE_buffer_pushback_mark: Set mark for a potential pushback.
+ */
+int GE_buffer_pushback_mark(F_Buf *buf)
+{
+	if (is_set(buf->st_buf, BUF_HOLD)) {
+		FAIL("F_Buf already held");
+		return 1;
+	}
+
+	buf->hold = buf->read;
+	state_set(buf->st_buf, BUF_HOLD);
+
+	return 0;
+}
+
+/*
+ * GE_pushback_unmark: Remove previously placed pushback point.
+ */
+int GE_buffer_pushback_unmark(F_Buf *buf)
+{
+	if (!is_set(buf->st_buf, BUF_HOLD)) {
+		FAIL("F_Buf not held");
+		return 1;
+	}
+
+	buf->hold = NULL;
+	state_unset(buf->st_buf, BUF_HOLD);
+
+	return 0;
+}
+
+/*
+ * GE_buffer_pushback_goto: Return to pushback marker.
+ */
+int GE_buffer_pushback_goto(F_Buf *buf)
+{
+	if (!is_set(buf->st_buf, BUF_HOLD)) {
+		FAIL("F_Buf not held");
+		return 1;
+	}
+
+	buf->read = buf->hold;
+	buf->hold = NULL;
+	state_unset(buf->st_buf, BUF_HOLD);
+
+	return *buf->read;
 }
 
 /*

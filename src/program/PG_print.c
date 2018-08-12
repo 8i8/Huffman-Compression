@@ -7,7 +7,7 @@
 static void print_node(HC_HuffmanNode *node)
 {
 	printf("%s ", node->data.utf8_char);
-	if (node->data.len)
+	if (node->data.len_bin)
 		printf("%s ", node->data.binary);
 	printf("%lu\n", node->data.frq);
 

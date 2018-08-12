@@ -10,6 +10,10 @@ void LE_lexer_init(void);
 /* LE_token_free: Free trie memory */
 void LE_lexer_free(void);
 
+/* LE_goto_glyph: Move forwards along the file stream to the next occurrence of
+ * the given glyph */
+char LE_goto_glyph(F_Buf *buf, char c, char glyph);
+
 /* LE_get_token: Returns a state on reading a token */
 char LE_get_token(F_Buf *buf, char c, int *st_lex);
 

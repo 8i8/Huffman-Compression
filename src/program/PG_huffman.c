@@ -7,9 +7,9 @@
 #include "huffman/HC_priority_queue.h"
 #include "huffman/HC_mergesort.h"
 #include "huffman/HC_hashtable.h"
-#include "huffman/HC_read_write.h"
 #include "lexer/LE_lexer.h"
-#include "general/GE_print.h"
+#include "program/PG_print.h"
+#include "program/PG_read_write.h"
 
 /*
  * hashmap_for_compression: Fills char hash table from an ordered binary tree
@@ -31,7 +31,6 @@ void hashmap_for_compression(Data *map, HC_HuffmanNode **tree, const int st_prg)
 	}
 }
 
-
 /*
  * decompress_archive: Read and then decompress compressed file. Analyze file
  * stream with lexer to know the decompression procedure for the particular
@@ -51,24 +50,32 @@ int decompress_archive(F_Buf **io, const int st_prg)
 
 	LE_lexer_init();
 	GE_buffer_on(io[0]);
-	while (io[0] && c != EOF)
+	c = GE_buffer_fgetc(io[0]);
+	while (io[0] && c != EOF && !is_set(st_lex, LEX_ERROR))
 	{
+		/* Change state */
+		if ((c = LE_get_token(io[0], c, &st_lex)) == 0) {
+			FAIL("decompression");
+			break;
+		}
 
-		/* Set the state */
-		if ((c = LE_get_token(io[0], c, &st_lex)) == 0)
-			FAIL("Token failed");
-
-		/* Decompress that thing */
+		/* Decompress */
 		if (is_set(st_lex, LEX_MAP))
-			st_lex = metadata_read_create_table(io, map, st_lex, st_prg);
+			st_lex = metadata_read_hash_table_data(io[0], map, st_lex, st_prg);
+
 		else if (is_set(st_lex, LEX_FILENAME)) {
 			str = GE_string_stack_init(str);
 			str = metadata_read_filename(io[0], str, &st_lex, st_prg);
 			GE_open_file(str.str, io, "w", st_prg);
 		}
 		else if (is_set(st_lex, LEX_DECOMPRESS))
-			decompress_write_text_file(io[0], io[++i], map, st_prg);
+			st_lex = decompress_write_text_file(io[0], io[++i], map, st_lex, st_prg);
+
 	}
+
+	if (is_set(st_lex, LEX_ERROR))
+		FAIL("archive corrrupted");
+
 	GE_buffer_rewind(io[0]);
 	GE_buffer_off(io[0]);
 	LE_lexer_free();
@@ -155,7 +162,7 @@ int huffman(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 		st_prg = decompress_archive(io, st_prg);
 
 	if (is_set(st_prg, ERROR))
-		FAIL("state signaled error");
+		FAIL("program runtime error");
 
 	return st_prg;
 }

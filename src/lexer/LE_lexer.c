@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 #include "lexer/LE_tokenizer.h"
 #include "lexer/LE_lexer.h"
 #include "lexer/LE_xml.h"
@@ -26,7 +27,7 @@ void LE_lexer_free(void)
 }
 
 /*
- * goto_next_word: Move forwards untill the next textual word is found.
+ * goto_next_word: Move forwards until the next textual word is found.
  */
 void goto_next_word(int c, F_Buf *buf)
 {
@@ -41,18 +42,44 @@ void goto_next_word(int c, F_Buf *buf)
 }
 
 /*
- * LE_get_token: Returns state on reading a token, will read recursivly untill
+ * LE_goto_glyph: Move forwards along the file stream to the next occurrence of
+ * the given glyph.
+ */
+char LE_goto_glyph(F_Buf *buf, char c, char glyph)
+{
+	/* Brutal read until the glyph is found or EOF is reached, whichever
+	 * happens first, assumes that a token will be the next relevant
+	 * information on the stream */
+	while (c != glyph && c != EOF)
+		c = GE_buffer_fgetc(buf);
+
+	/* If not a token then push back and return */
+	if (c != glyph)
+		FAIL("glyph not found in file stream");
+
+	return c;
+}
+
+/*
+ * LE_get_token: Returns state on reading a token, will read recursively until
  * the end of element indicator is reached.
- * TODO NEXT token sought here.
  */
 char LE_get_token(F_Buf *buf, char c, int *st_lex)
 {
-	/* Skip whitespace upto the next '<' */
-	c = LE_xml_goto_token(buf, c);
+	c = LE_goto_glyph(buf, c, '<');
+
+	if (c != '<') {
+		FAIL("expected a '<' ...");
+		return 0;
+	}
 
 	/* read and verify the validity, whilst setting the state of any valid
 	 * tokens read */
-	c = LE_xml_read_token(buf, c, st_lex);
+	if ((c = LE_xml_read_token(buf, c, st_lex)) == 0) {
+		state_set(*st_lex, LEX_ERROR);
+		FAIL("parsing");
+		return c;
+	}
 
 	if (c == '>')
 		return c;
@@ -62,7 +89,7 @@ char LE_get_token(F_Buf *buf, char c, int *st_lex)
 }
 
 /*
- * LE_get_utf8_char: Get the next utf-8 char from the file setream return it as
+ * LE_get_utf8_char: Get the next utf-8 char from the file stream return it as
  * a string, requires a string of at least 5 bytes.
  */
 char LE_get_utf8_char(F_Buf *buf, char *ptr)
@@ -70,8 +97,8 @@ char LE_get_utf8_char(F_Buf *buf, char *ptr)
 	int utf8_count = 0;
 	char c = GE_buffer_fgetc(buf);
 
-	/* Get the next char relgardless of what it is, if multibyte, transfer
-	 * the intire string of char */
+	/* Get the next char regardless of what it is, if multibyte, transfer
+	 * the entire string of char */
 	while ((*ptr++ = c)
 			&& (utf8_count || (utf8_count = utf8_len(c)))
 			&& utf8_count < 3)

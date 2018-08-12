@@ -4,7 +4,7 @@
 #include "general/GE_state.h"
 #include "general/GE_string.h"
 #include "general/GE_hash.h"
-#include "general/GE_print.h"
+#include "program/PG_print.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
 #include "huffman/HC_hashtable.h"
@@ -30,7 +30,8 @@ Data HC_data_init(void)
 	Data map;
 	map.utf8_char[0] = '\0';
 	map.binary[0] = '\0';
-	map.len = 0;
+	map.len_char = 0;
+	map.len_bin = 0;
 	map.frq = 0;
 	map.next = NULL;
 	return map;
@@ -296,30 +297,33 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
  */
 int DS_huffman_tree_extract_encoding(
 						HC_HuffmanNode *tree,
-						String* string,
+						String* str,
 						Data *map)
 {
 	/* Add binary bit data to string */
 	if (tree->bit)
-		if ((string = GE_string_add_char(string, tree->bit)) == NULL)
+		if ((str = GE_string_add_char(str, tree->bit)) == NULL)
 			return 1;
 
 	/* Branch left, adds '0' */
 	if (tree->left) {
-		DS_huffman_tree_extract_encoding(tree->left, string, map);
-		string = GE_string_rem_char(string);
+		DS_huffman_tree_extract_encoding(tree->left, str, map);
+		str = GE_string_rem_char(str);
 	}
 
 	/* Branch right, adds '1' */
 	if (tree->right) {
-		DS_huffman_tree_extract_encoding(tree->right, string, map);
-		string = GE_string_rem_char(string);
+		DS_huffman_tree_extract_encoding(tree->right, str, map);
+		str = GE_string_rem_char(str);
 	}
 
 	/* Fill data struct and insert into hash map */
-	//TODO NOW hash table created from text file data
-	if (tree->data.utf8_char[0] != '\0')
-		HC_hashtable_add_utf8_key(map, *(tree->data.utf8_char), *(string->str));
+	if (tree->data.utf8_char[0] != '\0') {
+		Data data = tree->data;
+		data.len_bin = str->len;
+		memcpy(data.binary, str->str, data.len_bin+1);
+		HC_hashtable_add_utf8_key(map, data);
+	}
 
 	return 0;
 }

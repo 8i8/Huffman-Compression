@@ -4,7 +4,7 @@
 #include "general/GE_error.h"
 #include "general/GE_state.h"
 #include "general/GE_utf8.h"
-#include "general/GE_print.h"
+#include "program/PG_print.h"
 #include "lexer/LE_lexer.h"
 #include "huffman/HC_mergesort.h"
 #include "huffman/HC_huffman_tree.h"
@@ -31,7 +31,7 @@ static HC_HuffmanNode **frequency_list_from_text(
 						F_Buf *buf)
 {
 	char c, *ptr;
-	size_t utf8_count;
+	size_t utf8_count, len;
 	Data data;
 	data = HC_data_init();
 	utf8_count = 0;
@@ -39,16 +39,16 @@ static HC_HuffmanNode **frequency_list_from_text(
 	GE_buffer_on(buf);
 	while ((c = GE_buffer_fgetc(buf)) != EOF)
 	{
-		ptr = data.utf8_char;
+		/* reset */
+		ptr = data.utf8_char, len = 1;;
 
 		/* Add char, check if multi-byte character */
 		while ((*ptr++ = c)
-				&& (utf8_count || (utf8_count = utf8_len(c)))
+				&& (utf8_count || (len = utf8_count = utf8_len(c)))
 				&& utf8_count < 4)
 			c = GE_buffer_fgetc(buf), utf8_count--;
 
-		*ptr = '\0';
-		data.frq = 1;
+		*ptr = '\0', data.frq = 1, data.len_char = len;
 		DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
 	}
 
@@ -74,8 +74,8 @@ static int frequency_list_from_metadata(
 	char c = 0;
 	size_t utf8_count;
 	utf8_count = 0;
-
-	Data data = HC_data_init();
+	Data data;
+	data = HC_data_init();
 	String *str = NULL;
 	str = GE_string_init(str);
 

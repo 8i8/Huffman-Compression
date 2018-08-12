@@ -26,38 +26,37 @@ Data *HC_hashtable_init(Data *map)
 /*
  * HC_hashtable_add_utf8_key: Add a new pair utf8 char key, binary value.
  */
-int HC_hashtable_add_utf8_key(Data *map, char utf8_char, char binary)
+int HC_hashtable_add_utf8_key(Data *map, Data data)
 {
-	int bucket = hash(utf8_char);
+
+	int bucket = hash(data.utf8_char);
 	Data *cur;
 
 	/* If the bucket is empty */
-	if (map[bucket].utf8_char[0] == '\0' ) {
-		memcpy(map[bucket].utf8_char, &utf8_char, UTF8_LEN);
-		memcpy(map[bucket].binary, &binary, BIN_MAX);
-	}
-	/* if already present return 0 */
-	else if (strcmp(map[bucket].utf8_char, &utf8_char) == 0)
+	if (map[bucket].utf8_char[0] == '\0') {
+		map[bucket] = data;
 		return 0;
+	}
+
+	/* if already present return 0 */
+	else if (strcmp(map[bucket].utf8_char, data.utf8_char) == 0)
+		return 0;
+
 	/* Add a node to the ajoined btree */
 	// TODO NEXT Make this a btree
 	else if (map[bucket].next) {
 		cur = map[bucket].next;
-
 		while (cur->next != NULL) {
-			if (strcmp(cur->utf8_char, &utf8_char) == 0)
+			if (strcmp(cur->utf8_char, data.utf8_char) == 0)
 				return 0;
 			cur = cur->next;
 		}
-
-		if ((cur->next = malloc(sizeof(Data))) == NULL)
-			FAIL("malloc failed");
-
-		cur = cur->next;
-		*cur = HC_data_init();
-		memcpy(map[bucket].utf8_char, &utf8_char, UTF8_LEN);
-		memcpy(map[bucket].binary, &binary, BIN_MAX);
 	}
+
+	/* Add the new value to either the bucket or the end of the list */
+	if ((map[bucket].next = malloc(sizeof(Data))) == NULL)
+		FAIL("malloc failed");
+	*map[bucket].next = data;
 
 	return 0;
 }
@@ -65,37 +64,36 @@ int HC_hashtable_add_utf8_key(Data *map, char utf8_char, char binary)
 /*
  * HC_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
  */
-int HC_hashtable_add_binary_key(Data *map, char binary, char utf8_char)
+int HC_hashtable_add_binary_key(Data *map, Data data)
 {
-	int bucket = hash(binary);
+	int bucket = hash(data.binary);
 	Data *cur;
 
 	/* If the bucket is empty */
-	if (map[bucket].utf8_char[0] == '\0' ) {
-		memcpy(map[bucket].binary, &binary, BIN_MAX);
-		memcpy(map[bucket].utf8_char, &utf8_char, UTF8_LEN);
-	}
-	/* if already present return 0 */
-	else if (strcmp(map[bucket].utf8_char, &utf8_char) == 0)
+	if (map[bucket].utf8_char[0] == '\0') {
+		map[bucket] = data;
 		return 0;
-	/* Add a node to the ajoined btree */
-	// TODO NEXT Make this a btree
-	else {
-		cur = map[bucket].next;
+	}
 
+	/* if already present return 0 */
+	else if (strcmp(map[bucket].utf8_char, data.utf8_char) == 0)
+		return 0;
+
+	/* Check all nodes for the value */
+	// TODO NEXT Make this a btree
+	else if (map[bucket].next) {
+		cur = map[bucket].next;
 		while (cur->next != NULL) {
-			if (strcmp(cur->binary, &binary) == 0)
+			if (strcmp(cur->binary, data.binary) == 0)
 				return 0;
 			cur = cur->next;
 		}
-
-		if ((cur->next = malloc(sizeof(Data))) == NULL)
-			FAIL("malloc failed");
-
-		cur = cur->next;
-		memcpy(map[bucket].binary, &binary, BIN_MAX);
-		memcpy(map[bucket].utf8_char, &utf8_char, UTF8_LEN);
 	}
+
+	/* Add the new value to either the bucket or the end of the list */
+	if ((map[bucket].next = malloc(sizeof(Data))) == NULL)
+		FAIL("malloc failed");
+	*map[bucket].next = data;
 
 	return 0;
 }
@@ -105,7 +103,7 @@ int HC_hashtable_add_binary_key(Data *map, char binary, char utf8_char)
  */
 Data HC_hashtable_lookup_string(Data *map, char str)
 {
-	int bucket = hash(str);
+	int bucket = hash(&str);
 	Data cur = map[bucket];
 	int res = 0;
 

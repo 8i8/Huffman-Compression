@@ -110,23 +110,6 @@ F_Buf *LE_xml_element_item(F_Buf *buf, char *item, char *tag)
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
- * LE_xml_goto_token: Move forwards allong the file stream to the next token.
- */
-char LE_xml_goto_token(F_Buf *buf, char c)
-{
-	/* Brutal read untill a < token is found, assumes that a token will be
-	 * the next relevent information on the stream */
-	while (c != '<' && c != EOF)
-		c = GE_buffer_fgetc(buf);
-
-	/* If not a token then push back and return*/
-	if (c != '<')
-		FAIL("Expected a token");
-
-	return c;
-}
-
-/*
  * in_or_out: Returns the state of a search for a specified char having removed
  * whitespace.
  */
@@ -146,12 +129,13 @@ static char in_or_out(F_Buf *buf, char c, char in, int *off)
 
 /*
  * LE_xml_read_token: Read and verify the token, set state acordingly.
+ * TODO NOW pushback written, is it working?
  */
 char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 {
 	char *ptr, str[TOKEN_LEN] = { '\0' };
-	int utf8_count, off, token;
-	utf8_count = off = token = 0;
+	int utf8_count, off, token, pushback;
+	utf8_count = off = token = pushback = 0;
 	ptr = str;
 
 	/* Read */
@@ -160,23 +144,31 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 		c = in_or_out(buf, c, '/', &off);
 
 		/* valid ? */
-		if (!isalnum(c)) {
+		if (!isalnum(c) && !is_set(*st_lex, LEX_DECOMPRESS)) {
 			GE_buffer_ungetc(c, buf);
 			FAIL("Invalid token non alpha numeric character");
 			return 0;
 		}
 
-		/* Read token */
-		while (isalnum((c))
+		GE_buffer_pushback_mark(buf);
+
+		/* Read token: pushback ok, alphanu or utf8 ... ? */
+		while (pushback < MAX_TOKEN_LENGTH 
+				&& (isalnum((c))
 				|| ((utf8_count || (utf8_count = utf8_len(c)))
-				&& utf8_count < 4)) {
-			*ptr++ = c;
+				&& utf8_count < 4))) {
+			*ptr++ = c, pushback++;
 			c = GE_buffer_fgetc(buf);
 		}
 
-		/* Does the token exist? */
-		if ((token = LE_check_token(str[ptr-&str[0]+1])) == 0)
-			FAIL("Token not found in hashtable");
+		/* Does the token exist, if not return to pushback mark */
+		if ((token = LE_check_token(str)) == 0) {
+			WARNING("Token not found in hashtable");
+			c = GE_buffer_pushback_goto(buf);
+		}
+
+		GE_buffer_pushback_unmark(buf);
+		pushback = 0;
 
 		c = in_or_out(buf, c, '/', &off);
 

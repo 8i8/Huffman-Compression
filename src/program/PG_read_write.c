@@ -10,10 +10,11 @@
 #include "general/GE_state.h"
 #include "general/GE_hash.h"
 #include "general/GE_string.h"
-#include "general/GE_print.h"
 #include "general/GE_file_buffer.h"
+#include "program/PG_print.h"
 #include "lexer/LE_xml.h"
 #include "lexer/LE_lexer.h"
+#include "general/GE_binary.h"
 
 /*
  * metadata_write_file_name: Write file name in the archive meta data at the
@@ -39,6 +40,7 @@ void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)
 {
 	size_t i;
 	Data cur;
+	cur = HC_data_init();
 
 	if (is_set(st_prg, VERBOSE))
 		printf("metadata: writing map.\n");
@@ -49,16 +51,16 @@ void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)
 	for (i = 0; i < MAP_LEN; i++)
 		if (map[i].binary[0] != '\0') {
 			LE_xml_element_map(
-								buf,
-								map[i].utf8_char,
-								map[i].binary);
+						buf,
+						map[i].utf8_char,
+						map[i].binary);
 			if (map[i].next != NULL) {
 				cur = *map[i].next;
 				while (cur.next != NULL) {
 					LE_xml_element_map(
-								buf,
-								map[i].utf8_char,
-								map[i].binary);
+						buf,
+						map[i].utf8_char,
+						map[i].binary);
 					cur = *cur.next;
 				}
 			}
@@ -73,6 +75,7 @@ void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)
  * write_bit: Set all of the bits in a byte, then write that byte to the given
  * file.
  */
+#define BIN_OUT 0
 static void write_bit(
 						F_Buf *buf,
 						unsigned char bit,
@@ -85,18 +88,23 @@ static void write_bit(
 		*byte = 0;
 	}
 
+
+	if (BIN_OUT) print_binary_of_int((unsigned long) *byte, 8);
+
 	/* Shift left ready for the next bit */
 	*byte <<= 1;
 
+	if (BIN_OUT) print_binary_of_int((unsigned long) *byte, 8);
+	if (BIN_OUT) print_binary_of_int((unsigned long) bit, 8);
+
 	/* Set bit to 1 or 0 */
 	*byte |= bit;
+
+	if (BIN_OUT) print_binary_of_int((unsigned long) *byte, 8);
 }
 
 /*
  * compression_write_file: Write compressed file.
-	
- write_bit(buf_write, bin[0], &byte, &bit_count);
-
  */
 int compression_write_file(
 						Data map[MAX_FILES],
@@ -106,10 +114,10 @@ int compression_write_file(
 {
 	int bit_count, utf8_count;
 	unsigned char byte;
-	int bucket, err;
+	int bucket;
 	bucket = err = 0;
 
-	char c, *ptr, utf8_char[UTF8_LEN], *bin;
+	char c, *ptr, utf8_char[UTF8_LEN], *bin_ptr;
 	size_t i, j;
 	ptr = utf8_char;
 
@@ -134,13 +142,16 @@ int compression_write_file(
 
 		*ptr = '\0';
 
-		/* Retreive huffman coding */
-		bucket = hash(utf8_char[UTF8_LEN]);
+		/* Retreive huffman encoding */
+		bucket = hash(utf8_char);
 		if (map[bucket].binary[0] == '\0')
 			FAIL("hashmap");
-		bin = map[bucket].binary;
-		for (j = 0; j < map[bucket].len; j++, bin++)
-			write_bit(buf_write, bin[0], &byte, &bit_count);
+		bin_ptr = map[bucket].binary;
+		for (j = 0; j < map[bucket].len_bin; j++)
+			write_bit(
+						buf_write,
+						(unsigned)bin_ptr[j]-'0',
+						&byte, &bit_count);
 
 		ptr = utf8_char;
 	}
@@ -150,15 +161,17 @@ int compression_write_file(
 	if (utf8_count > 4)
 		FAIL("utf8_countdown");
 
-	char eof[4] = "EOF";
 	/* Add EOF char */
-	bucket = hash(eof[4]);
+	bucket = hash("EOF");
 	if (map[bucket].binary[0] == '\0')
 		FAIL("hashmap");
-	bin = map[bucket].binary;
+	bin_ptr = map[bucket].binary;
 
-	for (i = 0; i < map[bucket].len; i++, bin++)
-		write_bit(buf_write, bin[0], &byte, &bit_count);
+	for (i = 0; i < map[bucket].len_bin; i++)
+		write_bit(
+						buf_write,
+						(unsigned)bin_ptr[i]-'0',
+						&byte, &bit_count);
 
 	/* Pad any remaining bits in the last byte with zeroes */
 	if(bit_count > 0) {
@@ -171,14 +184,20 @@ int compression_write_file(
 	GE_buffer_fwrite_FILE(buf_write);
 	GE_buffer_off(buf_write);
 
+	if (is_set(st_prg, VERBOSE))
+		printf("archive: %s written.\n", buf_write->name);
+
 	return err;
 }
 
 /*
- * metadata_read_create_table: Create a hash table using the key value pairs
- * retreived from the archive metadata.
+ * metadata_read_hash_table_data: Create a hash table using the key value pairs
  */
-int metadata_read_create_table(F_Buf **io, Data *map, int st_lex, const int st_prg)
+int metadata_read_hash_table_data(
+						F_Buf *buf,
+						Data *map,
+						int st_lex,
+						const int st_prg)
 {
 	char c = ' ';
 	char *ptr_bin, *ptr_utf8;
@@ -190,22 +209,32 @@ int metadata_read_create_table(F_Buf **io, Data *map, int st_lex, const int st_p
 	if (is_set(st_prg, VERBOSE))
 		printf("metadata: reading hashtable pairs.\n");
 
-	while (io[0] && is_set(st_lex, LEX_MAP) && c != EOF)
+	while (buf && is_set(st_lex, LEX_MAP) && c != EOF)
 	{
-		if ((c = LE_get_token(io[0], c, &st_lex)) == 0)
-			FAIL("Token failed");
+		/* remove spaces */
+		c = LE_goto_glyph(buf, c, '<');
 
- 		// TODO NOW hash table for inflation created here
+		if ((c = LE_get_token(buf, c, &st_lex)) == 0) {
+			FAIL("failed to read metadata");
+			state_set(st_lex, LEX_ERROR);
+			return st_lex;
+		}
+
+ 		/* hash table for inflation created here */
+		//TODO NEXT read in length values here
 		if (is_set(st_lex, LEX_CHAR))
 		{
 			/* Read utf-8 char */
-			c = LE_get_utf8_char(io[0], ptr_utf8);
+			c = LE_get_utf8_char(buf, ptr_utf8);
 
 			/* read binary representation */
-			c = LE_get_string(io[0], c, ptr_bin);
+			c = LE_get_string(buf, c, ptr_bin);
 
 			/* Store the data */
-			HC_hashtable_add_binary_key(map, *(data.binary), *(data.utf8_char));
+			//TODO NEXT the length data should be stored in the archive
+			data.len_bin = strlen(data.binary);
+			data.len_char = strlen(data.utf8_char);
+			HC_hashtable_add_binary_key(map, data);
 		}
 	}
 
@@ -215,7 +244,11 @@ int metadata_read_create_table(F_Buf **io, Data *map, int st_lex, const int st_p
 /*
  * metadata_read_filename: Read the filename from the archive metadata.
  */
-String metadata_read_filename(F_Buf *buf, String str, int *st_lex, const int st_prg)
+String metadata_read_filename(
+						F_Buf *buf,
+						String str,
+						int *st_lex,
+						const int st_prg)
 {
 	char c = ' ';
 
@@ -225,25 +258,29 @@ String metadata_read_filename(F_Buf *buf, String str, int *st_lex, const int st_
 	while ((c = GE_buffer_fgetc(buf)) != '<' && c != EOF)
 		GE_string_add_char(&str, c);
 
-	if ((c = LE_get_token(buf, c, st_lex)) == 0)
-		FAIL("Token failed expected </name>");
+	if ((c = LE_get_token(buf, c, st_lex)) == 0) {
+		FAIL("read metadata");
+		state_set(*st_lex, LEX_ERROR);
+		return str;
+	}
 
 	return str;
 }
 
 /*
- * decompress_write_text_file: Inflate a text file from the given arvhive.
+ * decompress_write_text_file: Inflate a text file from the given archive.
  */
 int decompress_write_text_file(
 						F_Buf *buf_read,
 						F_Buf *buf_write,
 						Data *map,
+						int st_lex,
 						const int st_prg)
 {
-	char c = ' ';
-	char byte = ' ';
-	int bit_count;
-	int bit, bucket;
+	unsigned char c = ' ';
+	unsigned char byte = ' ';
+	unsigned bit_count;
+	unsigned bit, bucket;
 	Data data;
 	data = HC_data_init();
 	String *str = NULL;
@@ -258,32 +295,37 @@ int decompress_write_text_file(
 
 	/*
 	 * read_bit: Read each bit of a new character, checking each time to
-	 * see if the binary string is in the hash tabel, if it is write the
-	 * coresponding char to the output file and start a new string.
+	 * see if the binary string is in the hash table, if it is found write the
+	 * corresponding char into the output file buffer and refresh the string.
+	 * TODO NOW pushback added to LE_get_token now changed to read ahead,
+	 * should the pushback be left in get_token, it must at least be tested.
 	 */
-	while ((c = GE_buffer_fgetc(buf_read)) != '<' && c != EOF)
+	c = GE_buffer_fgetc(buf_read);
+	bit_count = 7;
+	while (is_set(st_lex, LEX_DECOMPRESS))
 	{
+		if (c == '<' && ((LE_read_ahead(buf_read, c, &st_lex)) == 0)) {
+			FAIL("writing text file");
+			break;
+		}
+
 		/* Reset */
 		if (++bit_count == 8)
-			byte = GE_buffer_fgetc(buf_read), bit_count = 0;
+			c = byte = GE_buffer_fgetc(buf_read), bit_count = 0;
 
-		// var bit = (b & (1 << bitNumber-1)) != 0;
-
-		/* Write the state */
-		bit = byte & (1 << 0);
+		/* Read binary */
+		bit = byte & 1;
+		unsigned mask = (1 << bit_count) - 1;
+		byte &= mask;
 		GE_string_add_char(str, (char)bit+'0');
 
-		/* Look up the string in its current state in the hash tabel,
-		 * when a char is found the strig is reset */
-		// TODO NOW hash table is finding the string '0'
+		/* Look up the string in its current state in the hash table,
+		 * when a char is found the string is reset */
 		data = HC_hashtable_lookup_string(map, *(str->str));
-		if (data.utf8_char[0] != '\0')
-		{
+		if (data.utf8_char[0] != '\0') {
 			GE_buffer_fwrite(
-						map[bucket].utf8_char,
-						1,
-						utf8_len(map[bucket].utf8_char[0]),
-						buf_write);
+							data.utf8_char, 1,
+							data.len_char, buf_write);
 			GE_string_reset(str);
 		}
 
@@ -294,6 +336,6 @@ int decompress_write_text_file(
 	GE_buffer_fwrite_FILE(buf_write);
 	GE_buffer_off(buf_write);
 
-	return 0;
+	return st_lex;
 }
 

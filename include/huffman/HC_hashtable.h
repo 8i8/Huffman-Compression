@@ -10,12 +10,12 @@ Data *HC_hashtable_init(Data *map);
 /*
  * HC_hashtable_add_utf8_key: Add a new pair utf8 char key, binary value.
  */
-int HC_hashtable_add_utf8_key(Data *map, char utf8_char, char binary);
+int HC_hashtable_add_utf8_key(Data *map, Data data);
 
 /*
  * HC_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
  */
-int HC_hashtable_add_binary_key(Data *map, char binary, char utf8_char);
+int HC_hashtable_add_binary_key(Data *map, Data data);
 
 /* HC_map_add: Add data struct to binary data hashmap */
 int HC_map_add(void *m, void *d);

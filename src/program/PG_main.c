@@ -15,8 +15,8 @@
  * 5) Encode the file.
  *
  */
-#include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
+#include "general/GE_state.h"
 #include "huffman/HC_priority_queue.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_hashtable.h"
