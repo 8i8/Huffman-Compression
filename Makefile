@@ -14,6 +14,8 @@ CFLAGS += -fsanitize=float-divide-by-zero
 CFLAGS += -fno-sanitize-recover
 CFLAGS += -I./include
 
+#LFLAGS += -l m
+
 .PHONY: clean distclean
 
 ifndef VERBOSE
@@ -21,7 +23,7 @@ ifndef VERBOSE
 endif
 
 tartar: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 clean:
 	$(RM) $(OBJ)

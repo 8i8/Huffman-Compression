@@ -18,90 +18,58 @@ typedef struct _file_buffer {
 
 #define MAX_FILES       20
 #define BUFFER_SIZE     4000  /* Should be relativly small, here at around the
-				 size of th linux pagefile, absolutly should be
+				 size of the linux pagefile, absolutly should be
 				 lower than the systems available ram and never
 				 anywhere near the value of a 32 bit int. */
 
-/*
- * GE_buffer_array_init: Initialise and return an array of pointers to file
- * buffers.
- */
+/* GE_buffer_array_init: Initialise and return an array of pointers to file
+ * buffers */
 F_Buf **GE_buffer_array_init(void);
 
-/*
- * GE_buffer_init: Initialise a FILE buffer.
- */
+/* GE_buffer_init: Initialise a FILE buffer */
 F_Buf *GE_buffer_init(FILE *fp, char *name);
 
-/*
- * open_file: Open a file and add it to the F_Buf array.
- */
+/* open_file: Open a file and add it to the F_Buf array */
 unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state);
 
-/*
- * GE_buffer_on: allocate memory for file buffer.
- */
+/* GE_buffer_on: allocate memory for file buffer */
 F_Buf *GE_buffer_on(F_Buf *buf);
 
-/*
- * GE_buffer_off: Free only the file buffers momory.
- */
+/* GE_buffer_off: Free only the file buffers momory */
 F_Buf *GE_buffer_off(F_Buf *buf);
 
-/*
- * GE_buffer_rewind: Rewind file pointer.
- */
+/* GE_buffer_rewind: Rewind file pointer */
 F_Buf *GE_buffer_rewind(F_Buf *buf);
 
-/*
- * GE_buffer_fill: Fills the buffer from the input stream, allowing a margin of
- * space to complete any utf char that may have been started.
- */
+/* GE_buffer_fill: Fills the buffer from the input stream, allowing a margin of
+ * space to complete any utf char that may have been started */
 F_Buf *GE_buffer_fill(F_Buf *buf);
 
-/*
- * GE_buffer_fwrite: Buffer the writing to a file pointer.
- */
+/* GE_buffer_fwrite: Buffer the writing to a file pointer */
 F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf);
 
-/*
- * GE_buffer_fwrite: Write buffer content to file pointer.
- */
+/* GE_buffer_fwrite: Write buffer content to file pointer */
 F_Buf *GE_buffer_fwrite_FILE(F_Buf *buf);
 
-/*
- * GE_buffer_getc: Returns the next char from the buffer, refilling when
- * required.
- */
+/* GE_buffer_getc: Returns the next char from the buffer, refilling when
+ * required */
 int GE_buffer_fgetc(F_Buf *buf);
 
-/*
- * GE_buffer_skip: Skip over n cahr in the buffer.
- */
+/* GE_buffer_skip: Skip over n cahr in the buffer */
 int GE_buffer_skip(F_Buf *buf, unsigned num);
 
-/*
- * GE_buffer_ungetc: Push back unused character.
- */
+/* GE_buffer_ungetc: Push back unused character */
 int GE_buffer_ungetc(int c, F_Buf *buf);
 
-/*
- * GE_buffer_pushback_mark: Set mark for a potential pushback.
- */
+/* GE_buffer_pushback_mark: Set mark for a potential pushback */
 int GE_buffer_pushback_mark(F_Buf *buf);
 
-/*
- * GE_pushback_unmark: Remove previously placed pushback point.
- */
+/* GE_pushback_unmark: Remove previously placed pushback point */
 int GE_buffer_pushback_unmark(F_Buf *buf);
 
-/*
- * GE_buffer_pushback_goto: Return to pushback marker.
- */
+/* GE_buffer_pushback_goto: Return to pushback marker */
 int GE_buffer_pushback_goto(F_Buf *buf);
 
-/*
- * GE_buffer_free: Free all memory associated with a F_Buf struct.
- */
+/* GE_buffer_free: Free all memory associated with a F_Buf struct */
 void GE_buffer_free(F_Buf *buf);
 

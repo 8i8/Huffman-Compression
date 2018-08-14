@@ -8,6 +8,8 @@
 #include "general/GE_hash.h"
 #include "general/GE_error.h"
 
+// TODO change the collision data structure into a btree
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Huffman coding into hash map.
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -43,7 +45,6 @@ int HC_hashtable_add_utf8_key(Data *map, Data data)
 		return 0;
 
 	/* Add a node to the ajoined btree */
-	// TODO NEXT Make this a btree
 	else if (map[bucket].next) {
 		cur = map[bucket].next;
 		while (cur->next != NULL) {
@@ -80,7 +81,6 @@ int HC_hashtable_add_binary_key(Data *map, Data data)
 		return 0;
 
 	/* Check all nodes for the value */
-	// TODO NEXT Make this a btree
 	else if (map[bucket].next) {
 		cur = map[bucket].next;
 		while (cur->next != NULL) {
@@ -99,25 +99,65 @@ int HC_hashtable_add_binary_key(Data *map, Data data)
 }
 
 /*
- * HC_hashtable_lookup_string: Returns the paired string value for a given string key.
+ * HC_hashtable_lookup_utf8: Returns the paired utf8 char value as a string,
+ * for a given string key.
  */
-Data HC_hashtable_lookup_string(Data *map, char str)
+Data HC_hashtable_lokup_utf8(Data *map, char str)
 {
 	int bucket = hash(&str);
-	Data cur = map[bucket];
-	int res = 0;
+	Data *cur;
 
-	if (cur.next != NULL)
-	{
-		/* While str is not matched, move along if possible */
-		while ((cur.next != NULL) && ((res = strcmp(cur.utf8_char, &str)) != 0))
-			cur = *cur.next;
+	/* If the bucket is empty */
+	if (map[bucket].utf8_char[0] == '\0')
+		return HC_data_init();
 
-		if (res)
-			return HC_data_init();
+	/* if already present return 0 */
+	else if (strcmp(map[bucket].utf8_char, &str) == 0)
+		return map[bucket];
+
+	/* Check all nodes for the value */
+	else if (map[bucket].next) {
+		cur = map[bucket].next;
+		while (cur->next != NULL) {
+			/* Foumd it! */
+			if (strcmp(cur->utf8_char, &str) == 0)
+				return *cur;
+			cur = cur->next;
+		}
 	}
-	
-	return cur;
+
+	return HC_data_init();
+}
+
+/*
+ * HC_hashtable_lookup_binary: Returns the paired binary string value of a
+ * given utf8 char.
+ */
+Data HC_hashtable_lookup_binary(Data *map, char str)
+{
+	int bucket = hash(&str);
+	Data *cur;
+
+	/* If the bucket is empty */
+	if (map[bucket].binary[0] == '\0')
+		return HC_data_init();
+
+	/* if already present return 0 */
+	else if (strcmp(map[bucket].binary, &str) == 0)
+		return map[bucket];
+
+	/* Check all nodes for the value */
+	else if (map[bucket].next) {
+		cur = map[bucket].next;
+		while (cur->next != NULL) {
+			/* Foumd it! */
+			if (strcmp(cur->binary, &str) == 0)
+				return *cur;
+			cur = cur->next;
+		}
+	}
+
+	return HC_data_init();
 }
 
 /*

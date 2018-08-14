@@ -1,5 +1,4 @@
 
-#define MAX_TOKEN_LENGTH 32
 
 #ifndef _token_chain_
 #define _token_chain_

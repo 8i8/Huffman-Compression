@@ -163,11 +163,11 @@ int frequency_list_compression(
 }
 
 /*
- * decompression_priority_queue: Retrieve the frequency map from the beginning
+ * decompress_priority_queue: Retrieve the frequency map from the beginning
  * of a compressed file and make it into a list, sort the list into a priority
  * queue.
  */
-int decompression_priority_queue(
+int decompress_priority_queue(
 							HC_HuffmanNode **list,
 							F_Buf *buf,
 							int st_lex)

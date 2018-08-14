@@ -1,8 +1,8 @@
-
 #include <stdio.h>
+#include <stddef.h>
 #include "general/GE_file_buffer.h"
 
-#define TOKEN_MAX 256
+#define TOKEN_MAX 32
 
 /* LE_token_init: Initialise token trie for lexing */
 void LE_lexer_init(void);
@@ -16,6 +16,9 @@ char LE_goto_glyph(F_Buf *buf, char c, char glyph);
 
 /* LE_get_token: Returns a state on reading a token */
 char LE_get_token(F_Buf *buf, char c, int *st_lex);
+
+/* LE_read_ahead: Check ahead for a token */
+int LE_look_ahead(F_Buf *buf, char glyph, ptrdiff_t dist);
 
 /* LE_get_utf8_char: Get the next utf-8 char from the file setream return it as
  * a string */

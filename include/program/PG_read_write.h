@@ -4,8 +4,8 @@
  * given tab indenatation */
 int metadata_write_file_name(F_Buf *in, F_Buf *out, const int st_prg);
 
-/* compression_write_file: Write compressed file */
-int compression_write_file(
+/* compression_write_archive: Write compressed file */
+int compression_write_archive(
 						Data map[],
 						F_Buf *buf_read,
 						F_Buf *buf_write,
@@ -25,8 +25,8 @@ int metadata_read_hash_table_data(F_Buf *buf, Data *map, int st_lex, const int s
 /* metadata_read_filename: Read the filename from the archive metadata */
 String metadata_read_filename(F_Buf *buf, String str, int *st_lex, const int st_prg);
 
-/* decompress_write_text_file: Inflate a text file from the given arvhive */
-int decompress_write_text_file(
+/* decompress_write_file: Inflate a text file from the given arvhive */
+int decompress_write_file(
 						F_Buf *buf_read,
 						F_Buf *buf_write,
 						Data *map,

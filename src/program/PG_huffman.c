@@ -69,7 +69,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 			GE_open_file(str.str, io, "w", st_prg);
 		}
 		else if (is_set(st_lex, LEX_DECOMPRESS))
-			st_lex = decompress_write_text_file(io[0], io[++i], map, st_lex, st_prg);
+			st_lex = decompress_write_file(io[0], io[++i], map, st_lex, st_prg);
 
 	}
 
@@ -99,7 +99,7 @@ int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 		hashmap_for_compression(map, tree, st_prg);
 		metadata_write_map(map, io[0], st_prg);
 		metadata_write_file_name(io[0], io[1], st_prg);
-		compression_write_file(map, io[0], io[1], st_prg);
+		compression_write_archive(map, io[0], io[1], st_prg);
 		DS_huffman_tree_clear(tree);
 		HC_hashtable_clear(map);
 	}
@@ -133,10 +133,9 @@ int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 	metadata_write_map(map, io[0], st_prg);
 
 	/* Write each file name then the compressed data consecutively */
-
 	for (i = 1; i < MAX_FILES && io[i]; i++) {
 		metadata_write_file_name(io[i], io[0], st_prg);
-		compression_write_file(map, io[i], io[0], st_prg);
+		compression_write_archive(map, io[i], io[0], st_prg);
 	}
 
 	HC_hashtable_clear(map);

@@ -7,7 +7,7 @@
 #include "general/GE_utf8.h"
 #include "general/GE_state.h"
 
-#define TOKEN_LEN 255  /* Max length of a token */
+#define TOKEN_MAX 255  /* Max length of a token */
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -18,7 +18,7 @@ static int check_len(char *str)
 {
 	int len;
 	len = strlen(str);
-	assert(len < TOKEN_LEN);
+	assert(len < TOKEN_MAX);
 	return len;
 }
 
@@ -44,7 +44,7 @@ static char *make_close_tag(char *str, char *element)
 F_Buf *LE_xml_element_open(F_Buf *buf, char *token)
 {
 	int i;
-	char str[TOKEN_LEN] = { '\0' };
+	char str[TOKEN_MAX] = { '\0' };
 	for (i = 0; i < buf->tab_depth; i++)
 		strcat(str, "\t");
 	make_open_tag(str, token);
@@ -60,7 +60,7 @@ F_Buf *LE_xml_element_open(F_Buf *buf, char *token)
 F_Buf *LE_xml_element_close(F_Buf *buf, char *token)
 {
 	int i;
-	char str[TOKEN_LEN] = { '\0' };
+	char str[TOKEN_MAX] = { '\0' };
 	buf->tab_depth--;
 	for (i = 0; i < buf->tab_depth; i++)
 		strcat(str, "\t");
@@ -76,7 +76,7 @@ F_Buf *LE_xml_element_close(F_Buf *buf, char *token)
 F_Buf *LE_xml_element_map(F_Buf *buf, char *st1, char *st2)
 {
 	int i;
-	char str[TOKEN_LEN] = { '\0' };
+	char str[TOKEN_MAX] = { '\0' };
 	for (i = 0; i < buf->tab_depth; i++)
 		strcat(str, "\t");
 	strcat(str, "<ch>");
@@ -94,7 +94,7 @@ F_Buf *LE_xml_element_map(F_Buf *buf, char *st1, char *st2)
 F_Buf *LE_xml_element_item(F_Buf *buf, char *item, char *tag)
 {
 	int i;
-	char str[TOKEN_LEN] = { '\0' };
+	char str[TOKEN_MAX] = { '\0' };
 	for (i = 0; i < buf->tab_depth; i++)
 		strcat(str, "\t");
 	make_open_tag(str, tag);
@@ -129,11 +129,11 @@ static char in_or_out(F_Buf *buf, char c, char in, int *off)
 
 /*
  * LE_xml_read_token: Read and verify the token, set state acordingly.
- * TODO NOW pushback written, is it working?
+ * TODO NEXT pushback written, is it working?
  */
 char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 {
-	char *ptr, str[TOKEN_LEN] = { '\0' };
+	char *ptr, str[TOKEN_MAX] = { '\0' };
 	int utf8_count, off, token, pushback;
 	utf8_count = off = token = pushback = 0;
 	ptr = str;
@@ -152,8 +152,10 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 
 		GE_buffer_pushback_mark(buf);
 
-		/* Read token: pushback ok, alphanu or utf8 ... ? */
-		while (pushback < MAX_TOKEN_LENGTH 
+		/* Read token: pushback ok, alnum or utf8 ... ? */
+		//TODO NEXT deal with the case of pushback going over the end
+		//of the buffer.
+		while (pushback < TOKEN_MAX 
 				&& (isalnum((c))
 				|| ((utf8_count || (utf8_count = utf8_len(c)))
 				&& utf8_count < 4))) {

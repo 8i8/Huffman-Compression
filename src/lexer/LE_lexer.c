@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stddef.h>
 #include <assert.h>
 #include "lexer/LE_tokenizer.h"
 #include "lexer/LE_lexer.h"
@@ -89,6 +90,27 @@ char LE_get_token(F_Buf *buf, char c, int *st_lex)
 }
 
 /*
+ * LE_read_ahead: Check ahead for a token.
+ * TODO NEXT requires case for nearing the buffers end written.
+ * TODO NEXT write this function
+ */
+int LE_look_ahead(F_Buf *buf, char glyph, ptrdiff_t dist)
+{
+	ptrdiff_t *end, *read;
+	char *ptr;
+        end = (ptrdiff_t*)buf->end;
+	read = (ptrdiff_t*)buf->read;
+        ptr = buf->read;
+
+	assert(end - read > dist);
+
+	while (ptr < buf->read + dist && ptr < buf->end)
+		if (*++ptr == glyph)
+			return 1;
+	return 0;
+}
+
+/*
  * LE_get_utf8_char: Get the next utf-8 char from the file stream return it as
  * a string, requires a string of at least 5 bytes.
  */
@@ -124,7 +146,8 @@ char LE_get_string(F_Buf *buf, char c, char *str)
 {
 	int utf8_count = 0;
 	while ((isalnum(c)
-			|| ((utf8_count || (utf8_count = utf8_len(c))) && utf8_count < 3))
+			|| ((utf8_count || (utf8_count = utf8_len(c)))
+				&& utf8_count < 3))
 			&& c != EOF) {
 		*str++ = c;
 		c = GE_buffer_fgetc(buf);

@@ -14,7 +14,7 @@
 #include "program/PG_print.h"
 #include "lexer/LE_xml.h"
 #include "lexer/LE_lexer.h"
-#include "general/GE_binary.h"
+#include "bitwise/BI_bitwise.h"
 
 /*
  * metadata_write_file_name: Write file name in the archive meta data at the
@@ -72,41 +72,9 @@ void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)
 }
 
 /*
- * write_bit: Set all of the bits in a byte, then write that byte to the given
- * file.
+ * compression_write_archive: Write archive.
  */
-#define BIN_OUT 0
-static void write_bit(
-						F_Buf *buf,
-						unsigned char bit,
-						unsigned char *byte,
-						int *bit_count)
-{
-	if (++(*bit_count) == 8) {
-		GE_buffer_fwrite((char*)byte, 1, 1, buf);
-		*bit_count = 0;
-		*byte = 0;
-	}
-
-
-	if (BIN_OUT) print_binary_of_int((unsigned long) *byte, 8);
-
-	/* Shift left ready for the next bit */
-	*byte <<= 1;
-
-	if (BIN_OUT) print_binary_of_int((unsigned long) *byte, 8);
-	if (BIN_OUT) print_binary_of_int((unsigned long) bit, 8);
-
-	/* Set bit to 1 or 0 */
-	*byte |= bit;
-
-	if (BIN_OUT) print_binary_of_int((unsigned long) *byte, 8);
-}
-
-/*
- * compression_write_file: Write compressed file.
- */
-int compression_write_file(
+int compression_write_archive(
 						Data map[MAX_FILES],
 						F_Buf *buf_read,
 						F_Buf *buf_write,
@@ -114,14 +82,10 @@ int compression_write_file(
 {
 	int bit_count, utf8_count;
 	unsigned char byte;
-	int bucket;
-	bucket = err = 0;
-
 	char c, *ptr, utf8_char[UTF8_LEN], *bin_ptr;
-	size_t i, j;
+	size_t i, j, bucket;
 	ptr = utf8_char;
-
-	bit_count = byte = utf8_count = 0;
+	bucket = bit_count = utf8_count = byte = 0;
 
 	if (is_set(st_prg, VERBOSE))
 		printf("compression: file %s.\n", buf_read->name);
@@ -146,15 +110,19 @@ int compression_write_file(
 		bucket = hash(utf8_char);
 		if (map[bucket].binary[0] == '\0')
 			FAIL("hashmap");
+
+		/* set the pointer for the binary value to be read */
 		bin_ptr = map[bucket].binary;
 		for (j = 0; j < map[bucket].len_bin; j++)
-			write_bit(
+			BI_write_bit(
 						buf_write,
+						/* 7-j reverse the bit order */
 						(unsigned)bin_ptr[j]-'0',
-						&byte, &bit_count);
-
+						&byte,
+						&bit_count);
 		ptr = utf8_char;
 	}
+
 	GE_buffer_rewind(buf_read);
 	GE_buffer_off(buf_read);
 
@@ -165,16 +133,17 @@ int compression_write_file(
 	bucket = hash("EOF");
 	if (map[bucket].binary[0] == '\0')
 		FAIL("hashmap");
-	bin_ptr = map[bucket].binary;
 
+	/* set the pointer for the binary value to be read */
+	bin_ptr = map[bucket].binary;
 	for (i = 0; i < map[bucket].len_bin; i++)
-		write_bit(
+		BI_write_bit(
 						buf_write,
 						(unsigned)bin_ptr[i]-'0',
 						&byte, &bit_count);
 
 	/* Pad any remaining bits in the last byte with zeroes */
-	if(bit_count > 0) {
+	if (bit_count > 0) {
 		 byte <<= 8 - bit_count;
 		 GE_buffer_fwrite((char*)&byte, 1, 1, buf_write);
 	}
@@ -191,7 +160,8 @@ int compression_write_file(
 }
 
 /*
- * metadata_read_hash_table_data: Create a hash table using the key value pairs
+ * metadata_read_hash_table_data: Create a hash table using the key value
+ * pairs.
  */
 int metadata_read_hash_table_data(
 						F_Buf *buf,
@@ -231,7 +201,8 @@ int metadata_read_hash_table_data(
 			c = LE_get_string(buf, c, ptr_bin);
 
 			/* Store the data */
-			//TODO NEXT the length data should be stored in the archive
+			//TODO NEXT the length data should be stored in the
+			//archive
 			data.len_bin = strlen(data.binary);
 			data.len_char = strlen(data.utf8_char);
 			HC_hashtable_add_binary_key(map, data);
@@ -268,24 +239,20 @@ String metadata_read_filename(
 }
 
 /*
- * decompress_write_text_file: Inflate a text file from the given archive.
+ * decompress_write_file: Inflate a text file from the given archive.
  */
-int decompress_write_text_file(
+int decompress_write_file(
 						F_Buf *buf_read,
 						F_Buf *buf_write,
 						Data *map,
 						int st_lex,
 						const int st_prg)
 {
-	unsigned char c = ' ';
-	unsigned char byte = ' ';
-	unsigned bit_count;
-	unsigned bit, bucket;
-	Data data;
-	data = HC_data_init();
+	char c = ' ';
+	unsigned char byte;
+	int bit_count = 0;
 	String *str = NULL;
 	str = GE_string_init(str);
-        bit = bucket = 0;
 
 	if (is_set(st_prg, VERBOSE))
 		printf("decompression: writing from archive %s to %s.\n",
@@ -294,43 +261,24 @@ int decompress_write_text_file(
 	GE_buffer_on(buf_write);
 
 	/*
-	 * read_bit: Read each bit of a new character, checking each time to
-	 * see if the binary string is in the hash table, if it is found write the
-	 * corresponding char into the output file buffer and refresh the string.
-	 * TODO NOW pushback added to LE_get_token now changed to read ahead,
+	 * TODO NEXT pushback added to LE_get_token now changed to read ahead,
 	 * should the pushback be left in get_token, it must at least be tested.
 	 */
-	c = GE_buffer_fgetc(buf_read);
-	bit_count = 7;
-	while (is_set(st_lex, LEX_DECOMPRESS))
+	c = GE_buffer_fgetc(buf_read); /* get the '\n' after the <comp> tag */
+	while (is_set(st_lex, LEX_DECOMPRESS) && c != EOF)
 	{
-		if (c == '<' && ((LE_read_ahead(buf_read, c, &st_lex)) == 0)) {
-			FAIL("writing text file");
-			break;
-		}
+		if (c == '<')
+			if (LE_look_ahead(buf_read, '>', TOKEN_MAX))
+				if ((c = LE_get_token(buf_read, c, &st_lex)))
+					break;
 
-		/* Reset */
-		if (++bit_count == 8)
-			c = byte = GE_buffer_fgetc(buf_read), bit_count = 0;
-
-		/* Read binary */
-		bit = byte & 1;
-		unsigned mask = (1 << bit_count) - 1;
-		byte &= mask;
-		GE_string_add_char(str, (char)bit+'0');
-
-		/* Look up the string in its current state in the hash table,
-		 * when a char is found the string is reset */
-		data = HC_hashtable_lookup_string(map, *(str->str));
-		if (data.utf8_char[0] != '\0') {
-			GE_buffer_fwrite(
-							data.utf8_char, 1,
-							data.len_char, buf_write);
-			GE_string_reset(str);
-		}
-
-		/* Shift right ready for the next bit */
-		byte >>= 1;
+		 /* 
+		  * BI_read_bit: Read each bit of a char, checking each time to
+		  * see if the binary string that is being created is in the
+		  * hash table, if it is found; Write the corresponding char
+		  * into the output file buffer and then refresh the string.
+		  */
+		c = BI_read_bit(buf_read, buf_write, map, str, c, &byte, &bit_count);
 	}
 
 	GE_buffer_fwrite_FILE(buf_write);
