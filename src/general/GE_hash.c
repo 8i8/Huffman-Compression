@@ -1,4 +1,4 @@
-#include "general/GE_hash.h"
+#include "huffman/HC_hashtable.h"
 
 /*
  * hash: Hash value for string s

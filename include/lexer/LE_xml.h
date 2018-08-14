@@ -21,11 +21,6 @@ F_Buf *LE_xml_element_map(F_Buf *buf, char *st1, char *st2);
 F_Buf *LE_xml_element_item(F_Buf *buf, char *item, char *tag);
 
 /*
- * LE_xml_goto_token: Move forwards allong the file stream to the next token.
- */
-char LE_xml_goto_token(F_Buf *buf, char c);
-
-/*
  * LE_xml_read_token: Read and verify the token, set state acordingly.
  */
 char LE_xml_read_token(F_Buf *buf, char c, int *st_lex);

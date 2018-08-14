@@ -15,11 +15,11 @@
  * 5) Encode the file.
  *
  */
-#include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
+#include "general/GE_state.h"
 #include "huffman/HC_priority_queue.h"
 #include "huffman/HC_huffman_tree.h"
-#include "huffman/HC_map_char.h"
+#include "huffman/HC_hashtable.h"
 #include "program/PG_prologue.h"
 #include "program/PG_huffman.h"
 #include "program/PG_epilogue.h"

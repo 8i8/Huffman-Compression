@@ -68,7 +68,9 @@ int LE_token_init(void)
 		return 1;
 
 	token_add("map", LEX_MAP);
-	token_add("comp", LEX_DECOMP);
+	token_add("comp", LEX_DECOMPRESS);
+	token_add("name", LEX_FILENAME);
+	token_add("ch", LEX_CHAR);
 
 	return 0;
 }
@@ -100,10 +102,10 @@ int check_tree(Token *tree, char *check)
 int LE_check_token(char *token)
 {
 	int bucket = hash(token);
-	Token *current;
+	Token *cur;
 
-	if ((current = token_table[bucket]))
-		return check_tree(current, token);
+	if ((cur = token_table[bucket]))
+		return check_tree(cur, token);
 
 	return 0;
 }

@@ -4,10 +4,10 @@
 #include "general/GE_state.h"
 #include "general/GE_string.h"
 #include "general/GE_hash.h"
-#include "general/GE_print.h"
+#include "program/PG_print.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
-#include "huffman/HC_map_char.h"
+#include "huffman/HC_hashtable.h"
 
 /*
  * DS_huffman_data_init: Initalize an empty Data struct.
@@ -30,7 +30,8 @@ Data HC_data_init(void)
 	Data map;
 	map.utf8_char[0] = '\0';
 	map.binary[0] = '\0';
-	map.len = 0;
+	map.len_char = 0;
+	map.len_bin = 0;
 	map.frq = 0;
 	map.next = NULL;
 	return map;
@@ -255,7 +256,7 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 	data = HC_data_init();
 
 	if (is_set(st_prg, VERBOSE))
-		printf("Build binary tree.\n");
+		printf("metadata: buildiing binary tree.\n");
 
 	while ((*tree)->next)
 	{
@@ -283,7 +284,7 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 	}
 
 	if (is_set(st_prg, PRINT)) {
-		printf("Print huffman tree.\n");
+		printf("print: huffman tree.\n");
 		print_huffman_tree(*tree);
 	}
 
@@ -293,45 +294,37 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 /*
  * DS_huffman_tree_extract_encoding: Recursive function to walk tree and
  * extract binary data for encoding.
- * TODO NOW map written here.
  */
 int DS_huffman_tree_extract_encoding(
-					HC_HuffmanNode *tree,
-					String* string,
-					Data *map)
+						HC_HuffmanNode *tree,
+						String* str,
+						Data *map)
 {
 	/* Add binary bit data to string */
 	if (tree->bit)
-		if ((string = GE_string_add_char(string, tree->bit)) == NULL)
+		if ((str = GE_string_add_char(str, tree->bit)) == NULL)
 			return 1;
 
 	/* Branch left, adds '0' */
 	if (tree->left) {
-		DS_huffman_tree_extract_encoding(tree->left, string, map);
-		string = GE_string_rem_char(string);
+		DS_huffman_tree_extract_encoding(tree->left, str, map);
+		str = GE_string_rem_char(str);
 	}
 
-	/* Branch left, adds '1' */
+	/* Branch right, adds '1' */
 	if (tree->right) {
-		DS_huffman_tree_extract_encoding(tree->right, string, map);
-		string = GE_string_rem_char(string);
+		DS_huffman_tree_extract_encoding(tree->right, str, map);
+		str = GE_string_rem_char(str);
 	}
 
 	/* Fill data struct and insert into hash map */
 	if (tree->data.utf8_char[0] != '\0') {
-		int bucket = hash(tree->data.utf8_char);
-		if (map[bucket].binary[0] != '\0') {
-			Data new_node;
-			memcpy(new_node.binary, string->str, string->len+1);
-			memcpy(new_node.utf8_char, tree->data.utf8_char, 5);
-			new_node.len = string->len;
-			HC_map_add_node(map, bucket, new_node);
-		} else {
-			memcpy(map[bucket].binary, string->str, string->len+1);
-			memcpy(map[bucket].utf8_char, tree->data.utf8_char, 5);
-			map[bucket].len = string->len;
-		}
+		Data data = tree->data;
+		data.len_bin = str->len;
+		memcpy(data.binary, str->str, data.len_bin+1);
+		HC_hashtable_add_utf8_key(map, data);
 	}
+
 	return 0;
 }
 
@@ -343,8 +336,7 @@ int DS_huffman_tree_clear(HC_HuffmanNode **tree)
 	if (*tree == NULL) {
 		FAIL("tree node is NULL");
 		return 1;
-	}
-	else if ((*tree)->next != NULL)
+	} else if ((*tree)->next != NULL)
 		FAIL("Priority queue nodes still exist");
 
 	if ((*tree)->left) {

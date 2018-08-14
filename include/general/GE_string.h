@@ -18,6 +18,12 @@ typedef struct {
 String *GE_string_init(String *Str);
 
 /*
+ * GE_string_stack_init: Initalise a string whos struct is allocated on the
+ * stack.
+ */
+String GE_string_stack_init(String str);
+
+/*
  * _string_len: Buffer for simple string struct.
  */
 String *GE_string_len(String *Str, size_t len);

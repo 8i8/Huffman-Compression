@@ -4,7 +4,7 @@
 #include "general/GE_error.h"
 #include "general/GE_state.h"
 #include "general/GE_utf8.h"
-#include "general/GE_print.h"
+#include "program/PG_print.h"
 #include "lexer/LE_lexer.h"
 #include "huffman/HC_mergesort.h"
 #include "huffman/HC_huffman_tree.h"
@@ -25,14 +25,13 @@ int FN_data_strcmp(void *v1, void *v2)
 /*
  * frequency_list_from_text: Sort alphabetically and keep count of each
  * occurrences of every character used.
- * TODO NOW char is written into data struct here.
  */
 static HC_HuffmanNode **frequency_list_from_text(
 						HC_HuffmanNode **list,
 						F_Buf *buf)
 {
 	char c, *ptr;
-	size_t utf8_count;
+	size_t utf8_count, len;
 	Data data;
 	data = HC_data_init();
 	utf8_count = 0;
@@ -40,16 +39,16 @@ static HC_HuffmanNode **frequency_list_from_text(
 	GE_buffer_on(buf);
 	while ((c = GE_buffer_fgetc(buf)) != EOF)
 	{
-		ptr = data.utf8_char;
+		/* reset */
+		ptr = data.utf8_char, len = 1;;
 
 		/* Add char, check if multi-byte character */
 		while ((*ptr++ = c)
-				&& (utf8_count || (utf8_count = utf8_len(c)))
+				&& (utf8_count || (len = utf8_count = utf8_len(c)))
 				&& utf8_count < 4)
 			c = GE_buffer_fgetc(buf), utf8_count--;
 
-		*ptr = '\0';
-		data.frq = 1;
+		*ptr = '\0', data.frq = 1, data.len_char = len;
 		DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
 	}
 
@@ -75,8 +74,8 @@ static int frequency_list_from_metadata(
 	char c = 0;
 	size_t utf8_count;
 	utf8_count = 0;
-
-	Data data = HC_data_init();
+	Data data;
+	data = HC_data_init();
 	String *str = NULL;
 	str = GE_string_init(str);
 
@@ -131,7 +130,7 @@ static int frequency_list_from_metadata(
 
 		/* Check for a to end the list */
 		if (c == '<')
-			st_lex = LE_get_token(buf, c, st_lex);
+			st_lex = LE_get_token(buf, c, &st_lex);
 	}
 
 	GE_string_free(str);
@@ -164,11 +163,11 @@ int frequency_list_compression(
 }
 
 /*
- * decompression_priority_queue: Retrieve the frequency map from the beginning
+ * decompress_priority_queue: Retrieve the frequency map from the beginning
  * of a compressed file and make it into a list, sort the list into a priority
  * queue.
  */
-int decompression_priority_queue(
+int decompress_priority_queue(
 							HC_HuffmanNode **list,
 							F_Buf *buf,
 							int st_lex)

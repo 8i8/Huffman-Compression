@@ -11,11 +11,23 @@
 String *GE_string_init(String *Str)
 {
 	Str = malloc(sizeof(*Str));
+	Str->ptr = Str->str = calloc(STR_BUF_INIT+1, 1);
 	Str->buf = STR_BUF_INIT;
 	Str->len = 0;
-	Str->ptr = Str->str = calloc(Str->buf+1, 1);
 
 	return Str;
+}
+
+/*
+ * GE_string_stack_init: Initalise a string whos struct is allocated on the
+ * stack.
+ */
+String GE_string_stack_init(String str)
+{
+	str.ptr = str.str = calloc(STR_BUF_INIT+1, 1);
+	str.buf = STR_BUF_INIT;
+	str.len = 0;
+	return str;
 }
 
 /*

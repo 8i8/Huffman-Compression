@@ -12,10 +12,10 @@ unsigned frequency_list_compression(
 						F_Buf *buf,
 						const int state);
 
-/* decompression_priority_queue: Retrieve the frequency mapping from the
+/* decompress_priority_queue: Retrieve the frequency mapping from the
  * beginning of a compressed file and make it into a list, sort the list into a
  * priority queue */
-unsigned decompression_priority_queue(
+unsigned decompress_priority_queue(
 						HC_HuffmanNode **list,
 						F_Buf *buf,
 						int state);
