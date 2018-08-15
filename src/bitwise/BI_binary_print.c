@@ -17,7 +17,7 @@ static F_Buf *BI_buffer_init(void)
 
 	GE_file_clear("binary_log");
 
-	if (GE_file_open(buf, "binary_log", "a", 0))
+	if (GE_buffer_fopen(buf, "binary_log", "a", 0))
 		FAIL("File open failed");
 	GE_buffer_on(buf);
 	return buf;

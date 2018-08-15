@@ -52,6 +52,8 @@ int decompress_archive(F_Buf **io, const int st_prg)
 	GE_buffer_on(io[0]);
 	c = GE_buffer_fgetc(io[0]);
 
+	// TODO NOW add <archive> tiken so that the program can close
+	// elequantly.
 	while (io[0] && c != EOF && !is_set(st_lex, LEX_ERROR))
 	{
 		/* Change state */
@@ -62,17 +64,31 @@ int decompress_archive(F_Buf **io, const int st_prg)
 
 		/* Decompress */
 		if (is_set(st_lex, LEX_MAP))
-			st_lex = metadata_read_hash_table_data(io[0], map, st_lex, st_prg);
+			st_lex = metadata_read_hash_table_data(
+								io[0],
+								map,
+								st_lex,
+								st_prg);
 
-		else if (is_set(st_lex, LEX_FILENAME)) {
+		else if (is_set(st_lex, LEX_FILENAME))
+		{
 			str = GE_string_stack_init(str);
-			str = metadata_read_filename(io[0], str, &st_lex, st_prg);
-			GE_file_open_array(io, str.str, "w", st_prg);
+			str = metadata_read_filename(
+								io[0],
+								str,
+								&st_lex,
+								st_prg);
+
+			GE_buffer_fopen_array(io, str.str, "w", st_prg);
 			GE_string_stack_free(str);
 		}
 		else if (is_set(st_lex, LEX_DECOMPRESS))
-			st_lex = decompress_write_file(io[0], io[++i], map, st_lex, st_prg);
-
+			st_lex = decompress_write_file(
+								io[0],
+								io[++i],
+								map,
+								&st_lex,
+								st_prg);
 	}
 
 	if (is_set(st_lex, LEX_ERROR))

@@ -54,6 +54,7 @@ static HC_HuffmanNode **frequency_list_from_text(
 
 	/* Add EOF char */
 	memcpy(data.utf8_char, "EOF", 4), data.frq = 1;
+	state_set(data.st_dta, DTA_EOF);
 	DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
 
 	rewind(buf->fp);

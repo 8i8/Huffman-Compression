@@ -11,6 +11,7 @@ typedef struct _data {
 	char binary[BIN_MAX];
 	unsigned short len_char;
 	unsigned short len_bin;
+	unsigned short st_dta;
 	size_t frq;
 	struct _data *next;
 } Data;

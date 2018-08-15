@@ -5,10 +5,22 @@
 #include "general/GE_hashtable.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
-#include "general/GE_hash.h"
 #include "general/GE_error.h"
 
 // TODO change the collision data structure into a btree
+
+/*
+ * hash: Hash value for string s
+ */
+unsigned long hash(char *s)
+{
+	unsigned long hashval;
+
+	for (hashval = 0; *s != '\0'; s++)
+		hashval = *s + 3 * hashval;
+
+	return hashval % MAP_LEN;
+}
 
 /*
  * HC_data_init: Returns a data struct with all values set to 0.
@@ -20,6 +32,7 @@ Data HC_data_init(void)
 	map.binary[0] = '\0';
 	map.len_char = 0;
 	map.len_bin = 0;
+	map.st_dta = 0;
 	map.frq = 0;
 	map.next = NULL;
 	return map;
@@ -98,7 +111,6 @@ int HC_hashtable_add_utf8_key(Data *map, Data data)
 
 /*
  * HC_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
- * TODO NOW memory leak here.
  */
 int HC_hashtable_add_binary_key(Data *map, Data data)
 {

@@ -70,9 +70,9 @@ unsigned GE_file_clear(char *name)
 }
 
 /*
- * GE_file_open: Open file for file buffer.
+ * GE_buffer_fopen: Open file for file buffer.
  */
-unsigned GE_file_open(F_Buf *buf, char *name, char *mode, const int st_prg)
+unsigned GE_buffer_fopen(F_Buf *buf, char *name, char *mode, const int st_prg)
 {
 	FILE *fp;
 	String *str = NULL;
@@ -111,9 +111,9 @@ unsigned GE_file_open(F_Buf *buf, char *name, char *mode, const int st_prg)
 }
 
 /*
- * GE_file_open_array: Open a file.
+ * GE_buffer_fopen_array: Open a file.
  */
-unsigned GE_file_open_array(F_Buf **io, char *name, char *mode, const int st_prg)
+unsigned GE_buffer_fopen_array(F_Buf **io, char *name, char *mode, const int st_prg)
 {
 	int i;
 
@@ -129,12 +129,22 @@ unsigned GE_file_open_array(F_Buf **io, char *name, char *mode, const int st_prg
 
 	/* allocate and try for a file */
 	io[i] = malloc(sizeof(F_Buf));
-	if (GE_file_open(io[i], name, mode, st_prg)) {
+	if (GE_buffer_fopen(io[i], name, mode, st_prg)) {
 		free(io[i]);
 		return 1;
 	}
 
 	return 0;
+}
+
+/*
+ * GE_buffer_fclose: Clode a buffered file.
+ */
+F_Buf *GE_buffer_fclose(F_Buf *buf)
+{
+	if (buf->fp)
+		fclose(buf->fp);
+	return buf;
 }
 
 /*
@@ -358,6 +368,8 @@ int GE_buffer_pushback_goto(F_Buf *buf)
  */
 void GE_buffer_free(F_Buf *buf)
 {
+	if (buf->fp)
+		fclose(buf->fp);
 	free(buf->buf);
 	free(buf);
 }

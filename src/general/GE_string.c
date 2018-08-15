@@ -93,8 +93,6 @@ String *GE_string_set(String *Str, char *str)
 /*
  * GE_string_add_char: Add a single char to the string, buffer that string if
  * required.
- * TODO NOW realloc can not be used like this if the string is made on the
- * stack.
  */
 String *GE_string_add_char(String *Str, char c)
 {

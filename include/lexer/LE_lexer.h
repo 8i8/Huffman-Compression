@@ -18,7 +18,7 @@ char LE_goto_glyph(F_Buf *buf, char c, char glyph);
 char LE_get_token(F_Buf *buf, char c, int *st_lex);
 
 /* LE_read_ahead: Check ahead for a token */
-int LE_look_ahead(F_Buf *buf, char glyph, ptrdiff_t dist);
+int LE_look_ahead(F_Buf *buf, char close, char open, ptrdiff_t dist);
 
 /* LE_get_utf8_char: Get the next utf-8 char from the file setream return it as
  * a string */

@@ -35,11 +35,14 @@ F_Buf *GE_buffer_stack_init(F_Buf *buf, FILE *fp, char *name);
 /* GE_file_clear: empty the file, used berfor file open with append */
 unsigned GE_file_clear(char *name);
 
-/* GE_file_open: Open file for file buffer */
-unsigned GE_file_open(F_Buf *buf, char *name, char *mode, const int st_prg);
+/* GE_buffer_fopen: Open file for file buffer */
+unsigned GE_buffer_fopen(F_Buf *buf, char *name, char *mode, const int st_prg);
 
 /* open_file: Open a file and add it to the F_Buf array */
-unsigned GE_file_open_array(F_Buf **io, char *name, char *mode, const int state);
+unsigned GE_buffer_fopen_array(F_Buf **io, char *name, char *mode, const int state);
+
+/* GE_buffer_fclose: Clode a buffered file */
+F_Buf *GE_buffer_fclose(F_Buf *buf);
 
 /* GE_buffer_on: allocate memory for file buffer */
 F_Buf *GE_buffer_on(F_Buf *buf);

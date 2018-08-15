@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "general/GE_state.h"
 #include "general/GE_file_buffer.h"
 #include "bitwise/BI_bitwise.h"
 
@@ -35,7 +36,6 @@ void BI_write_bit(
   * binary string that is being created is in the hash table, if it is found;
   * Write the corresponding char into the output file buffer and then refresh
   * the string.
-  * TODO NOW binary read
   */
 char BI_read_bit(
 						F_Buf *buf_read,
@@ -44,7 +44,8 @@ char BI_read_bit(
 						String *str,
 						char c,
 						unsigned char *byte,
-						int *bit_count)
+						int *bit_count,
+						int *ignore)
 {
 	unsigned bit;
 	Data data;
@@ -64,6 +65,8 @@ char BI_read_bit(
 	/* write to file when ready */
 	data = HC_hashtable_lookup_binary(map, str->str);
 	if (data.utf8_char[0] != '\0') {
+		if (is_set(data.st_dta, DTA_EOF))
+			return EOF;
 		GE_buffer_fwrite(
 						data.utf8_char, 1,
 						data.len_char, buf_write);
@@ -75,7 +78,7 @@ char BI_read_bit(
 	/* Reset byte */
 	if ((*bit_count)++ == 7) {
 		c = *byte = GE_buffer_fgetc(buf_read);
-		*bit_count = 0;
+		*ignore = *bit_count = 0;
 	}
 
 	return c;

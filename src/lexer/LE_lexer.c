@@ -92,9 +92,8 @@ char LE_get_token(F_Buf *buf, char c, int *st_lex)
 /*
  * LE_read_ahead: Check ahead for a token.
  * TODO NEXT requires case for nearing the buffers end written.
- * TODO NEXT write this function
  */
-int LE_look_ahead(F_Buf *buf, char glyph, ptrdiff_t dist)
+int LE_look_ahead(F_Buf *buf, char close, char open, ptrdiff_t dist)
 {
 	ptrdiff_t *end, *read;
 	char *ptr;
@@ -104,8 +103,11 @@ int LE_look_ahead(F_Buf *buf, char glyph, ptrdiff_t dist)
 
 	assert(end - read > dist);
 
-	while (ptr < buf->read + dist && ptr < buf->end)
-		if (*++ptr == glyph)
+	while (ptr < buf->read + dist
+			&& ptr < buf->end
+			&& *ptr != open
+			&& *ptr != EOF)
+		if (*++ptr == close)
 			return 1;
 	return 0;
 }

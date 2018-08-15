@@ -153,6 +153,7 @@ int compression_write_archive(
 		 GE_buffer_fwrite((char*)&byte, 1, 1, buf_write);
 		 BI_binary_log(byte, 8);
 	}
+	GE_buffer_fwrite("\0", 1, 1, buf_write);
 	GE_buffer_fwrite("\n", 1, 1, buf_write);
 
 	BI_binary_log_flush();
@@ -248,16 +249,17 @@ String metadata_read_filename(
 /*
  * decompress_write_file: Inflate a text file from the given archive.
  */
-int decompress_write_file(
+char decompress_write_file(
 						F_Buf *buf_read,
 						F_Buf *buf_write,
 						Data *map,
-						int st_lex,
+						int *st_lex,
 						const int st_prg)
 {
 	char c = ' ';
 	unsigned char byte;
-	int bit_count = 0;
+	int bit_count, ignore;
+	bit_count = ignore = 0;
 	String *str = NULL;
 	str = GE_string_init(str);
 
@@ -271,29 +273,33 @@ int decompress_write_file(
 	 * TODO NEXT pushback added to LE_get_token now changed to read ahead,
 	 * should the pushback be left in get_token, it must at least be tested.
 	 */
-	// TODO NOW decompress binary read called here
 	c = GE_buffer_fgetc(buf_read); /* get the '\n' after the <comp> tag */
 	c = byte = GE_buffer_fgetc(buf_read); /* get the first byte of compressed data */
-	while (is_set(st_lex, LEX_DECOMPRESS) && c != EOF)
+	while (is_set(*st_lex, LEX_DECOMPRESS) && c != EOF)
 	{
-		if (c == '<')
-			if (LE_look_ahead(buf_read, '>', TOKEN_MAX))
-				if ((c = LE_get_token(buf_read, c, &st_lex)))
+		if (c == '<' && !ignore) {
+			/* Check forwars for sign of a token, if not found then
+			 * ignore the '<' untill the next char is read */
+			if (LE_look_ahead(buf_read, '>', '<', TOKEN_MAX)) {
+				if ((c = LE_get_token(buf_read, c, st_lex)))
 					break;
-
+			} else
+				ignore++;
+		}
 		 /* 
 		  * BI_read_bit: Read each bit of a char, checking each time to
 		  * see if the binary string that is being created is in the
 		  * hash table, if it is found; Write the corresponding char
 		  * into the output file buffer and then refresh the string.
 		  */
-		c = BI_read_bit(buf_read, buf_write, map, str, c, &byte, &bit_count);
+		c = BI_read_bit(buf_read, buf_write, map, str, c, &byte, &bit_count, &ignore);
 	}
 
 	GE_buffer_fwrite_FILE(buf_write);
 	GE_buffer_off(buf_write);
+	GE_buffer_fclose(buf_write);
 	GE_string_free(str);
 
-	return st_lex;
+	return c;
 }
 

@@ -26,9 +26,9 @@ int metadata_read_hash_table_data(F_Buf *buf, Data *map, int st_lex, const int s
 String metadata_read_filename(F_Buf *buf, String str, int *st_lex, const int st_prg);
 
 /* decompress_write_file: Inflate a text file from the given arvhive */
-int decompress_write_file(
+char decompress_write_file(
 						F_Buf *buf_read,
 						F_Buf *buf_write,
 						Data *map,
-						int st_lex,
+						int *st_lex,
 						const int st_prg);

@@ -42,7 +42,7 @@ int prologue(int argc, char *argv[], F_Buf **io, int st_prg)
 
 			/* Open the first file for writing as an archive */
 			if (argc && is_set(st_prg, COMPRESS)) {
-				if (GE_file_open_array(io, *argv, "wb", st_prg))
+				if (GE_buffer_fopen_array(io, *argv, "wb", st_prg))
 					return state_set(st_prg, ESC);
 				else
 					--argc, ++argv;
@@ -52,14 +52,14 @@ int prologue(int argc, char *argv[], F_Buf **io, int st_prg)
 		/* Open a readable file for every argument following the options given
 		 * and the initial write file */
 		if (argc && is_set(st_prg, COMPRESS)) {
-			if (GE_file_open_array(io, *argv, "r", st_prg))
+			if (GE_buffer_fopen_array(io, *argv, "r", st_prg))
 				return state_set(st_prg, ESC);
 		}
 
 		/* Open a file with text write enabled, to write the decompressed data
 		 * too */
 		if (argc && is_set(st_prg, DECOMPRESS)) {
-			if (GE_file_open_array(io, *argv, "rb", st_prg))
+			if (GE_buffer_fopen_array(io, *argv, "rb", st_prg))
 				return state_set(st_prg, ESC);
 		}
 	}
