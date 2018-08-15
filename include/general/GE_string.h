@@ -18,10 +18,21 @@ typedef struct {
 String *GE_string_init(String *Str);
 
 /*
+ * GE_string_free: Destroy string.
+ */
+void GE_string_free(String *Str);
+
+/*
  * GE_string_stack_init: Initalise a string whos struct is allocated on the
  * stack.
  */
 String GE_string_stack_init(String str);
+
+/*
+ * GE_string_stack_free: Free the heap alocated string inside of a stack
+ * alocated String struct.
+ */
+void GE_string_stack_free(String str);
 
 /*
  * _string_len: Buffer for simple string struct.
@@ -61,7 +72,3 @@ String *GE_string_concat(String *Str, char *string, int len);
  */
 String *GE_string_reset(String *Str);
 
-/*
- * GE_string_free: Destroy string.
- */
-void GE_string_free(String *Str);

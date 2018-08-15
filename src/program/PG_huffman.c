@@ -40,17 +40,18 @@ int decompress_archive(F_Buf **io, const int st_prg)
 {
 	char c = ' ';
 	int i, st_lex;
-        i = st_lex = 0;
 	Data map[MAP_LEN];
-	HC_hashtable_init(map);
 	String str;
+        i = st_lex = 0;
 
 	if (is_set(st_prg, VERBOSE))
 		printf("Opening archive.\n");
 
+	HC_hashtable_init(map);
 	LE_lexer_init();
 	GE_buffer_on(io[0]);
 	c = GE_buffer_fgetc(io[0]);
+
 	while (io[0] && c != EOF && !is_set(st_lex, LEX_ERROR))
 	{
 		/* Change state */
@@ -67,6 +68,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 			str = GE_string_stack_init(str);
 			str = metadata_read_filename(io[0], str, &st_lex, st_prg);
 			GE_file_open_array(io, str.str, "w", st_prg);
+			GE_string_stack_free(str);
 		}
 		else if (is_set(st_lex, LEX_DECOMPRESS))
 			st_lex = decompress_write_file(io[0], io[++i], map, st_lex, st_prg);

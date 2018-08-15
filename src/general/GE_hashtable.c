@@ -63,7 +63,7 @@ int HC_hashtable_add_utf8_key(Data *map, Data data)
 {
 
 	int bucket = hash(data.utf8_char);
-	Data cur;
+	Data *cur;
 
 	/* If the bucket is empty */
 	if (map[bucket].utf8_char[0] == '\0') {
@@ -75,29 +75,30 @@ int HC_hashtable_add_utf8_key(Data *map, Data data)
 	if (strcmp(map[bucket].utf8_char, data.utf8_char) == 0)
 		return 0;
 
+	cur = &map[bucket];
+
 	/* Add a node to the ajoined btree */
-	if (map[bucket].next) {
-		cur = map[bucket];
-		while (cur.next != NULL) {
-			if (strcmp(cur.utf8_char, data.utf8_char) == 0)
+	if (cur->next) {
+		while (cur->next != NULL) {
+			if (strcmp(cur->utf8_char, data.utf8_char) == 0)
 				return 0;
-			cur = *cur.next;
+			cur = cur->next;
 		}
-		if (strcmp(cur.utf8_char, data.utf8_char) == 0)
+		if (strcmp(cur->utf8_char, data.utf8_char) == 0)
 			return 0;
 	}
 
 	/* Add the new value to either the bucket or the end of the list */
-	if ((cur.next = malloc(sizeof(Data))) == NULL)
+	if ((cur->next = malloc(sizeof(Data))) == NULL)
 		FAIL("malloc failed");
-	*(cur.next) = data;
+	*(cur->next) = data;
 
 	return 0;
 }
 
 /*
  * HC_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
- * TODO NOW data is getting leaked here.
+ * TODO NOW memory leak here.
  */
 int HC_hashtable_add_binary_key(Data *map, Data data)
 {
@@ -111,23 +112,26 @@ int HC_hashtable_add_binary_key(Data *map, Data data)
 	}
 
 	/* if already present return 0 */
-	else if (strcmp(map[bucket].utf8_char, data.utf8_char) == 0)
+	if (strcmp(map[bucket].utf8_char, data.utf8_char) == 0)
 		return 0;
 
+	cur = &map[bucket];
+
 	/* Check all nodes for the value */
-	else if (map[bucket].next) {
-		cur = map[bucket].next;
+	if (cur->next) {
 		while (cur->next != NULL) {
 			if (strcmp(cur->binary, data.binary) == 0)
 				return 0;
 			cur = cur->next;
 		}
+		if (strcmp(cur->binary, data.binary) == 0)
+			return 0;
 	}
 
 	/* Add the new value to either the bucket or the end of the list */
-	if ((map[bucket].next = malloc(sizeof(Data))) == NULL)
+	if ((cur->next = malloc(sizeof(Data))) == NULL)
 		FAIL("malloc failed");
-	*map[bucket].next = data;
+	*cur->next = data;
 
 	return 0;
 }
