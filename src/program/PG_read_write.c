@@ -80,20 +80,23 @@ int compression_write_archive(
 						F_Buf *buf_write,
 						const int st_prg)
 {
+	Data data;
 	int bit_count, utf8_count;
 	unsigned char byte;
 	char c, *ptr, utf8_char[UTF8_LEN], *bin_ptr;
-	size_t i, j, bucket;
+	size_t i, j;
 	ptr = utf8_char;
-	bucket = bit_count = utf8_count = byte = 0;
+	bit_count = utf8_count = byte = 0;
 
 	if (is_set(st_prg, VERBOSE))
 		printf("compression: file %s.\n", buf_read->name);
 
 	GE_buffer_on(buf_write);
 	LE_xml_element_open(buf_write, "comp");
-
 	GE_buffer_on(buf_read);
+
+	/* Read binary representation of each char read and write that
+	 * representation into the archive bit by bit */
 	while ((c = GE_buffer_fgetc(buf_read)) != EOF && utf8_count < 4)
 	{
 		/* Get a character from the file buffer, test for
@@ -107,18 +110,19 @@ int compression_write_archive(
 		*ptr = '\0';
 
 		/* Retreive huffman encoding */
-		bucket = hash(utf8_char);
-		if (map[bucket].binary[0] == '\0')
+		data = HC_hashtable_lookup_utf8(map, utf8_char);
+		if (data.binary[0] == '\0')
 			FAIL("hashmap");
 
-		/* set the pointer for the binary value to be read */
+		/* set the pointer to the start of the text representation of
+		 * the binary value to be read */
 		// TODO NOW compression binary write called here
-		bin_ptr = map[bucket].binary;
-		for (j = 0; j < map[bucket].len_bin; j++)
+		bin_ptr = data.binary;
+		for (j = 0; j < data.len_bin; j++)
 			BI_write_bit(
 						buf_write,
-						/* 7-j reverse the bit order */
-						(unsigned)bin_ptr[j]-'0',
+						/* conver to int */
+						(unsigned char)bin_ptr[j]-'0',
 						&byte,
 						&bit_count);
 		ptr = utf8_char;
@@ -131,17 +135,18 @@ int compression_write_archive(
 		FAIL("utf8_countdown");
 
 	/* Add EOF char */
-	bucket = hash("EOF");
-	if (map[bucket].binary[0] == '\0')
+	data = HC_hashtable_lookup_utf8(map, "EOF");
+	if (data.binary[0] == '\0')
 		FAIL("hashmap");
 
 	/* set the pointer for the binary value to be read */
-	bin_ptr = map[bucket].binary;
-	for (i = 0; i < map[bucket].len_bin; i++)
+	bin_ptr = data.binary;
+	for (i = 0; i < data.len_bin; i++)
 		BI_write_bit(
 						buf_write,
 						(unsigned)bin_ptr[i]-'0',
-						&byte, &bit_count);
+						&byte,
+						&bit_count);
 
 	/* Pad any remaining bits in the last byte with zeroes */
 	if (bit_count > 0) {
@@ -267,7 +272,7 @@ int decompress_write_file(
 	 * TODO NEXT pushback added to LE_get_token now changed to read ahead,
 	 * should the pushback be left in get_token, it must at least be tested.
 	 */
-	// TODO NOW decompress bin read called here
+	// TODO NOW decompress binary read called here
 	c = GE_buffer_fgetc(buf_read); /* get the '\n' after the <comp> tag */
 	while (is_set(st_lex, LEX_DECOMPRESS) && c != EOF)
 	{

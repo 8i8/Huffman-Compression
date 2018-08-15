@@ -80,7 +80,7 @@ F_Buf *BI_binary_log(size_t i, size_t bits)
 	str = BI_int_to_binary(i, bits);
 	GE_buffer_fwrite(str, bits, 1, buf);
 
-	if (BIN_WRITE) BI_binary_print(*str, 8);
+	if (BIN_LOG_PRINT) BI_binary_print(i, 8);
 
 	if (j == 5)
 		GE_buffer_fwrite("\n", 1, 1, buf);

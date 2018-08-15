@@ -39,11 +39,11 @@ int HC_map_add(void *m, void *d);
 
 /* HC_hashtable_lookup_utf8: Returns the paired utf8 char value as a string,
  * for a given string key */
-Data HC_hashtable_lookup_utf8(Data *map, char str);
+Data HC_hashtable_lookup_utf8(Data *map, char *str);
 
 /* HC_hashtable_lookup_binary: Returns the paired binary string value of a
  * given utf8 char */
-Data HC_hashtable_lookup_binary(Data *map, char str);
+Data HC_hashtable_lookup_binary(Data *map, char *str);
 
 /* HC_hashtable_clear: Reset the map to empty */
 void HC_hashtable_clear(Data *map);

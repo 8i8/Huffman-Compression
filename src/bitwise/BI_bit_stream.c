@@ -13,21 +13,22 @@ void BI_write_bit(
 						unsigned char *byte,
 						int *bit_count)
 {
-	if (++(*bit_count) == 9) {
-		if (BIN_IN) BI_binary_print(*byte, 8);
-		if (BIN_LOG_IN) BI_binary_log(*byte, 8);
-		GE_buffer_fwrite((char*)byte, 1, 1, buf);
-		*bit_count = 0;
-	}
-
 	/* Shift left ready for the next bit */
 	*byte <<= 1;
 
 	/* Set bit to 1 or 0 */
-	*byte |= bit;
+	*byte |= (int)bit;
 
-	printf("%d ", *bit_count);
+	if (BIN_IN) printf("%d ", *bit_count);
 	if (BIN_IN) BI_binary_print(*byte, 8);
+	
+	if ((*bit_count)++ == 7)
+	{
+		if (BIN_IN) BI_binary_print(*byte, 8);
+		if (BIN_LOG_IN) BI_binary_log((size_t)*byte, 8);
+		GE_buffer_fwrite((char*)byte, 1, 1, buf);
+		*bit_count = 0;
+	}
 }
 
  /* 
@@ -66,7 +67,7 @@ char BI_read_bit(
 	*byte >>= 1;
 
 	/* write to file when ready */
-	data = HC_hashtable_lookup_binary(map, *str->str);
+	data = HC_hashtable_lookup_binary(map, str->str);
 	if (data.utf8_char[0] != '\0') {
 		if (BIN_OUT) BI_binary_print(*byte, 8);
 		GE_buffer_fwrite(

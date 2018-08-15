@@ -133,9 +133,10 @@ int HC_hashtable_add_binary_key(Data *map, Data data)
  * HC_hashtable_lookup_utf8: Returns the paired utf8 char value as a string,
  * for a given string key.
  */
-Data HC_hashtable_lokup_utf8(Data *map, char str)
+Data HC_hashtable_lookup_utf8(Data *map, char *str)
 {
-	int bucket = hash(&str);
+	int bucket;
+        bucket = hash(str);
 	Data *cur;
 
 	/* If the bucket is empty */
@@ -143,7 +144,7 @@ Data HC_hashtable_lokup_utf8(Data *map, char str)
 		return HC_data_init();
 
 	/* if already present return 0 */
-	else if (strcmp(map[bucket].utf8_char, &str) == 0)
+	else if (strcmp(map[bucket].utf8_char, str) == 0)
 		return map[bucket];
 
 	/* Check all nodes for the value */
@@ -151,7 +152,7 @@ Data HC_hashtable_lokup_utf8(Data *map, char str)
 		cur = map[bucket].next;
 		while (cur->next != NULL) {
 			/* Foumd it! */
-			if (strcmp(cur->utf8_char, &str) == 0)
+			if (strcmp(cur->utf8_char, str) == 0)
 				return *cur;
 			cur = cur->next;
 		}
@@ -164,9 +165,9 @@ Data HC_hashtable_lokup_utf8(Data *map, char str)
  * HC_hashtable_lookup_binary: Returns the paired binary string value of a
  * given utf8 char.
  */
-Data HC_hashtable_lookup_binary(Data *map, char str)
+Data HC_hashtable_lookup_binary(Data *map, char *str)
 {
-	int bucket = hash(&str);
+	int bucket = hash(str);
 	Data *cur;
 
 	/* If the bucket is empty */
@@ -174,7 +175,7 @@ Data HC_hashtable_lookup_binary(Data *map, char str)
 		return HC_data_init();
 
 	/* if already present return 0 */
-	else if (strcmp(map[bucket].binary, &str) == 0)
+	else if (strcmp(map[bucket].binary, str) == 0)
 		return map[bucket];
 
 	/* Check all nodes for the value */
@@ -182,7 +183,7 @@ Data HC_hashtable_lookup_binary(Data *map, char str)
 		cur = map[bucket].next;
 		while (cur->next != NULL) {
 			/* Foumd it! */
-			if (strcmp(cur->binary, &str) == 0)
+			if (strcmp(cur->binary, str) == 0)
 				return *cur;
 			cur = cur->next;
 		}
