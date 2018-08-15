@@ -79,6 +79,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 	GE_buffer_rewind(io[0]);
 	GE_buffer_off(io[0]);
 	LE_lexer_free();
+	HC_hashtable_clear(map);
 
 	return st_lex;
 }

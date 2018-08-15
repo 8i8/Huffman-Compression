@@ -116,7 +116,6 @@ int compression_write_archive(
 
 		/* set the pointer to the start of the text representation of
 		 * the binary value to be read */
-		// TODO NOW compression binary write called here
 		bin_ptr = data.binary;
 		for (j = 0; j < data.len_bin; j++)
 			BI_write_bit(
@@ -274,6 +273,7 @@ int decompress_write_file(
 	 */
 	// TODO NOW decompress binary read called here
 	c = GE_buffer_fgetc(buf_read); /* get the '\n' after the <comp> tag */
+	c = byte = GE_buffer_fgetc(buf_read); /* get the first byte of compressed data */
 	while (is_set(st_lex, LEX_DECOMPRESS) && c != EOF)
 	{
 		if (c == '<')
@@ -292,6 +292,7 @@ int decompress_write_file(
 
 	GE_buffer_fwrite_FILE(buf_write);
 	GE_buffer_off(buf_write);
+	GE_string_free(str);
 
 	return st_lex;
 }

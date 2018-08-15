@@ -3,11 +3,11 @@
 #include "general/GE_string.h"
 #include "general/GE_file_buffer.h"
 
-#define BIN_IN  1
+#define BIN_IN  0
 #define BIN_OUT 0
-#define BIN_LOG_IN  1
-#define BIN_LOG_OUT 0
-#define BIN_LOG_PRINT 1
+#define BIN_LOG_IN  0
+#define BIN_LOG_OUT 1
+#define BIN_LOG_PRINT 0
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *   bitwise test

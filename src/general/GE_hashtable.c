@@ -63,7 +63,7 @@ int HC_hashtable_add_utf8_key(Data *map, Data data)
 {
 
 	int bucket = hash(data.utf8_char);
-	Data *cur;
+	Data cur;
 
 	/* If the bucket is empty */
 	if (map[bucket].utf8_char[0] == '\0') {
@@ -72,29 +72,32 @@ int HC_hashtable_add_utf8_key(Data *map, Data data)
 	}
 
 	/* if already present return 0 */
-	else if (strcmp(map[bucket].utf8_char, data.utf8_char) == 0)
+	if (strcmp(map[bucket].utf8_char, data.utf8_char) == 0)
 		return 0;
 
 	/* Add a node to the ajoined btree */
-	else if (map[bucket].next) {
-		cur = map[bucket].next;
-		while (cur->next != NULL) {
-			if (strcmp(cur->utf8_char, data.utf8_char) == 0)
+	if (map[bucket].next) {
+		cur = map[bucket];
+		while (cur.next != NULL) {
+			if (strcmp(cur.utf8_char, data.utf8_char) == 0)
 				return 0;
-			cur = cur->next;
+			cur = *cur.next;
 		}
+		if (strcmp(cur.utf8_char, data.utf8_char) == 0)
+			return 0;
 	}
 
 	/* Add the new value to either the bucket or the end of the list */
-	if ((map[bucket].next = malloc(sizeof(Data))) == NULL)
+	if ((cur.next = malloc(sizeof(Data))) == NULL)
 		FAIL("malloc failed");
-	*map[bucket].next = data;
+	*(cur.next) = data;
 
 	return 0;
 }
 
 /*
  * HC_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
+ * TODO NOW data is getting leaked here.
  */
 int HC_hashtable_add_binary_key(Data *map, Data data)
 {
@@ -135,27 +138,27 @@ int HC_hashtable_add_binary_key(Data *map, Data data)
  */
 Data HC_hashtable_lookup_utf8(Data *map, char *str)
 {
-	int bucket;
-        bucket = hash(str);
-	Data *cur;
+	int bucket = hash(str);
+	Data cur;
 
 	/* If the bucket is empty */
 	if (map[bucket].utf8_char[0] == '\0')
 		return HC_data_init();
 
-	/* if already present return 0 */
-	else if (strcmp(map[bucket].utf8_char, str) == 0)
+	/* Is it here ? */
+	if (strcmp(map[bucket].utf8_char, str) == 0)
 		return map[bucket];
 
-	/* Check all nodes for the value */
-	else if (map[bucket].next) {
-		cur = map[bucket].next;
-		while (cur->next != NULL) {
-			/* Foumd it! */
-			if (strcmp(cur->utf8_char, str) == 0)
-				return *cur;
-			cur = cur->next;
+	/* Check all nodes in tree */
+	if (map[bucket].next) {
+		cur = map[bucket];
+		while (cur.next != NULL) {
+			if (strcmp(cur.utf8_char, str) == 0)
+				return cur;
+			cur = *cur.next;
 		}
+		if (strcmp(cur.utf8_char, str) == 0)
+			return cur;
 	}
 
 	return HC_data_init();
@@ -168,25 +171,26 @@ Data HC_hashtable_lookup_utf8(Data *map, char *str)
 Data HC_hashtable_lookup_binary(Data *map, char *str)
 {
 	int bucket = hash(str);
-	Data *cur;
+	Data cur;
 
 	/* If the bucket is empty */
 	if (map[bucket].binary[0] == '\0')
 		return HC_data_init();
 
-	/* if already present return 0 */
-	else if (strcmp(map[bucket].binary, str) == 0)
+	/* Is it here ? */
+	if (strcmp(map[bucket].binary, str) == 0)
 		return map[bucket];
 
-	/* Check all nodes for the value */
-	else if (map[bucket].next) {
-		cur = map[bucket].next;
-		while (cur->next != NULL) {
-			/* Foumd it! */
-			if (strcmp(cur->binary, str) == 0)
-				return *cur;
-			cur = cur->next;
+	/* Check all nodes in tree */
+	if (map[bucket].next) {
+		cur = map[bucket];
+		while (cur.next != NULL) {
+			if (strcmp(cur.binary, str) == 0)
+				return cur;
+			cur = *cur.next;
 		}
+		if (strcmp(cur.binary, str) == 0)
+			return cur;
 	}
 
 	return HC_data_init();
@@ -196,17 +200,15 @@ Data HC_hashtable_lookup_binary(Data *map, char *str)
  * free_collision_tree: Free the linked list that has been created to deal with hash
  * collisions.
  */
-static void free_collision_tree(Data map)
+static void free_collision_tree(Data *node)
 {
 	Data *old;
-	if (map.next) {
-		map = *map.next;
-		while (map.next) {
-			old = &map;
-			map = *map.next;
-			free(old);
-		}
+	while (node->next) {
+		old = node;
+		node = node->next;
+		free(old);
 	}
+	free(node);
 }
 
 /*
@@ -215,8 +217,10 @@ static void free_collision_tree(Data map)
 void HC_hashtable_clear(Data *map)
 {
 	for (int i = 0; i < MAP_LEN; i++) {
-		free_collision_tree(map[i]);
-		map[i] = HC_data_init();
+		if (map[i].next) {
+			free_collision_tree(map[i].next);
+			map[i] = HC_data_init();
+		}
 	}
 }
 
