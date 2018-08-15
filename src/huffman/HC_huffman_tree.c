@@ -7,51 +7,7 @@
 #include "program/PG_print.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
-#include "huffman/HC_hashtable.h"
-
-/*
- * DS_huffman_data_init: Initalize an empty Data struct.
- */
-//Data *DS_huffman_data_init(Data *map)
-//{
-//	map->utf8_char[0] = '\0';
-//	map->string[0] = '\0';
-//	map->len = 0;
-//	map->frq = 0;
-//	map->next = NULL;
-//	return map;
-//}
-
-/*
- * HC_data_init: Returns a data struct with all values set to 0.
- */
-Data HC_data_init(void)
-{
-	Data map;
-	map.utf8_char[0] = '\0';
-	map.binary[0] = '\0';
-	map.len_char = 0;
-	map.len_bin = 0;
-	map.frq = 0;
-	map.next = NULL;
-	return map;
-}
-
-/*
- * FN_data_frqcmp: Compare Data one and two, the value should be a number, sort
- * into numerical order, highest first. If d1 s greater than d2 return a
- * positive int, if equal return 0 and if smaller than d2 then return a negative
- * int.
- */
-int FN_data_frqcmp(void *v1, void *v2)
-{
-	Data *d1, *d2;
-	d1 = (Data*) v1;
-	d2 = (Data*) v2;
-
-	return (int)(d1->frq - d2->frq);
-}
-
+#include "general/GE_hashtable.h"
 
 /*
  * DS_huffman_tree_new_node: Function for creating new linkedlist type nodes.
@@ -273,7 +229,8 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 
 		/* Begin to build the binary tree, add relevent binary state */
 		new->left = one, new->right = two;
-		new->left->bit = '0', new->right->bit = '1';
+		/* left bit set to 1 to assist in debubbing */
+		new->left->bit = '1', new->right->bit = '0';
 
 		/* Insert the new node back into the priority queue */
 		if (*tree) {

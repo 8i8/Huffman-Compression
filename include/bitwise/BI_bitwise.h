@@ -1,5 +1,13 @@
 #include <stdlib.h>
-#include "huffman/HC_hashtable.h"
+#include "general/GE_hashtable.h"
+#include "general/GE_string.h"
+#include "general/GE_file_buffer.h"
+
+#define BIN_IN  1
+#define BIN_OUT 1
+#define BIN_LOG_IN  1
+#define BIN_LOG_OUT 1
+#define BIN_WRITE   1
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *   bitwise test
@@ -23,9 +31,21 @@ long unsigned right_shift(long unsigned word, long unsigned bits, long unsigned 
  *  binary printout
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+/* BI_int_to_binary: Returns the binary representation of 'i', with a word
+ * length of 'bits' */
+char *BI_int_to_binary(size_t i, size_t bits);
+
 /* BI_binary_print: Display a binary representation of the given integer, with
  * a with of 'bits' */
-void BI_binary_print(int i, size_t bits);
+void BI_binary_print(size_t i, size_t bits);
+
+/* BI_binary_log: Logs value of 'i' for a width of 'bits' in their binary form
+ * to the file 'binary_log' in the root folder */
+F_Buf *BI_binary_log(size_t i, size_t bits);
+
+/* BI_binary_log_flush: Flush the remaining contents of the buffer, writing to
+ * the F_Buf file pointer */
+int BI_binary_log_flush(void);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  bit_stream

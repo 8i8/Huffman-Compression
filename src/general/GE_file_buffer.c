@@ -17,18 +17,18 @@
 #define BUF_UNGETC      (1 <<  3)
 
 /*
- * GE_buffer_array_init: Initialise and return an array of pointers to file
+ * GE_buffer_init_array: Initialise and return an array of pointers to file
  * buffers.
  */
-F_Buf **GE_buffer_array_init(void)
+F_Buf **GE_buffer_init_array(void)
 {
 	return calloc(MAX_FILES, sizeof(F_Buf*));
 }
 
 /*
- * GE_buffer_init: Initialise a FILE buffer.
+ * GE_buffer_init_alloc: Initialise a FILE buffer.
  */
-F_Buf *GE_buffer_init(FILE *fp, char *name)
+F_Buf *GE_buffer_init_alloc(FILE *fp, char *name)
 {
 	F_Buf *buf;
 	buf = malloc(sizeof(F_Buf));
@@ -43,23 +43,39 @@ F_Buf *GE_buffer_init(FILE *fp, char *name)
 }
 
 /*
- * open_file: Open a file.
+ * GE_buffer_init: Initialise a FILE buffer.
  */
-unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int st_prg)
+F_Buf *GE_buffer_init(F_Buf *buf, FILE *fp, char *name)
 {
-	FILE *fp;
-	int i;
-	String *str = NULL;
+	memcpy(buf->name, name, strlen(name)+1);
+	buf->fp = fp;
+	buf->eof = 0;
+	buf->buf = buf->read = buf->ptr = buf->end = NULL;
+	buf->hold = NULL;
+	buf->tab_depth = 0;
+	buf->st_buf = state_init();
+	return buf;
+}
 
-	/* Next available slot */
-	for (i = 0; i < MAX_FILES && io[i]; i++)
-		;
-
-	/* To many */
-	if (i >= MAX_FILES) {
-		FAIL("file limit exceeded");
+/*
+ * GE_file_clear: empty the file, used berfor file open with append.
+ */
+unsigned GE_file_clear(char *name)
+{
+	if (fopen(name, "w") == NULL) {
+		FAIL("file read failed");
 		return 1;
 	}
+	return 0;
+}
+
+/*
+ * GE_file_open: Open file for file buffer.
+ */
+unsigned GE_file_open(F_Buf *buf, char *name, char *mode, const int st_prg)
+{
+	FILE *fp;
+	String *str = NULL;
 
 	/* Ask first before overwriting */
 	if (!is_set(st_prg, FORCE) 
@@ -89,7 +105,34 @@ unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int st_prg)
 		FAIL("file read failed");
 		return 1;
 	} else
-		io[i]= GE_buffer_init(fp, name);;
+		buf = GE_buffer_init(buf, fp, name);
+
+	return 0;
+}
+
+/*
+ * GE_file_open_array: Open a file.
+ */
+unsigned GE_file_open_array(F_Buf **io, char *name, char *mode, const int st_prg)
+{
+	int i;
+
+	/* Next available slot */
+	for (i = 0; i < MAX_FILES && io[i]; i++)
+		;
+
+	/* To many */
+	if (i >= MAX_FILES) {
+		FAIL("file limit exceeded");
+		return 1;
+	}
+
+	/* allocate and try for a file */
+	io[i] = malloc(sizeof(F_Buf));
+	if (GE_file_open(io[i], name, mode, st_prg)) {
+		free(io[i]);
+		return 1;
+	}
 
 	return 0;
 }
@@ -161,10 +204,13 @@ F_Buf *GE_buffer_fill(F_Buf *buf)
  */
 F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf)
 {
-	if (buf == NULL)
+	if (buf == NULL) {
 		FAIL("F_Buf: NULL pointer recieved");
-	else if (buf->ptr == NULL)
+		return NULL;
+	} else if (buf->ptr == NULL) {
 		FAIL("F_Buf->ptr: NULL pointer recieved");
+		return NULL;
+	}
 
 	size_t space, len;
 	space = BUF - (buf->ptr - buf->buf);

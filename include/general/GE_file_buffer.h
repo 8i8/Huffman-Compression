@@ -22,15 +22,24 @@ typedef struct _file_buffer {
 				 lower than the systems available ram and never
 				 anywhere near the value of a 32 bit int. */
 
-/* GE_buffer_array_init: Initialise and return an array of pointers to file
+/* GE_buffer_init_array: Initialise and return an array of pointers to file
  * buffers */
-F_Buf **GE_buffer_array_init(void);
+F_Buf **GE_buffer_init_array(void);
 
-/* GE_buffer_init: Initialise a FILE buffer */
-F_Buf *GE_buffer_init(FILE *fp, char *name);
+/* GE_buffer_init_alloc: Initialise a FILE buffer */
+F_Buf *GE_buffer_init_alloc(FILE *fp, char *name);
+
+/* GE_buffer_stack_init: Initialise a FILE buffer for the stack */
+F_Buf *GE_buffer_stack_init(F_Buf *buf, FILE *fp, char *name);
+
+/* GE_file_clear: empty the file, used berfor file open with append */
+unsigned GE_file_clear(char *name);
+
+/* GE_file_open: Open file for file buffer */
+unsigned GE_file_open(F_Buf *buf, char *name, char *mode, const int st_prg);
 
 /* open_file: Open a file and add it to the F_Buf array */
-unsigned GE_open_file(char *name, F_Buf **io, char *mode, const int state);
+unsigned GE_file_open_array(F_Buf **io, char *name, char *mode, const int state);
 
 /* GE_buffer_on: allocate memory for file buffer */
 F_Buf *GE_buffer_on(F_Buf *buf);

@@ -3,7 +3,7 @@
 #include <libgen.h>
 #include <ctype.h>
 #include "huffman/HC_huffman_tree.h"
-#include "huffman/HC_hashtable.h"
+#include "general/GE_hashtable.h"
 #include "huffman/HC_priority_queue.h"
 #include "general/GE_error.h"
 #include "general/GE_utf8.h"
@@ -112,6 +112,7 @@ int compression_write_archive(
 			FAIL("hashmap");
 
 		/* set the pointer for the binary value to be read */
+		// TODO NOW compression binary write called here
 		bin_ptr = map[bucket].binary;
 		for (j = 0; j < map[bucket].len_bin; j++)
 			BI_write_bit(
@@ -146,9 +147,11 @@ int compression_write_archive(
 	if (bit_count > 0) {
 		 byte <<= 8 - bit_count;
 		 GE_buffer_fwrite((char*)&byte, 1, 1, buf_write);
+		 BI_binary_log(byte, 8);
 	}
 	GE_buffer_fwrite("\n", 1, 1, buf_write);
 
+	BI_binary_log_flush();
 	LE_xml_element_close(buf_write, "comp");
 	GE_buffer_fwrite_FILE(buf_write);
 	GE_buffer_off(buf_write);
@@ -264,6 +267,7 @@ int decompress_write_file(
 	 * TODO NEXT pushback added to LE_get_token now changed to read ahead,
 	 * should the pushback be left in get_token, it must at least be tested.
 	 */
+	// TODO NOW decompress bin read called here
 	c = GE_buffer_fgetc(buf_read); /* get the '\n' after the <comp> tag */
 	while (is_set(st_lex, LEX_DECOMPRESS) && c != EOF)
 	{

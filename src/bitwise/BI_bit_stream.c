@@ -2,9 +2,6 @@
 #include "general/GE_file_buffer.h"
 #include "bitwise/BI_bitwise.h"
 
-#define BIN_IN  1
-#define BIN_OUT 1
-
 /*
  * write_bit: Set all of the bits in a byte, then write that byte to the given
  * file.
@@ -16,10 +13,9 @@ void BI_write_bit(
 						unsigned char *byte,
 						int *bit_count)
 {
-	if (BIN_IN) BI_binary_print(bit, 8);
-
-	if (++(*bit_count) == 8) {
-		if (BIN_IN) BI_binary_print((unsigned long) *byte, 8);
+	if (++(*bit_count) == 9) {
+		if (BIN_IN) BI_binary_print(*byte, 8);
+		if (BIN_LOG_IN) BI_binary_log(*byte, 8);
 		GE_buffer_fwrite((char*)byte, 1, 1, buf);
 		*bit_count = 0;
 	}
@@ -30,6 +26,7 @@ void BI_write_bit(
 	/* Set bit to 1 or 0 */
 	*byte |= bit;
 
+	printf("%d ", *bit_count);
 	if (BIN_IN) BI_binary_print(*byte, 8);
 }
 

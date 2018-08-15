@@ -3,10 +3,10 @@
 #include "general/GE_hash.h"
 #include "general/GE_error.h"
 #include "general/GE_string.h"
+#include "general/GE_hashtable.h"
 #include "huffman/HC_huffman_tree.h"
 #include "huffman/HC_priority_queue.h"
 #include "huffman/HC_mergesort.h"
-#include "huffman/HC_hashtable.h"
 #include "lexer/LE_lexer.h"
 #include "program/PG_print.h"
 #include "program/PG_read_write.h"
@@ -66,7 +66,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 		else if (is_set(st_lex, LEX_FILENAME)) {
 			str = GE_string_stack_init(str);
 			str = metadata_read_filename(io[0], str, &st_lex, st_prg);
-			GE_open_file(str.str, io, "w", st_prg);
+			GE_file_open_array(io, str.str, "w", st_prg);
 		}
 		else if (is_set(st_lex, LEX_DECOMPRESS))
 			st_lex = decompress_write_file(io[0], io[++i], map, st_lex, st_prg);

@@ -1,14 +1,45 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "huffman/HC_hashtable.h"
 #include "huffman/HC_huffman_tree.h"
+#include "general/GE_hashtable.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
 #include "general/GE_hash.h"
 #include "general/GE_error.h"
 
 // TODO change the collision data structure into a btree
+
+/*
+ * HC_data_init: Returns a data struct with all values set to 0.
+ */
+Data HC_data_init(void)
+{
+	Data map;
+	map.utf8_char[0] = '\0';
+	map.binary[0] = '\0';
+	map.len_char = 0;
+	map.len_bin = 0;
+	map.frq = 0;
+	map.next = NULL;
+	return map;
+}
+
+/*
+ * FN_data_frqcmp: Compare Data one and two, the value should be a number, sort
+ * into numerical order, highest first. If d1 s greater than d2 return a
+ * positive int, if equal return 0 and if smaller than d2 then return a negative
+ * int.
+ */
+int FN_data_frqcmp(void *v1, void *v2)
+{
+	Data *d1, *d2;
+	d1 = (Data*) v1;
+	d2 = (Data*) v2;
+
+	return (int)(d1->frq - d2->frq);
+}
+
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Huffman coding into hash map.
