@@ -33,7 +33,7 @@ static HC_HuffmanNode **frequency_list_from_text(
 	char c, *ptr;
 	size_t utf8_count, len;
 	Data data;
-	data = HC_data_init();
+	data = GE_data_init();
 	utf8_count = 0;
 
 	GE_buffer_on(buf);
@@ -76,7 +76,7 @@ static int frequency_list_from_metadata(
 	size_t utf8_count;
 	utf8_count = 0;
 	Data data;
-	data = HC_data_init();
+	data = GE_data_init();
 	String *str = NULL;
 	str = GE_string_init(str);
 

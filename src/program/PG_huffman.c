@@ -47,7 +47,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 	if (is_set(st_prg, VERBOSE))
 		printf("Opening archive.\n");
 
-	HC_hashtable_init(map);
+	GE_hashtable_init(map);
 	LE_lexer_init();
 	GE_buffer_on(io[0]);
 	c = GE_buffer_fgetc(io[0]);
@@ -106,7 +106,7 @@ int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 {
 	int i;
 	Data map[MAP_LEN];
-	HC_hashtable_init(map);
+	GE_hashtable_init(map);
 
 	for (i = 1; i < MAX_FILES && io[i]; i++) {
 		frequency_list_compression(tree, io[i], st_prg);
@@ -130,7 +130,7 @@ int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 {
 	int i;
 	Data map[MAP_LEN];
-	HC_hashtable_init(map);
+	GE_hashtable_init(map);
 
 	/* Make priority queue from the input file's character count and then
 	 * construct an ordered binary tree from that queue, and then finaly a

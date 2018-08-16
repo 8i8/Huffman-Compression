@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "huffman/HC_huffman_tree.h"
-#include "general/GE_hashtable.h"
+#include "general/GE_GE_hashtable.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
 #include "general/GE_error.h"
@@ -10,22 +10,22 @@
 // TODO change the collision data structure into a btree
 
 /*
- * hash: Hash value for string s
+ * GE_hash: Hash value for string s
  */
-unsigned long hash(char *s)
+unsigned long GE_hash(char *s)
 {
-	unsigned long hashval;
+	unsigned long GE_hashval;
 
-	for (hashval = 0; *s != '\0'; s++)
-		hashval = *s + 3 * hashval;
+	for (GE_hashval = 0; *s != '\0'; s++)
+		GE_hashval = *s + 3 * GE_hashval;
 
-	return hashval % MAP_LEN;
+	return GE_hashval % MAP_LEN;
 }
 
 /*
- * HC_data_init: Returns a data struct with all values set to 0.
+ * GE_data_init: Returns a data struct with all values set to 0.
  */
-Data HC_data_init(void)
+Data GE_data_init(void)
 {
 	Data map;
 	map.utf8_char[0] = '\0';
@@ -55,27 +55,27 @@ int FN_data_frqcmp(void *v1, void *v2)
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Huffman coding into hash map.
+ *  Huffman coding into GE_hash map.
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /*
- * HC_hashtable_init: Initialise array for char map.
+ * GE_hashtable_init: Initialise array for char map.
  */
-Data *HC_hashtable_init(Data *map)
+Data *GE_hashtable_init(Data *map)
 {
 	int i;
 	for (i = 0; i < MAP_LEN; i++)
-		map[i] = HC_data_init();
+		map[i] = GE_data_init();
 	return map;
 }
 
 /*
- * HC_hashtable_add_utf8_key: Add a new pair utf8 char key, binary value.
+ * HC_GE_hashtable_add_utf8_key: Add a new pair utf8 char key, binary value.
  */
-int HC_hashtable_add_utf8_key(Data *map, Data data)
+int HC_GE_hashtable_add_utf8_key(Data *map, Data data)
 {
 
-	int bucket = hash(data.utf8_char);
+	int bucket = GE_hash(data.utf8_char);
 	Data *cur;
 
 	/* If the bucket is empty */
@@ -110,11 +110,11 @@ int HC_hashtable_add_utf8_key(Data *map, Data data)
 }
 
 /*
- * HC_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
+ * HC_GE_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
  */
-int HC_hashtable_add_binary_key(Data *map, Data data)
+int HC_GE_hashtable_add_binary_key(Data *map, Data data)
 {
-	int bucket = hash(data.binary);
+	int bucket = GE_hash(data.binary);
 	Data *cur;
 
 	/* If the bucket is empty */
@@ -149,17 +149,17 @@ int HC_hashtable_add_binary_key(Data *map, Data data)
 }
 
 /*
- * HC_hashtable_lookup_utf8: Returns the paired utf8 char value as a string,
+ * HC_GE_hashtable_lookup_utf8: Returns the paired utf8 char value as a string,
  * for a given string key.
  */
-Data HC_hashtable_lookup_utf8(Data *map, char *str)
+Data HC_GE_hashtable_lookup_utf8(Data *map, char *str)
 {
-	int bucket = hash(str);
+	int bucket = GE_hash(str);
 	Data cur;
 
 	/* If the bucket is empty */
 	if (map[bucket].utf8_char[0] == '\0')
-		return HC_data_init();
+		return GE_data_init();
 
 	/* Is it here ? */
 	if (strcmp(map[bucket].utf8_char, str) == 0)
@@ -177,21 +177,21 @@ Data HC_hashtable_lookup_utf8(Data *map, char *str)
 			return cur;
 	}
 
-	return HC_data_init();
+	return GE_data_init();
 }
 
 /*
- * HC_hashtable_lookup_binary: Returns the paired binary string value of a
+ * HC_GE_hashtable_lookup_binary: Returns the paired binary string value of a
  * given utf8 char.
  */
-Data HC_hashtable_lookup_binary(Data *map, char *str)
+Data HC_GE_hashtable_lookup_binary(Data *map, char *str)
 {
-	int bucket = hash(str);
+	int bucket = GE_hash(str);
 	Data cur;
 
 	/* If the bucket is empty */
 	if (map[bucket].binary[0] == '\0')
-		return HC_data_init();
+		return GE_data_init();
 
 	/* Is it here ? */
 	if (strcmp(map[bucket].binary, str) == 0)
@@ -209,11 +209,11 @@ Data HC_hashtable_lookup_binary(Data *map, char *str)
 			return cur;
 	}
 
-	return HC_data_init();
+	return GE_data_init();
 }
 
 /*
- * free_collision_tree: Free the linked list that has been created to deal with hash
+ * free_collision_tree: Free the linked list that has been created to deal with GE_hash
  * collisions.
  */
 static void free_collision_tree(Data *node)
@@ -228,14 +228,14 @@ static void free_collision_tree(Data *node)
 }
 
 /*
- * HC_hashtable_clear: Reset the map to empty.
+ * HC_GE_hashtable_clear: Reset the map to empty.
  */
-void HC_hashtable_clear(Data *map)
+void HC_GE_hashtable_clear(Data *map)
 {
 	for (int i = 0; i < MAP_LEN; i++) {
 		if (map[i].next) {
 			free_collision_tree(map[i].next);
-			map[i] = HC_data_init();
+			map[i] = GE_data_init();
 		}
 	}
 }

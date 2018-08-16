@@ -209,7 +209,7 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 {
 	HC_HuffmanNode *new, *one, *two;
 	Data data;
-	data = HC_data_init();
+	data = GE_data_init();
 
 	if (is_set(st_prg, VERBOSE))
 		printf("metadata: buildiing binary tree.\n");

@@ -40,7 +40,7 @@ void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)
 {
 	size_t i;
 	Data cur;
-	cur = HC_data_init();
+	cur = GE_data_init();
 
 	if (is_set(st_prg, VERBOSE))
 		printf("metadata: writing map.\n");
@@ -180,7 +180,7 @@ int metadata_read_hash_table_data(
 	char c = ' ';
 	char *ptr_bin, *ptr_utf8;
 	Data data;
-	data = HC_data_init();
+	data = GE_data_init();
 	ptr_bin = data.binary;
 	ptr_utf8 = data.utf8_char;
 
