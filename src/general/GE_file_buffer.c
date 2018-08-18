@@ -83,10 +83,10 @@ unsigned GE_buffer_fopen(F_Buf *buf, char *name, char *mode, const int st_prg)
 						|| !strcmp(mode, "wb") 
 						|| !strcmp(mode, "r+")))
 	{
-		str = GE_string_init(str);
 
 		if ((fp = fopen(name, "r")) != NULL)
 		{
+			str = GE_string_init(str);
 			fprintf(stdout, "Overwrite %s ? [y/n] ", name);
 			GE_string_getchar(str);
 			if (str->str[0] != 'y') {
@@ -94,10 +94,8 @@ unsigned GE_buffer_fopen(F_Buf *buf, char *name, char *mode, const int st_prg)
 				GE_string_free(str);
 				return 1;
 			}
-		} else
-			FAIL("File open failed");
-
-		GE_string_free(str);
+			GE_string_free(str);
+		}
 	}
 
 	/* Open file */

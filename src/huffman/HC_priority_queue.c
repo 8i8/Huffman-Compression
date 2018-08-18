@@ -178,7 +178,7 @@ int decompress_priority_queue(
 		FAIL("metadata frequency list failed");
 
 	/* Sort by frequency */
-	if (HC_mergesort(list, FN_data_frqcmp) == NULL)
+	if (HC_mergesort(list, GE_data_frqcmp) == NULL)
 		FAIL("mergesort failed");
 
 	return st_lex;

@@ -110,7 +110,7 @@ int compression_write_archive(
 		*ptr = '\0';
 
 		/* Retreive huffman encoding */
-		data = HC_hashtable_lookup_utf8(map, utf8_char);
+		data = GE_hashtable_lookup_utf8(map, utf8_char);
 		if (data.binary[0] == '\0')
 			FAIL("hashmap");
 
@@ -134,7 +134,7 @@ int compression_write_archive(
 		FAIL("utf8_countdown");
 
 	/* Add EOF char */
-	data = HC_hashtable_lookup_utf8(map, "EOF");
+	data = GE_hashtable_lookup_utf8(map, "EOF");
 	if (data.binary[0] == '\0')
 		FAIL("hashmap");
 
@@ -151,12 +151,12 @@ int compression_write_archive(
 	if (bit_count > 0) {
 		 byte <<= 8 - bit_count;
 		 GE_buffer_fwrite((char*)&byte, 1, 1, buf_write);
-		 BI_binary_log(byte, 8);
+		 if (BIN_LOG_IN) BI_binary_log(byte, 8);
 	}
 	GE_buffer_fwrite("\0", 1, 1, buf_write);
 	GE_buffer_fwrite("\n", 1, 1, buf_write);
 
-	BI_binary_log_flush();
+	if (BIN_LOG_IN) BI_binary_log_flush();
 	LE_xml_element_close(buf_write, "comp");
 	GE_buffer_fwrite_FILE(buf_write);
 	GE_buffer_off(buf_write);
@@ -213,7 +213,7 @@ int metadata_read_hash_table_data(
 			//archive
 			data.len_bin = strlen(data.binary);
 			data.len_char = strlen(data.utf8_char);
-			HC_hashtable_add_binary_key(map, data);
+			GE_hashtable_add_binary_key(map, data);
 		}
 	}
 
@@ -275,7 +275,7 @@ char decompress_write_file(
 	 */
 	c = GE_buffer_fgetc(buf_read); /* get the '\n' after the <comp> tag */
 	c = byte = GE_buffer_fgetc(buf_read); /* get the first byte of compressed data */
-	while (is_set(*st_lex, LEX_DECOMPRESS) && c != EOF)
+	while (is_set(*st_lex, LEX_DECOMPRESS))
 	{
 		if (c == '<' && !ignore) {
 			/* Check forwars for sign of a token, if not found then
@@ -292,7 +292,10 @@ char decompress_write_file(
 		  * hash table, if it is found; Write the corresponding char
 		  * into the output file buffer and then refresh the string.
 		  */
-		c = BI_read_bit(buf_read, buf_write, map, str, c, &byte, &bit_count, &ignore);
+		c = BI_read_bit(
+						buf_read, buf_write, map,
+						str, c, &byte, &bit_count,
+						&ignore, st_lex);
 	}
 
 	GE_buffer_fwrite_FILE(buf_write);

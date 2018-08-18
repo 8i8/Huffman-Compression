@@ -55,7 +55,7 @@ char LE_goto_glyph(F_Buf *buf, char c, char glyph)
 		c = GE_buffer_fgetc(buf);
 
 	/* If not a token then push back and return */
-	if (c != glyph)
+	if (c != glyph && c != EOF)
 		FAIL("glyph not found in file stream");
 
 	return c;
@@ -63,26 +63,26 @@ char LE_goto_glyph(F_Buf *buf, char c, char glyph)
 
 /*
  * LE_get_token: Returns state on reading a token, will read recursively until
- * the end of element indicator is reached.
+ * the end of element indicator is reached. TODO NOW is the file ending correctly ?
  */
 char LE_get_token(F_Buf *buf, char c, int *st_lex)
 {
 	c = LE_goto_glyph(buf, c, '<');
 
-	if (c != '<') {
+	if (c != '<' && c != EOF) {
 		FAIL("expected a '<' ...");
 		return 0;
 	}
 
 	/* read and verify the validity, whilst setting the state of any valid
 	 * tokens read */
-	if ((c = LE_xml_read_token(buf, c, st_lex)) == 0) {
+	if (c != EOF && (c = LE_xml_read_token(buf, c, st_lex)) == 0) {
 		state_set(*st_lex, LEX_ERROR);
 		FAIL("parsing");
 		return c;
 	}
 
-	if (c == '>')
+	if (c == '>' || c == EOF)
 		return c;
 	else
 		LE_get_token(buf, c, st_lex);
@@ -95,18 +95,20 @@ char LE_get_token(F_Buf *buf, char c, int *st_lex)
  */
 int LE_look_ahead(F_Buf *buf, char close, char open, ptrdiff_t dist)
 {
-	ptrdiff_t *end, *read;
+	//ptrdiff_t *end, *read;
 	char *ptr;
-        end = (ptrdiff_t*)buf->end;
-	read = (ptrdiff_t*)buf->read;
+        //end = (ptrdiff_t*)buf->end;
+	//read = (ptrdiff_t*)buf->read;
         ptr = buf->read;
 
-	assert(end - read > dist);
+	//assert(end - read > dist);
 
 	while (ptr < buf->read + dist
 			&& ptr < buf->end
 			&& *ptr != open
-			&& *ptr != EOF)
+			&& (isalnum(*ptr)
+				|| isspace(*ptr)
+				|| ispunct(*ptr)))
 		if (*++ptr == close)
 			return 1;
 	return 0;

@@ -155,8 +155,6 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 		/* Read token: pushback ok, alnum or utf8 ... ? */
 		//TODO NEXT deal with the case of pushback going over the end
 		//of the buffer.
-		//TODO NOW this seems to be the cause of the problem at
-		//runtime.
 		while (pushback < TOKEN_MAX 
 				&& (isalnum((c))
 				|| ((utf8_count || (utf8_count = utf8_len(c)))

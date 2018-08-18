@@ -40,7 +40,7 @@ static void token_to_tree(Token *tree, Token *new_token)
  */
 static int token_add(char *token, int flag)
 {
-	int bucket = hash(token);
+	int bucket = GE_hash(token);
 	Token *new_token;
        
 	if ((new_token = malloc(sizeof(Token))) == NULL)
@@ -101,7 +101,7 @@ int check_tree(Token *tree, char *check)
  */
 int LE_check_token(char *token)
 {
-	int bucket = hash(token);
+	int bucket = GE_hash(token);
 	Token *cur;
 
 	if ((cur = token_table[bucket]))

@@ -52,9 +52,9 @@ int decompress_archive(F_Buf **io, const int st_prg)
 	GE_buffer_on(io[0]);
 	c = GE_buffer_fgetc(io[0]);
 
-	// TODO NOW add <archive> tiken so that the program can close
-	// elequantly.
-	while (io[0] && c != EOF && !is_set(st_lex, LEX_ERROR))
+	while (io[0] && c != EOF
+			&& !is_set(st_lex, LEX_ERROR)
+			&& !is_set(st_lex, LEX_DONE))
 	{
 		/* Change state */
 		if ((c = LE_get_token(io[0], c, &st_lex)) == 0) {
@@ -97,7 +97,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 	GE_buffer_rewind(io[0]);
 	GE_buffer_off(io[0]);
 	LE_lexer_free();
-	HC_hashtable_clear(map);
+	GE_hashtable_clear(map);
 
 	return st_lex;
 }
@@ -111,7 +111,7 @@ int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 	for (i = 1; i < MAX_FILES && io[i]; i++) {
 		frequency_list_compression(tree, io[i], st_prg);
 
-		if (HC_mergesort(tree, FN_data_frqcmp) == NULL)
+		if (HC_mergesort(tree, GE_data_frqcmp) == NULL)
 			FAIL("mergsort failed");
 
 		ordered_binary_tree(tree, st_prg);
@@ -120,7 +120,7 @@ int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 		metadata_write_file_name(io[0], io[1], st_prg);
 		compression_write_archive(map, io[0], io[1], st_prg);
 		DS_huffman_tree_clear(tree);
-		HC_hashtable_clear(map);
+		GE_hashtable_clear(map);
 	}
 
 	return st_prg;
@@ -141,7 +141,7 @@ int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 		frequency_list_compression(tree, io[i], st_prg);
 
 	/* Sort by frequency */
-	if (HC_mergesort(tree, FN_data_frqcmp) == NULL)
+	if (HC_mergesort(tree, GE_data_frqcmp) == NULL)
 		FAIL("mergsort failed");
 	
 	/* Build a hashmap by way of an ordered binary tree */
@@ -151,13 +151,13 @@ int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 	/* Write metadata */
 	metadata_write_map(map, io[0], st_prg);
 
-	/* Write each file name then the compressed data consecutively */
+	/* Write each file namefollowed by its compressed data */
 	for (i = 1; i < MAX_FILES && io[i]; i++) {
 		metadata_write_file_name(io[i], io[0], st_prg);
 		compression_write_archive(map, io[i], io[0], st_prg);
 	}
 
-	HC_hashtable_clear(map);
+	GE_hashtable_clear(map);
 
 	return st_prg;
 }

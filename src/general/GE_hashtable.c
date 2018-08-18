@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "huffman/HC_huffman_tree.h"
-#include "general/GE_GE_hashtable.h"
+#include "general/GE_hashtable.h"
 #include "general/GE_string.h"
 #include "general/GE_state.h"
 #include "general/GE_error.h"
@@ -39,12 +39,12 @@ Data GE_data_init(void)
 }
 
 /*
- * FN_data_frqcmp: Compare Data one and two, the value should be a number, sort
+ * GE_data_frqcmp: Compare Data one and two, the value should be a number, sort
  * into numerical order, highest first. If d1 s greater than d2 return a
  * positive int, if equal return 0 and if smaller than d2 then return a negative
  * int.
  */
-int FN_data_frqcmp(void *v1, void *v2)
+int GE_data_frqcmp(void *v1, void *v2)
 {
 	Data *d1, *d2;
 	d1 = (Data*) v1;
@@ -70,9 +70,9 @@ Data *GE_hashtable_init(Data *map)
 }
 
 /*
- * HC_GE_hashtable_add_utf8_key: Add a new pair utf8 char key, binary value.
+ * GE_hashtable_add_utf8_key: Add a new pair utf8 char key, binary value.
  */
-int HC_GE_hashtable_add_utf8_key(Data *map, Data data)
+int GE_hashtable_add_utf8_key(Data *map, Data data)
 {
 
 	int bucket = GE_hash(data.utf8_char);
@@ -110,9 +110,9 @@ int HC_GE_hashtable_add_utf8_key(Data *map, Data data)
 }
 
 /*
- * HC_GE_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
+ * GE_hashtable_add_binary_key: Add a new pair binary key, utf8 char value.
  */
-int HC_GE_hashtable_add_binary_key(Data *map, Data data)
+int GE_hashtable_add_binary_key(Data *map, Data data)
 {
 	int bucket = GE_hash(data.binary);
 	Data *cur;
@@ -149,10 +149,10 @@ int HC_GE_hashtable_add_binary_key(Data *map, Data data)
 }
 
 /*
- * HC_GE_hashtable_lookup_utf8: Returns the paired utf8 char value as a string,
+ * GE_hashtable_lookup_utf8: Returns the paired utf8 char value as a string,
  * for a given string key.
  */
-Data HC_GE_hashtable_lookup_utf8(Data *map, char *str)
+Data GE_hashtable_lookup_utf8(Data *map, char *str)
 {
 	int bucket = GE_hash(str);
 	Data cur;
@@ -181,10 +181,10 @@ Data HC_GE_hashtable_lookup_utf8(Data *map, char *str)
 }
 
 /*
- * HC_GE_hashtable_lookup_binary: Returns the paired binary string value of a
+ * GE_hashtable_lookup_binary: Returns the paired binary string value of a
  * given utf8 char.
  */
-Data HC_GE_hashtable_lookup_binary(Data *map, char *str)
+Data GE_hashtable_lookup_binary(Data *map, char *str)
 {
 	int bucket = GE_hash(str);
 	Data cur;
@@ -228,9 +228,9 @@ static void free_collision_tree(Data *node)
 }
 
 /*
- * HC_GE_hashtable_clear: Reset the map to empty.
+ * GE_hashtable_clear: Reset the map to empty.
  */
-void HC_GE_hashtable_clear(Data *map)
+void GE_hashtable_clear(Data *map)
 {
 	for (int i = 0; i < MAP_LEN; i++) {
 		if (map[i].next) {

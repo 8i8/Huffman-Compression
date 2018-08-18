@@ -45,7 +45,8 @@ char BI_read_bit(
 						char c,
 						unsigned char *byte,
 						int *bit_count,
-						int *ignore)
+						int *ignore,
+						int *st_lex)
 {
 	unsigned bit;
 	Data data;
@@ -56,17 +57,16 @@ char BI_read_bit(
 	bit = *byte & 128;
 	bit >>= 7;
 	if (BIN_OUT) BI_binary_print(*byte, 8);
-	if (BIN_OUT) BI_binary_print(bit, 8);
 
 	GE_string_add_char(str, (char)bit+'0');
-	if (BIN_OUT) printf("%s\n", str->str);
 	*byte <<= 1;
 
 	/* write to file when ready */
-	data = HC_hashtable_lookup_binary(map, str->str);
+	data = GE_hashtable_lookup_binary(map, str->str);
 	if (data.utf8_char[0] != '\0') {
+		if (BIN_OUT) printf("%s\n", str->str);
 		if (is_set(data.st_dta, DTA_EOF))
-			return EOF;
+			return state_unset(*st_lex, LEX_EOF);
 		GE_buffer_fwrite(
 						data.utf8_char, 1,
 						data.len_char, buf_write);

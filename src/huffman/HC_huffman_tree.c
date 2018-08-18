@@ -234,7 +234,7 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 
 		/* Insert the new node back into the priority queue */
 		if (*tree) {
-			if (DS_huffman_tree_insert_ordered(tree, new, FN_data_frqcmp) == NULL)
+			if (DS_huffman_tree_insert_ordered(tree, new, GE_data_frqcmp) == NULL)
 				FAIL("NULL pointer returned");
 		} else 
 			*tree = new;
@@ -279,7 +279,7 @@ int DS_huffman_tree_extract_encoding(
 		Data data = tree->data;
 		data.len_bin = str->len;
 		memcpy(data.binary, str->str, data.len_bin+1);
-		HC_hashtable_add_utf8_key(map, data);
+		GE_hashtable_add_utf8_key(map, data);
 	}
 
 	return 0;
