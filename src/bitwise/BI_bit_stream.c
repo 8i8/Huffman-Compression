@@ -19,13 +19,17 @@ void BI_write_bit(
 	/* Set bit to 1 or 0 */
 	*byte |= (int)bit;
 
-	if (BIN_IN) printf("%d ", *bit_count);
-	if (BIN_IN) BI_binary_print(*byte, 8);
+	if (BIN_IN)
+		printf("%d ", *bit_count);
+	if (BIN_IN)
+		BI_binary_print(*byte, 8);
 	
 	if ((*bit_count)++ == 7)
 	{
-		if (BIN_IN) BI_binary_print(*byte, 8);
-		if (BIN_LOG_IN) BI_binary_log((size_t)*byte, 8);
+		if (BIN_IN)
+			BI_binary_print(*byte, 8);
+		if (BIN_LOG_IN)
+			BI_binary_log((size_t)*byte, 8);
 		GE_buffer_fwrite((char*)byte, 1, 1, buf);
 		*bit_count = 0;
 	}
@@ -56,17 +60,22 @@ char BI_read_bit(
 	 * then shift the byte left fot the next read */
 	bit = *byte & 128;
 	bit >>= 7;
-	if (BIN_OUT) BI_binary_print(*byte, 8);
 
 	GE_string_add_char(str, (char)bit+'0');
 	*byte <<= 1;
+	if (BIN_OUT)
+		printf("%s\n", str->str);
 
-	/* write to file when ready */
+	/* Keep write to the string untill it returns a char from the hash table */
 	data = GE_hashtable_lookup_binary(map, str->str);
 	if (data.utf8_char[0] != '\0') {
-		if (BIN_OUT) printf("%s\n", str->str);
-		if (is_set(data.st_dta, DTA_EOF))
-			return state_unset(*st_lex, LEX_EOF);
+		if (BIN_OUT)
+			printf("%s\n", str->str);
+		if (data.utf8_char[0] == 'E') // TODO set memory record here
+			if (is_set(data.st_dta, DTA_EOF)) {
+				GE_string_reset(str);
+				return state_unset(*st_lex, LEX_DECOMPRESS);
+			}
 		GE_buffer_fwrite(
 						data.utf8_char, 1,
 						data.len_char, buf_write);

@@ -100,7 +100,7 @@ unsigned GE_buffer_fopen(F_Buf *buf, char *name, char *mode, const int st_prg)
 
 	/* Open file */
 	if ((fp = fopen(name, mode)) == NULL) {
-		FAIL("file read failed");
+		fprintf(stdout, "File %s not found.\n", name);
 		return 1;
 	} else
 		buf = GE_buffer_init(buf, fp, name);

@@ -98,16 +98,18 @@ void print_hashtable(Data *map)
 {
 	size_t i;
 	Data *cur;
-	for (i = 0; i < MAP_LEN; i++)
+	for (i = 0; i < MAP_LEN; i++) {
 		if (map[i].binary[0] != '\0') {
-			printf("%s %s\n", map[i].utf8_char, map[i].binary);
 			if (map[i].next) {
-				cur = map[i].next;
-				while (cur->binary[0] != '\0') {
+				cur = &map[i];
+				while (cur->next) {
 					printf("%s %s\n", cur->utf8_char, cur->binary);
 					cur = cur->next;
 				}
-			}
+				printf("%s %s\n", cur->utf8_char, cur->binary);
+			} else
+				printf("%s %s\n", map[i].utf8_char, map[i].binary);
 		}
+	}
 }
 

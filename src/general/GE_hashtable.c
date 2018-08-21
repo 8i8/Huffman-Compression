@@ -92,7 +92,7 @@ int GE_hashtable_add_utf8_key(Data *map, Data data)
 
 	/* Add a node to the ajoined btree */
 	if (cur->next) {
-		while (cur->next != NULL) {
+		while (cur->next) {
 			if (strcmp(cur->utf8_char, data.utf8_char) == 0)
 				return 0;
 			cur = cur->next;
@@ -131,7 +131,7 @@ int GE_hashtable_add_binary_key(Data *map, Data data)
 
 	/* Check all nodes for the value */
 	if (cur->next) {
-		while (cur->next != NULL) {
+		while (cur->next) {
 			if (strcmp(cur->binary, data.binary) == 0)
 				return 0;
 			cur = cur->next;
@@ -232,11 +232,12 @@ static void free_collision_tree(Data *node)
  */
 void GE_hashtable_clear(Data *map)
 {
-	for (int i = 0; i < MAP_LEN; i++) {
+	int i;
+	for (i = 0; i < MAP_LEN; i++) {
 		if (map[i].next) {
 			free_collision_tree(map[i].next);
-			map[i] = GE_data_init();
 		}
+		map[i] = GE_data_init();
 	}
 }
 

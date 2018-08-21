@@ -53,8 +53,7 @@ static HC_HuffmanNode **frequency_list_from_text(
 	}
 
 	/* Add EOF char */
-	memcpy(data.utf8_char, "EOF", 4), data.frq = 1;
-	state_set(data.st_dta, DTA_EOF);
+	memcpy(data.utf8_char, "EOF", 4), data.frq = 1, data.len_char = 3;
 	DS_huffman_tree_insert_or_count(list, data, FN_data_strcmp);
 
 	rewind(buf->fp);
@@ -107,7 +106,7 @@ static int frequency_list_from_metadata(
 		GE_string_reset(str);
 
 		/* Check for utf-8 errors */
-		if (utf8_count > 4)
+		if (utf8_count > 3)
 			FAIL("utf8_countdown error");
 
 		/* next is a space, skip it */

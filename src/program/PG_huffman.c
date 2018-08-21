@@ -53,8 +53,7 @@ int decompress_archive(F_Buf **io, const int st_prg)
 	c = GE_buffer_fgetc(io[0]);
 
 	while (io[0] && c != EOF
-			&& !is_set(st_lex, LEX_ERROR)
-			&& !is_set(st_lex, LEX_DONE))
+			&& !is_set(st_lex, LEX_ERROR))
 	{
 		/* Change state */
 		if ((c = LE_get_token(io[0], c, &st_lex)) == 0) {
@@ -82,13 +81,15 @@ int decompress_archive(F_Buf **io, const int st_prg)
 			GE_buffer_fopen_array(io, str.str, "w", st_prg);
 			GE_string_stack_free(str);
 		}
-		else if (is_set(st_lex, LEX_DECOMPRESS))
+		else if (is_set(st_lex, LEX_DECOMPRESS)) {
 			st_lex = decompress_write_file(
 								io[0],
 								io[++i],
 								map,
 								&st_lex,
 								st_prg);
+			GE_hashtable_clear(map);
+		}
 	}
 
 	if (is_set(st_lex, LEX_ERROR))
@@ -102,6 +103,10 @@ int decompress_archive(F_Buf **io, const int st_prg)
 	return st_lex;
 }
 
+/*
+ * write_archive_MULTI: Write an archive with a separate compression map for
+ * each file.
+ */
 int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 {
 	int i;
@@ -117,8 +122,11 @@ int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 		ordered_binary_tree(tree, st_prg);
 		hashmap_for_compression(map, tree, st_prg);
 		metadata_write_map(map, io[0], st_prg);
-		metadata_write_file_name(io[0], io[1], st_prg);
-		compression_write_archive(map, io[0], io[1], st_prg);
+
+		metadata_write_file_name(io[i], io[0], st_prg);
+		compression_write_archive(map, io[i], io[0], st_prg);
+
+		// TODO NOW are these clears working correctly?
 		DS_huffman_tree_clear(tree);
 		GE_hashtable_clear(map);
 	}
@@ -126,6 +134,10 @@ int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 	return st_prg;
 }
 
+/*
+ * write_archive_MONO: Write all files to an archive using one single char map
+ * for all of the files combined.
+ */
 int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 {
 	int i;
@@ -133,7 +145,7 @@ int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 	GE_hashtable_init(map);
 
 	/* Make priority queue from the input file's character count and then
-	 * construct an ordered binary tree from that queue, and then finaly a
+	 * construct an ordered binary tree from that queue, and then finally a
 	 * hashmap with a binary representation for each char */
 
 	/* Scan all of the files counting incidences of each char */
@@ -151,7 +163,7 @@ int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 	/* Write metadata */
 	metadata_write_map(map, io[0], st_prg);
 
-	/* Write each file namefollowed by its compressed data */
+	/* Write each file name followed by its compressed data */
 	for (i = 1; i < MAX_FILES && io[i]; i++) {
 		metadata_write_file_name(io[i], io[0], st_prg);
 		compression_write_archive(map, io[i], io[0], st_prg);
@@ -170,10 +182,10 @@ int huffman(F_Buf **io, HC_HuffmanNode **tree, int st_prg)
 	/* If required, write compressed data */
 	if (is_set(st_prg, COMPRESS) && !is_set(st_prg, ESC))
 	{
-		if (is_set(st_prg, MULTI))
-			st_prg = write_archive_MULTI(io, tree, st_prg);
-		else
+		if (is_set(st_prg, MONO))
 			st_prg = write_archive_MONO(io, tree, st_prg);
+		else
+			st_prg = write_archive_MULTI(io, tree, st_prg);
 	}
 
 	if (is_set(st_prg, DECOMPRESS) && !is_set(st_prg, ESC))

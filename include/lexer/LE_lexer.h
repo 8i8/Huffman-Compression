@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "general/GE_file_buffer.h"
+#include "general/GE_hashtable.h"
 
 #define TOKEN_MAX 32
 
@@ -22,8 +23,8 @@ int LE_look_ahead(F_Buf *buf, char close, char open, ptrdiff_t dist);
 
 /* LE_get_utf8_char: Get the next utf-8 char from the file setream return it as
  * a string */
-char LE_get_utf8_char(F_Buf *buf, char *str);
+char LE_get_utf8_char(F_Buf *buf, Data *str);
 
 /* LE_get_string: Get the next word upto the next whitespace or EOF */
-char LE_get_string(F_Buf *buf, char c, char *str);
+char LE_get_string(F_Buf *buf, char c, Data *str);
 

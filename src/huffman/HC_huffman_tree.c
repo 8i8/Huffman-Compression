@@ -230,7 +230,7 @@ HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)
 		/* Begin to build the binary tree, add relevent binary state */
 		new->left = one, new->right = two;
 		/* left bit set to 1 to assist in debubbing */
-		new->left->bit = '1', new->right->bit = '0';
+		new->left->bit = '0', new->right->bit = '1';
 
 		/* Insert the new node back into the priority queue */
 		if (*tree) {
@@ -293,7 +293,8 @@ int DS_huffman_tree_clear(HC_HuffmanNode **tree)
 	if (*tree == NULL) {
 		FAIL("tree node is NULL");
 		return 1;
-	} else if ((*tree)->next != NULL)
+	}
+	if ((*tree)->next != NULL)
 		FAIL("Priority queue nodes still exist");
 
 	if ((*tree)->left) {

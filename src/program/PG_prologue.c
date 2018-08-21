@@ -52,7 +52,7 @@ int prologue(int argc, char *argv[], F_Buf **io, int st_prg)
 			}
 
 			/* Open the first file for writing as an archive */
-			if (argc > 2 && is_set(st_prg, COMPRESS)) {
+			if (argc > 1 && is_set(st_prg, COMPRESS)) {
 				if (GE_buffer_fopen_array(io, *argv, "wb", st_prg))
 					return state_set(st_prg, ESC);
 				else
@@ -75,16 +75,16 @@ int prologue(int argc, char *argv[], F_Buf **io, int st_prg)
 		/* Open a file with text write enabled, to write the decompressed data
 		 * too */
 		if (argc && is_set(st_prg, DECOMPRESS)) {
-			if (GE_buffer_fopen_array(io, *argv, "rb", st_prg))
+			if (argc == 1) {
+				if (GE_buffer_fopen_array(io, *argv, "rb", st_prg))
+					return state_set(st_prg, ESC);
+				else
+					++files;
+			} else {
+				fprintf(stdout, "Only one file expected for decompression operation.\n");
 				return state_set(st_prg, ESC);
-			else
-				++files;
+			}
 		}
-	}
-
-	if (is_set(st_prg, DECOMPRESS) && files > 1) {
-		fprintf(stdout, "Only one file expected for decompression operation.\n");
-		return state_set(st_prg, ESC);
 	}
 
 	return st_prg;

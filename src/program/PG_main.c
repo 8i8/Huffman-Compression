@@ -1,6 +1,7 @@
 /*
- * TODO NEXT Close nicely on file open error. Also on file error for read in
- * compression.
+ * TODO NOW  There are different maps being written, depending on the number of
+ * files compressed, for the same file. Is the map being reset after the first
+ * file is compressed?
  */
 #include "general/GE_file_buffer.h"
 #include "general/GE_state.h"

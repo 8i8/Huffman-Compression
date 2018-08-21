@@ -134,8 +134,8 @@ static char in_or_out(F_Buf *buf, char c, char in, int *off)
 char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 {
 	char *ptr, str[TOKEN_MAX] = { '\0' };
-	int utf8_count, off, token, pushback;
-	utf8_count = off = token = pushback = 0;
+	int off, token, pushback;
+	off = token = pushback = 0;
 	ptr = str;
 
 	/* Read */
@@ -144,7 +144,7 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 		c = in_or_out(buf, c, '/', &off);
 
 		/* valid ? */
-		if (!isalnum(c) && !is_set(*st_lex, LEX_DECOMPRESS)) {
+		if (!isalnum(c)) {
 			GE_buffer_ungetc(c, buf);
 			FAIL("Invalid token non alpha numeric character");
 			return 0;
@@ -152,13 +152,10 @@ char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)
 
 		GE_buffer_pushback_mark(buf);
 
-		/* Read token: pushback ok, alnum or utf8 ... ? */
+		/* Read token */
 		//TODO NEXT deal with the case of pushback going over the end
-		//of the buffer.
-		while (pushback < TOKEN_MAX 
-				&& (isalnum((c))
-				|| ((utf8_count || (utf8_count = utf8_len(c)))
-				&& utf8_count < 4))) {
+		//of the file buffer.
+		while (pushback < TOKEN_MAX && (isalnum((c)))) {
 			*ptr++ = c, pushback++;
 			c = GE_buffer_fgetc(buf);
 		}

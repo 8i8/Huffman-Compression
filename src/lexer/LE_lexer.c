@@ -63,7 +63,7 @@ char LE_goto_glyph(F_Buf *buf, char c, char glyph)
 
 /*
  * LE_get_token: Returns state on reading a token, will read recursively until
- * the end of element indicator is reached. TODO NOW is the file ending correctly ?
+ * the end of element indicator is reached.
  */
 char LE_get_token(F_Buf *buf, char c, int *st_lex)
 {
@@ -118,20 +118,33 @@ int LE_look_ahead(F_Buf *buf, char close, char open, ptrdiff_t dist)
  * LE_get_utf8_char: Get the next utf-8 char from the file stream return it as
  * a string, requires a string of at least 5 bytes.
  */
-char LE_get_utf8_char(F_Buf *buf, char *ptr)
+char LE_get_utf8_char(F_Buf *buf, Data *data)
 {
 	int utf8_count = 0;
-	char c = GE_buffer_fgetc(buf);
+	char c, *ptr;
+	c = GE_buffer_fgetc(buf);
+	ptr = data->utf8_char;
 
 	/* Get the next char regardless of what it is, if multibyte, transfer
 	 * the entire string of char */
 	while ((*ptr++ = c)
 			&& (utf8_count || (utf8_count = utf8_len(c)))
-			&& utf8_count < 3)
+			&& utf8_count < 4)
 		c = GE_buffer_fgetc(buf), utf8_count--;
 
 	if (utf8_count > 3)
 		FAIL("utf-8 character read failed");
+
+	/* Check for and add the EOF char */
+	if (c == 'E') {
+	       if (((c = GE_buffer_fgetc(buf)) == 'O')) {
+			c = GE_buffer_fgetc(buf);
+			*ptr++ = 'O';
+			*ptr++ = 'F';
+			state_set(data->st_dta, DTA_EOF);
+	       } else
+			GE_buffer_ungetc(c, buf);
+	}
 
 	*ptr = '\0';
 
@@ -146,12 +159,15 @@ char LE_get_utf8_char(F_Buf *buf, char *ptr)
  * LE_get_string: Get the next word up until the next whitespace or EOF
  * character, return that character.
  */
-char LE_get_string(F_Buf *buf, char c, char *str)
+char LE_get_string(F_Buf *buf, char c, Data *data)
 {
 	int utf8_count = 0;
+	char *str;
+	str = data->binary;
+
 	while ((isalnum(c)
 			|| ((utf8_count || (utf8_count = utf8_len(c)))
-				&& utf8_count < 3))
+				&& utf8_count < 4))
 			&& c != EOF) {
 		*str++ = c;
 		c = GE_buffer_fgetc(buf);

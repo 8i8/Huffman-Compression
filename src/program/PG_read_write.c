@@ -10,6 +10,7 @@
 #include "general/GE_state.h"
 #include "general/GE_hash.h"
 #include "general/GE_string.h"
+#include "general/GE_hashtable.h"
 #include "general/GE_file_buffer.h"
 #include "program/PG_print.h"
 #include "lexer/LE_xml.h"
@@ -39,8 +40,7 @@ void metadata_write_file_name(F_Buf *read, F_Buf *write, const int st_prg)
 void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)
 {
 	size_t i;
-	Data cur;
-	cur = GE_data_init();
+	Data *cur;
 
 	if (is_set(st_prg, VERBOSE))
 		printf("metadata: writing map.\n");
@@ -49,21 +49,21 @@ void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)
 	LE_xml_element_open(buf, "map");
 
 	for (i = 0; i < MAP_LEN; i++)
-		if (map[i].binary[0] != '\0') {
-			LE_xml_element_map(
-						buf,
-						map[i].utf8_char,
-						map[i].binary);
-			if (map[i].next != NULL) {
-				cur = *map[i].next;
-				while (cur.next != NULL) {
+		if (map[i].utf8_char[0] != '\0') {
+			cur = &map[i];
+			if (cur->next) {
+				while (cur->next) {
 					LE_xml_element_map(
-						buf,
-						map[i].utf8_char,
-						map[i].binary);
-					cur = *cur.next;
+							buf,
+							cur->utf8_char,
+							cur->binary);
+					cur = cur->next;
 				}
 			}
+			LE_xml_element_map(
+						buf,
+						cur->utf8_char,
+						cur->binary);
 		}
 	
 	LE_xml_element_close(buf, "map");
@@ -130,7 +130,7 @@ int compression_write_archive(
 	GE_buffer_rewind(buf_read);
 	GE_buffer_off(buf_read);
 
-	if (utf8_count > 4)
+	if (utf8_count > 3)
 		FAIL("utf8_countdown");
 
 	/* Add EOF char */
@@ -153,7 +153,6 @@ int compression_write_archive(
 		 GE_buffer_fwrite((char*)&byte, 1, 1, buf_write);
 		 if (BIN_LOG_IN) BI_binary_log(byte, 8);
 	}
-	GE_buffer_fwrite("\0", 1, 1, buf_write);
 	GE_buffer_fwrite("\n", 1, 1, buf_write);
 
 	if (BIN_LOG_IN) BI_binary_log_flush();
@@ -162,7 +161,7 @@ int compression_write_archive(
 	GE_buffer_off(buf_write);
 
 	if (is_set(st_prg, VERBOSE))
-		printf("archive: %s written.\n", buf_write->name);
+		printf("File: %s, appended to archive.\n", buf_read->name);
 
 	return err;
 }
@@ -178,11 +177,8 @@ int metadata_read_hash_table_data(
 						const int st_prg)
 {
 	char c = ' ';
-	char *ptr_bin, *ptr_utf8;
 	Data data;
 	data = GE_data_init();
-	ptr_bin = data.binary;
-	ptr_utf8 = data.utf8_char;
 
 	if (is_set(st_prg, VERBOSE))
 		printf("metadata: reading hashtable pairs.\n");
@@ -199,14 +195,13 @@ int metadata_read_hash_table_data(
 		}
 
  		/* hash table for inflation created here */
-		//TODO NEXT read in length values here
 		if (is_set(st_lex, LEX_CHAR))
 		{
 			/* Read utf-8 char */
-			c = LE_get_utf8_char(buf, ptr_utf8);
+			c = LE_get_utf8_char(buf, &data);
 
 			/* read binary representation */
-			c = LE_get_string(buf, c, ptr_bin);
+			c = LE_get_string(buf, c, &data);
 
 			/* Store the data */
 			//TODO NEXT the length data should be stored in the
@@ -278,6 +273,7 @@ char decompress_write_file(
 	while (is_set(*st_lex, LEX_DECOMPRESS))
 	{
 		if (c == '<' && !ignore) {
+		//if (c == '<' && !is_set(*st_lex, LEX_DECOMPRESS)) {
 			/* Check forwars for sign of a token, if not found then
 			 * ignore the '<' untill the next char is read */
 			if (LE_look_ahead(buf_read, '>', '<', TOKEN_MAX)) {
