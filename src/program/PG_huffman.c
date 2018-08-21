@@ -88,7 +88,10 @@ int decompress_archive(F_Buf **io, const int st_prg)
 								map,
 								&st_lex,
 								st_prg);
+		}
+		if (is_set(st_lex, LEX_EOF)) {
 			GE_hashtable_clear(map);
+			state_unset(st_lex, LEX_EOF);
 		}
 	}
 

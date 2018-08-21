@@ -74,6 +74,7 @@ char BI_read_bit(
 		if (data.utf8_char[0] == 'E') // TODO set memory record here
 			if (is_set(data.st_dta, DTA_EOF)) {
 				GE_string_reset(str);
+				state_set(*st_lex, LEX_EOF);
 				return state_unset(*st_lex, LEX_DECOMPRESS);
 			}
 		GE_buffer_fwrite(

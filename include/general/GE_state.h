@@ -14,6 +14,7 @@
 #define LEX_FILENAME     (1 << 12)
 #define LEX_CHAR         (1 << 13)
 #define LEX_ERROR        (1 << 14)
+#define LEX_EOF          (1 << 15)
 
 #ifndef _state_
 #define _state_
