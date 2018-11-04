@@ -78,9 +78,9 @@ unsigned GE_buffer_fopen(F_Buf *buf, char *name, char *mode, const int st_prg)
 	String *str = NULL;
 
 	/* Ask first before overwriting */
-	if (!is_set(st_prg, FORCE) 
-						&& (!strcmp(mode, "w") 
-						|| !strcmp(mode, "wb") 
+	if (!is_set(st_prg, FORCE)
+						&& (!strcmp(mode, "w")
+						|| !strcmp(mode, "wb")
 						|| !strcmp(mode, "r+")))
 	{
 

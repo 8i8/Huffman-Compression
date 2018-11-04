@@ -82,7 +82,7 @@ static HC_HuffmanNode **mergesort_cut(
 	 * current list to NULL; The merged list will have a different head. */
 	left = *list;
 	tail = *list = NULL;
-	
+
 	/* Whilst there is still a list, keep working the list; Right to left */
 	while (left)
 	{
@@ -131,7 +131,7 @@ static HC_HuffmanNode **mergesort(
 	 * current list to NULL, the merged list will have a different head */
 	left = *list;
 	new = tail = *list = NULL;
-	
+
 	while (left)
 	{
 		count++;
