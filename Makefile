@@ -6,12 +6,12 @@ CC = gcc
 
 CFLAGS += -Wall -Wextra -pedantic
 #CFLAGS += -Werror
-CFLAGS += -g
-CFLAGS += -fsanitize=address
-CFLAGS += -fno-omit-frame-pointer
-CFLAGS += -fsanitize=undefined
-CFLAGS += -fsanitize=float-divide-by-zero
-CFLAGS += -fno-sanitize-recover
+#CFLAGS += -g
+#CFLAGS += -fsanitize=address
+#CFLAGS += -fno-omit-frame-pointer
+#CFLAGS += -fsanitize=undefined
+#CFLAGS += -fsanitize=float-divide-by-zero
+#CFLAGS += -fno-sanitize-recover
 CFLAGS += -I./include
 
 #LFLAGS += -l m
@@ -22,7 +22,7 @@ ifndef VERBOSE
 .SILENT:
 endif
 
-tartar: $(OBJ)
+compress: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 clean:

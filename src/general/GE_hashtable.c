@@ -90,7 +90,7 @@ int GE_hashtable_add_utf8_key(Data *map, Data data)
 
 	cur = &map[bucket];
 
-	/* Add a node to the ajoined btree */
+	/* Add a node to the ajoined linkedlist */
 	if (cur->next) {
 		while (cur->next) {
 			if (strcmp(cur->utf8_char, data.utf8_char) == 0)

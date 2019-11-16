@@ -54,7 +54,7 @@ void GE_string_stack_free(String str)
  */
 String *GE_string_len(String *Str, size_t len)
 {
-	while (len >= Str->buf) {
+	while (len > Str->buf) {
 		Str->len = Str->ptr - Str->str;
 		Str->buf <<= 1;
 		Str->ptr = Str->str = realloc(Str->str, Str->buf+1);
@@ -101,7 +101,7 @@ String *GE_string_add_char(String *Str, char c)
 		return NULL;
 	}
 
-	if (Str->len+1 >= Str->buf) {
+	if (Str->len > Str->buf) {
 		Str->buf <<= 1;
 		Str->ptr = Str->str = realloc(Str->str, Str->buf+1);
 		Str->ptr += Str->len;
@@ -129,7 +129,7 @@ String *GE_string_rem_char(String *Str)
  */
 String *GE_string_concat(String *Str, char *string, int len)
 {
-	if (Str->len + len >= Str->buf) {
+	if (Str->len + len > Str->buf) {
 		Str->buf <<= 1;
 		Str->ptr = Str->str = realloc(Str->str, Str->buf+1);
 		Str->ptr += Str->len;

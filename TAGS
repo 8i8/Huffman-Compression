@@ -1,0 +1,307 @@
+
+/home/iain/Projects/c/huffman_compression/src/program/PG_epilogue.c,64
+int epilogue(F_Buf **io, HC_HuffmanNode **tree)epilogue10,211
+
+/home/iain/Projects/c/huffman_compression/src/program/PG_huffman.c,466
+void hashmap_for_compression(Data *map, HC_HuffmanNode **tree, const int st_prg)hashmap_for_compression18,526
+int decompress_archive(F_Buf **io, const int st_prg)decompress_archive39,1084
+int write_archive_MULTI(F_Buf **io, HC_HuffmanNode **tree, int st_prg)write_archive_MULTI113,2520
+int write_archive_MONO(F_Buf **io, HC_HuffmanNode **tree, int st_prg)write_archive_MONO144,3306
+int huffman(F_Buf **io, HC_HuffmanNode **tree, int st_prg)huffman183,4398
+
+/home/iain/Projects/c/huffman_compression/src/program/PG_print.c,438
+static void print_node(HC_HuffmanNode *node)print_node7,110
+static void print_tree(HC_HuffmanNode *tree, int depth)print_tree19,349
+void print_frequency_map(HC_HuffmanNode *list)print_frequency_map45,837
+static void print_huffman_tree_rec(HC_HuffmanNode *tree, int depth)print_huffman_tree_rec61,1075
+void print_huffman_tree(HC_HuffmanNode *tree)print_huffman_tree83,1494
+void print_hashtable(Data *map)print_hashtable97,1780
+
+/home/iain/Projects/c/huffman_compression/src/program/PG_prologue.c,77
+int prologue(int argc, char *argv[], F_Buf **io, int st_prg)prologue10,230
+
+/home/iain/Projects/c/huffman_compression/src/program/PG_read_write.c,460
+void metadata_write_file_name(F_Buf *read, F_Buf *write, const int st_prg)metadata_write_file_name24,636
+void metadata_write_map(Data *map, F_Buf *buf, const int st_prg)metadata_write_map40,1165
+int compression_write_archive(compression_write_archive77,1846
+int metadata_read_hash_table_data(metadata_read_hash_table_data173,4296
+String metadata_read_filename(metadata_read_filename221,5340
+char decompress_write_file(decompress_write_file247,5846
+
+/home/iain/Projects/c/huffman_compression/src/program/PG_main.c,45
+int main(int argc, char *argv[])main15,464
+
+/home/iain/Projects/c/huffman_compression/src/general/GE_string.c,741
+String *GE_string_init(String *Str)GE_string_init11,227
+void GE_string_free(String *Str)GE_string_free24,444
+String GE_string_stack_init(String str)GE_string_stack_init34,604
+void GE_string_stack_free(String str)GE_string_stack_free46,856
+String *GE_string_len(String *Str, size_t len)GE_string_len55,1016
+String *GE_string_getchar(String *Str)GE_string_getchar70,1292
+String *GE_string_set(String *Str, char *str)GE_string_set84,1634
+String *GE_string_add_char(String *Str, char c)GE_string_add_char97,1915
+String *GE_string_rem_char(String *Str)GE_string_rem_char119,2294
+String *GE_string_concat(String *Str, char *string, int len)GE_string_concat130,2472
+String *GE_string_reset(String *Str)GE_string_reset149,2819
+
+/home/iain/Projects/c/huffman_compression/src/general/GE_state.c,44
+int is_set(int state, int flag)is_set5,56
+
+/home/iain/Projects/c/huffman_compression/src/general/GE_file_buffer.c,1609
+#define BUF BUF11,258
+#define BUF_BACK_AVAIL BUF_BACK_AVAIL14,412
+#define BUF_HOLD BUF_HOLD15,446
+#define BUF_EXISTS BUF_EXISTS16,480
+#define BUF_UNGETC BUF_UNGETC17,514
+F_Buf **GE_buffer_init_array(void)GE_buffer_init_array23,644
+F_Buf *GE_buffer_init_alloc(FILE *fp, char *name)GE_buffer_init_alloc31,785
+F_Buf *GE_buffer_init(F_Buf *buf, FILE *fp, char *name)GE_buffer_init48,1141
+unsigned GE_file_clear(char *name)GE_file_clear63,1484
+unsigned GE_buffer_fopen(F_Buf *buf, char *name, char *mode, const int st_prg)GE_buffer_fopen75,1665
+unsigned GE_buffer_fopen_array(F_Buf **io, char *name, char *mode, const int st_prg)GE_buffer_fopen_array114,2435
+F_Buf *GE_buffer_fclose(F_Buf *buf)GE_buffer_fclose141,2904
+F_Buf *GE_buffer_on(F_Buf *buf)GE_buffer_on151,3048
+F_Buf *GE_buffer_off(F_Buf *buf)GE_buffer_off162,3279
+F_Buf *GE_buffer_rewind(F_Buf *buf)GE_buffer_rewind173,3475
+F_Buf *GE_buffer_fill(F_Buf *buf)GE_buffer_fill185,3754
+F_Buf *GE_buffer_fwrite(char *str, size_t size, size_t num, F_Buf *buf)GE_buffer_fwrite213,4326
+F_Buf *GE_buffer_fwrite_FILE(F_Buf *buf)GE_buffer_fwrite_FILE245,5009
+int GE_buffer_fgetc(F_Buf *buf)GE_buffer_fgetc258,5342
+int GE_buffer_skip(F_Buf *buf, unsigned num)GE_buffer_skip273,5661
+int GE_buffer_ungetc(int c, F_Buf *buf)GE_buffer_ungetc295,6303
+int GE_buffer_pushback_mark(F_Buf *buf)GE_buffer_pushback_mark318,6796
+int GE_buffer_pushback_unmark(F_Buf *buf)GE_buffer_pushback_unmark334,7067
+int GE_buffer_pushback_goto(F_Buf *buf)GE_buffer_pushback_goto350,7325
+void GE_buffer_free(F_Buf *buf)GE_buffer_free367,7626
+
+/home/iain/Projects/c/huffman_compression/src/general/GE_utf8.c,245
+#define FOUR_BYTES	FOUR_BYTES1,0
+#define THREE_BYTES	THREE_BYTES2,50
+#define TWO_BYTES	TWO_BYTES3,73
+#define MULTIBYTE MULTIBYTE5,94
+static unsigned utf8_bytes(unsigned char c)utf8_bytes11,241
+unsigned utf8_len(char c)utf8_len26,508
+
+/home/iain/Projects/c/huffman_compression/src/general/GE_hashtable.c,702
+unsigned long GE_hash(char *s)GE_hash15,324
+Data GE_data_init(void)GE_data_init28,566
+int GE_data_frqcmp(void *v1, void *v2)GE_data_frqcmp47,1003
+Data *GE_hashtable_init(Data *map)GE_hashtable_init64,1390
+int GE_hashtable_add_utf8_key(Data *map, Data data)GE_hashtable_add_utf8_key75,1590
+int GE_hashtable_add_binary_key(Data *map, Data data)GE_hashtable_add_binary_key115,2438
+Data GE_hashtable_lookup_utf8(Data *map, char *str)GE_hashtable_lookup_utf8155,3291
+Data GE_hashtable_lookup_binary(Data *map, char *str)GE_hashtable_lookup_binary187,3942
+static void free_collision_tree(Data *node)free_collision_tree219,4591
+void GE_hashtable_clear(Data *map)GE_hashtable_clear233,4792
+
+/home/iain/Projects/c/huffman_compression/src/general/GE_error.c,21
+int err = 0;err1,0
+
+/home/iain/Projects/c/huffman_compression/src/lexer/LE_tokenizer.c,483
+#define TABLE_LEN TABLE_LEN9,179
+static Token **token_table;token_table11,202
+static void token_to_tree(Token *tree, Token *new_token)token_to_tree16,315
+static int token_add(char *token, int flag)token_add41,739
+int LE_token_init(void)LE_token_init65,1218
+int check_tree(Token *tree, char *check)check_tree82,1601
+int LE_check_token(char *token)LE_check_token102,2002
+static int free_tree(Token *tree)free_tree116,2201
+int LE_token_free(void)LE_token_free133,2461
+
+/home/iain/Projects/c/huffman_compression/src/lexer/LE_lexer.c,534
+void LE_lexer_init(void)LE_lexer_init17,364
+void LE_lexer_free(void)LE_lexer_free25,455
+void goto_next_word(int c, F_Buf *buf)goto_next_word33,581
+char LE_goto_glyph(F_Buf *buf, char c, char glyph)LE_goto_glyph49,939
+char LE_get_token(F_Buf *buf, char c, int *st_lex)LE_get_token68,1486
+int LE_look_ahead(F_Buf *buf, char close, char open, ptrdiff_t dist)LE_look_ahead96,2077
+char LE_get_utf8_char(F_Buf *buf, Data *data)LE_get_utf8_char121,2638
+char LE_get_string(F_Buf *buf, char c, Data *data)LE_get_string162,3549
+
+/home/iain/Projects/c/huffman_compression/src/lexer/LE_xml.c,736
+#define TOKEN_MAX TOKEN_MAX10,217
+static int check_len(char *str)check_len17,450
+static char *make_open_tag(char *str, char *element)make_open_tag25,556
+static char *make_close_tag(char *str, char *element)make_close_tag33,688
+F_Buf *LE_xml_element_open(F_Buf *buf, char *token)LE_xml_element_open44,883
+F_Buf *LE_xml_element_close(F_Buf *buf, char *token)LE_xml_element_close60,1230
+F_Buf *LE_xml_element_map(F_Buf *buf, char *st1, char *st2)LE_xml_element_map76,1592
+F_Buf *LE_xml_element_item(F_Buf *buf, char *item, char *tag)LE_xml_element_item94,1995
+static char in_or_out(F_Buf *buf, char c, char in, int *off)in_or_out116,2599
+char LE_xml_read_token(F_Buf *buf, char c, int *st_lex)LE_xml_read_token134,2977
+
+/home/iain/Projects/c/huffman_compression/src/huffman/HC_priority_queue.c,355
+int FN_data_strcmp(void *v1, void *v2)FN_data_strcmp16,441
+static HC_HuffmanNode **frequency_list_from_text(frequency_list_from_text29,703
+static int frequency_list_from_metadata(frequency_list_from_metadata69,1647
+int frequency_list_compression(frequency_list_compression145,3278
+int decompress_priority_queue(decompress_priority_queue170,3898
+
+/home/iain/Projects/c/huffman_compression/src/huffman/HC_huffman_tree.c,982
+HC_HuffmanNode *DS_huffman_tree_new_node(Data data)DS_huffman_tree_new_node15,386
+HC_HuffmanNode **DS_huffman_tree_add(HC_HuffmanNode **list, Data data)DS_huffman_tree_add35,809
+HC_HuffmanNode **DS_huffman_tree_insert(HC_HuffmanNode** list, Data data)DS_huffman_tree_insert59,1302
+HC_HuffmanNode **DS_huffman_tree_insert_node(DS_huffman_tree_insert_node82,1728
+HC_HuffmanNode **DS_huffman_tree_insert_ordered(DS_huffman_tree_insert_ordered100,2083
+HC_HuffmanNode **DS_huffman_tree_insert_or_count(DS_huffman_tree_insert_or_count138,2858
+HC_HuffmanNode *DS_huffman_tree_pop(HC_HuffmanNode **list)DS_huffman_tree_pop184,3750
+HC_HuffmanNode **ordered_binary_tree(HC_HuffmanNode **tree, const int st_prg)ordered_binary_tree208,4260
+int DS_huffman_tree_extract_encoding(DS_huffman_tree_extract_encoding255,5478
+int DS_huffman_tree_clear(HC_HuffmanNode **tree)DS_huffman_tree_clear291,6303
+int DS_huffman_tree_free(HC_HuffmanNode **tree)DS_huffman_tree_free315,6747
+
+/home/iain/Projects/c/huffman_compression/src/huffman/HC_mergesort.c,462
+static HC_HuffmanNode* advance_and_cut(HC_HuffmanNode *list, size_t len)advance_and_cut3,35
+static HC_HuffmanNode* merge(merge23,362
+static HC_HuffmanNode **mergesort_cut(mergesort_cut69,1455
+static HC_HuffmanNode **mergesort(mergesort118,2917
+HC_HuffmanNode **HC_mergesort(HC_HuffmanNode **list, int(*comp)(void*, void*))HC_mergesort202,5125
+HC_HuffmanNode **HC_mergesort_cut(HC_HuffmanNode **list, int(*comp)(void*, void*))HC_mergesort_cut213,5437
+
+/home/iain/Projects/c/huffman_compression/src/bitwise/BI_bitwise.c,288
+long unsigned get_bits(long unsigned x, long unsigned p, long unsigned n)get_bits9,219
+long unsigned mask_left_of_word(long unsigned word, long unsigned n)mask_left_of_word28,661
+long unsigned right_shift(long unsigned word, long unsigned bits, long unsigned mask)right_shift42,995
+
+/home/iain/Projects/c/huffman_compression/src/bitwise/BI_binary_print.c,356
+static F_Buf *buf = NULL;buf8,158
+static F_Buf *BI_buffer_init(void)BI_buffer_init13,254
+char *BI_int_to_binary(size_t i, size_t bits)BI_int_to_binary34,744
+void BI_binary_print(size_t i, size_t bits)BI_binary_print56,1108
+F_Buf *BI_binary_log(size_t i, size_t bits)BI_binary_log70,1373
+int BI_binary_log_flush(void)BI_binary_log_flush100,1854
+
+/home/iain/Projects/c/huffman_compression/src/bitwise/BI_bitwise_math.c,53
+unsigned ipow(unsigned base, unsigned exp)ipow5,41
+
+/home/iain/Projects/c/huffman_compression/src/bitwise/BI_bit_stream.c,76
+void BI_write_bit(BI_write_bit10,213
+char BI_read_bit(BI_read_bit44,966
+
+/home/iain/Projects/c/huffman_compression/Makefile,171
+SRCS = $(wildcard src/*/*.c)SRCS1,0
+HEADR = $(wildcard include/*/*.h)HEADR2,29
+TSRCS = $(wildcard tests/*.c)TSRCS3,63
+OBJ = $(SRCS:.c=.o)OBJ4,93
+CC = gccCC5,113
+
+/home/iain/Projects/c/huffman_compression/include/program/PG_huffman.h,0
+
+/home/iain/Projects/c/huffman_compression/include/program/PG_epilogue.h,0
+
+/home/iain/Projects/c/huffman_compression/include/program/PG_print.h,0
+
+/home/iain/Projects/c/huffman_compression/include/program/PG_read_write.h,0
+
+/home/iain/Projects/c/huffman_compression/include/program/PG_prologue.h,0
+
+/home/iain/Projects/c/huffman_compression/include/general/GE_file_buffer.h,432
+#define _file_buffer__file_buffer_4,42
+typedef struct _file_buffer {_file_buffer5,64
+	FILE *fp;fp6,94
+	char name[255];name7,105
+	char *buf;buf8,122
+	char *ptr;ptr9,134
+	char *read;read10,146
+	char *hold;hold11,159
+	char *end;end12,172
+	int tab_depth;tab_depth13,184
+	int eof;eof14,200
+	int st_buf;st_buf15,210
+} F_Buf;F_Buf16,223
+#define MAX_FILES MAX_FILES19,240
+#define BUFFER_SIZE BUFFER_SIZE20,267
+
+/home/iain/Projects/c/huffman_compression/include/general/GE_string.h,184
+#define _string__string_4,37
+	char *str;str6,71
+	char *ptr;ptr7,83
+	size_t len;len8,95
+	size_t buf;buf9,108
+} String;String10,121
+#define STR_BUF_INIT STR_BUF_INIT13,139
+
+/home/iain/Projects/c/huffman_compression/include/general/GE_state.h,683
+#define DTA_EOF DTA_EOF2,1
+#define DECOMPRESS DECOMPRESS3,36
+#define COMPRESS COMPRESS4,71
+#define VERBOSE VERBOSE5,106
+#define FORCE FORCE6,141
+#define MONO MONO7,176
+#define MULTI MULTI8,211
+#define PRINT PRINT9,246
+#define ESC ESC10,281
+#define ERROR ERROR11,316
+#define LEX_MAP LEX_MAP12,351
+#define LEX_DECOMPRESS LEX_DECOMPRESS13,386
+#define LEX_FILENAME LEX_FILENAME14,421
+#define LEX_CHAR LEX_CHAR15,456
+#define LEX_ERROR LEX_ERROR16,491
+#define LEX_EOF LEX_EOF17,526
+#define _state__state_20,578
+#define state_init(state_init21,594
+#define state_set(state_set22,630
+#define state_unset(state_unset23,683
+#define is_set(is_set24,738
+
+/home/iain/Projects/c/huffman_compression/include/general/GE_utf8.h,0
+
+/home/iain/Projects/c/huffman_compression/include/general/GE_error.h,55
+#define FAIL(FAIL3,21
+#define WARNING(WARNING4,111
+
+/home/iain/Projects/c/huffman_compression/include/general/GE_hashtable.h,433
+#define MAP_LEN MAP_LEN3,20
+#define UTF8_LEN UTF8_LEN4,40
+#define BIN_MAX BIN_MAX5,59
+#define _data__data_8,149
+typedef struct _data {_data9,164
+	char utf8_char[UTF8_LEN];utf8_char10,187
+	char binary[BIN_MAX];binary11,214
+	unsigned short len_char;len_char12,237
+	unsigned short len_bin;len_bin13,263
+	unsigned short st_dta;st_dta14,288
+	size_t frq;frq15,312
+	struct _data *next;next16,325
+} Data;Data17,346
+
+/home/iain/Projects/c/huffman_compression/include/general/GE_hash.h,0
+
+/home/iain/Projects/c/huffman_compression/include/lexer/LE_lexer.h,35
+#define TOKEN_MAX TOKEN_MAX6,110
+
+/home/iain/Projects/c/huffman_compression/include/lexer/LE_tokenizer.h,230
+#define _token_chain__token_chain_4,24
+typedef struct _token_chain {_token_chain5,46
+	char *id;id6,76
+	int flag;flag7,87
+	struct _token_chain *left;left8,98
+	struct _token_chain *right;right9,126
+} Token;Token10,155
+
+/home/iain/Projects/c/huffman_compression/include/lexer/LE_xml.h,0
+
+/home/iain/Projects/c/huffman_compression/include/huffman/HC_huffman_tree.h,326
+#define _hc_huffman_node__hc_huffman_node_7,147
+typedef struct _hc_huffman_node {_hc_huffman_node8,173
+	Data data;data9,207
+	char bit;bit10,219
+	struct _hc_huffman_node *next;next11,230
+	struct _hc_huffman_node *right;right12,262
+	struct _hc_huffman_node *left;left13,295
+} HC_HuffmanNode;HC_HuffmanNode14,327
+
+/home/iain/Projects/c/huffman_compression/include/huffman/HC_priority_queue.h,0
+
+/home/iain/Projects/c/huffman_compression/include/huffman/HC_mergesort.h,0
+
+/home/iain/Projects/c/huffman_compression/include/bitwise/BI_bitwise.h,180
+#define BIN_IN BIN_IN6,122
+#define BIN_OUT BIN_OUT7,140
+#define BIN_LOG_IN BIN_LOG_IN8,158
+#define BIN_LOG_OUT BIN_LOG_OUT9,180
+#define BIN_LOG_PRINT BIN_LOG_PRINT10,202
+
+/home/iain/Projects/c/huffman_compression/open,0
+
+/home/iain/Projects/c/huffman_compression/links,0
