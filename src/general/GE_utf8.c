@@ -2,7 +2,7 @@
 #define THREE_BYTES	14
 #define TWO_BYTES	6
 
-#define MULTIBYTE (c >> 7)
+#define MULTIBYTE ((c >> 7)%2)
 
 /*
  * utf8_bytes:	Return multi-char length in bytes, value is -1 as it is read as
