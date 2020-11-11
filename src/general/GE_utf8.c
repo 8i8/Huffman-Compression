@@ -2,11 +2,13 @@
 #define THREE_BYTES	14
 #define TWO_BYTES	6
 
-#define MULTIBYTE ((c >> 7)%2)
+/* After the shift we are only interested by the fitst bit, is it odd or
+ * even ? */
+#define MULTIBYTE ((c >> 7)%2) 
 
 /*
- * utf8_bytes:	Return multi-char length in bytes, value is -1 as it is read as
- * the number of char remaining.
+ * utf8_bytes:	Return multi-char length in bytes, value is -1 as it is
+ * read as the number of char remaining.
  */
 static unsigned utf8_bytes(unsigned char c)
 {
@@ -16,14 +18,13 @@ static unsigned utf8_bytes(unsigned char c)
 		return 2;
 	else if (c >> 5 == TWO_BYTES)
 		return 1;
-
 	return 0;
 }
 
 /*
  * utf8_len: Return the length of a multibyte char, 0 if not multybyte.
  */
-unsigned utf8_len(char c)
+unsigned utf8_len(unsigned char c)
 {
 	if (MULTIBYTE)
 		return utf8_bytes(c);
