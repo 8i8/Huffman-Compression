@@ -4,16 +4,16 @@
 #define UTF8_LEN 5
 #define BIN_MAX 128	/* Max depth of ordered binary tree, binary string */
 
-#ifndef _data_
-#define _data_
-typedef struct _data {
+#ifndef data_
+#define data_
+typedef struct data {
 	char utf8_char[UTF8_LEN];
 	char binary[BIN_MAX];
 	unsigned short len_char;
 	unsigned short len_bin;
 	unsigned short st_dta;
 	size_t frq;
-	struct _data *next;
+	struct data *next;
 } Data;
 #endif
 

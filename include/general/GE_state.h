@@ -16,8 +16,8 @@
 #define LEX_ERROR        (1 << 14)
 #define LEX_EOF          (1 << 15)
 
-#ifndef _state_
-#define _state_
+#ifndef state_
+#define state_
 #define state_init()              0
 #define state_set(state, flag)	  ((state) |= (flag))
 #define state_unset(state, flag)  ((state) &= ~(flag))

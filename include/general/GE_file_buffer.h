@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#ifndef _file_buffer_
-#define _file_buffer_
-typedef struct _file_buffer {
+#ifndef file_buffer_
+#define file_buffer_
+typedef struct file_buffer {
 	FILE *fp;
 	char name[255];
 	char *buf;

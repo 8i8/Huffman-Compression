@@ -49,7 +49,7 @@ void GE_string_stack_free(String str)
 }
 
 /*
- * _string_len: Buffer for simple string struct, test whether buffer requires
+ * GE_string_len: Buffer for simple string struct, test whether buffer requires
  * lengthening.
  */
 String *GE_string_len(String *Str, size_t len)

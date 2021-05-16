@@ -3,14 +3,14 @@
 #include "general/GE_hashtable.h"
 #include <stdio.h>
 
-#ifndef _hc_huffman_node_
-#define _hc_huffman_node_
-typedef struct _hc_huffman_node {
+#ifndef hc_huffman_node_
+#define hc_huffman_node_
+typedef struct hc_huffman_node {
 	Data data;
 	char bit;
-	struct _hc_huffman_node *next;
-	struct _hc_huffman_node *right;
-	struct _hc_huffman_node *left;
+	struct hc_huffman_node *next;
+	struct hc_huffman_node *right;
+	struct hc_huffman_node *left;
 } HC_HuffmanNode;
 #endif
 

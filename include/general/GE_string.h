@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#ifndef _string_
-#define _string_
+#ifndef string_
+#define string_
 typedef struct {
 	char *str;
 	char *ptr;
@@ -35,7 +35,7 @@ String GE_string_stack_init(String str);
 void GE_string_stack_free(String str);
 
 /*
- * _string_len: Buffer for simple string struct.
+ * GE_string_len: Buffer for simple string struct.
  */
 String *GE_string_len(String *Str, size_t len);
 

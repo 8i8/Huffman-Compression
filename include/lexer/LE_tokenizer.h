@@ -1,12 +1,12 @@
 
 
-#ifndef _token_chain_
-#define _token_chain_
-typedef struct _token_chain {
+#ifndef token_chain_
+#define token_chain_
+typedef struct token_chain {
 	char *id;
 	int flag;
-	struct _token_chain *left;
-	struct _token_chain *right;
+	struct token_chain *left;
+	struct token_chain *right;
 } Token;
 #endif
 
