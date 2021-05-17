@@ -1,3 +1,5 @@
+#ifndef GE_STATE
+#define GE_STATE
 
 #define DTA_EOF          (1 <<  0)
 #define DECOMPRESS       (1 <<  1)
@@ -16,16 +18,14 @@
 #define LEX_ERROR        (1 << 14)
 #define LEX_EOF          (1 << 15)
 
-#ifndef state_
-#define state_
 #define state_init()              0
 #define state_set(state, flag)	  ((state) |= (flag))
 #define state_unset(state, flag)  ((state) &= ~(flag))
 #define is_set(state, flag)       ((state) & (flag))
-#endif
 
 /*
  * is_set: Returns the current state of a flag.
  */
 //int is_set(int state, int flag);
 
+#endif

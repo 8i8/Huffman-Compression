@@ -1,14 +1,14 @@
+#ifndef GE_STRING
+#define GE_STRING
+
 #include <stdio.h>
 
-#ifndef string_
-#define string_
 typedef struct {
 	char *str;
 	char *ptr;
 	size_t len;
 	size_t buf;
 } String;
-#endif
 
 #define STR_BUF_INIT 8
 
@@ -72,3 +72,4 @@ String *GE_string_concat(String *Str, char *string, int len);
  */
 String *GE_string_reset(String *Str);
 
+#endif

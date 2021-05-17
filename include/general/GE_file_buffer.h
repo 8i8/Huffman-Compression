@@ -1,7 +1,8 @@
+#ifndef GE_FILE_BUFFER
+#define GE_FILE_BUFFER
+
 #include <stdio.h>
 
-#ifndef file_buffer_
-#define file_buffer_
 typedef struct file_buffer {
 	FILE *fp;
 	char name[255];
@@ -14,7 +15,6 @@ typedef struct file_buffer {
 	int eof;
 	int st_buf;
 } F_Buf;
-#endif
 
 #define MAX_FILES       20
 #define BUFFER_SIZE     4000  /* Should be relativly small, here at around the
@@ -85,3 +85,4 @@ int GE_buffer_pushback_goto(F_Buf *buf);
 /* GE_buffer_free: Free all memory associated with a F_Buf struct */
 void GE_buffer_free(F_Buf *buf);
 
+#endif

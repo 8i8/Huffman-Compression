@@ -1,10 +1,11 @@
+#ifndef HC_HUFFMAN_NODE
+#define HC_HUFFMAN_NODE
+
 #include "general/GE_file_buffer.h"
 #include "general/GE_string.h"
 #include "general/GE_hashtable.h"
 #include <stdio.h>
 
-#ifndef hc_huffman_node_
-#define hc_huffman_node_
 typedef struct hc_huffman_node {
 	Data data;
 	char bit;
@@ -12,7 +13,6 @@ typedef struct hc_huffman_node {
 	struct hc_huffman_node *right;
 	struct hc_huffman_node *left;
 } HC_HuffmanNode;
-#endif
 
 /* DS_huffman_tree_new_node: Function for creating new linkedlist type nodes */
 HC_HuffmanNode *DS_huffman_tree_new_node(Data data);
@@ -57,3 +57,4 @@ int DS_huffman_tree_clear(HC_HuffmanNode **tree);
 /* DS_huffman_tree_free: Free huffman tree memory */
 int DS_huffman_tree_free(HC_HuffmanNode **tree);
 
+#endif

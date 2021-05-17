@@ -1,14 +1,12 @@
+#ifndef LE_TOKEN_CHAIN
+#define LE_TOKEN_CHAIN
 
-
-#ifndef token_chain_
-#define token_chain_
 typedef struct token_chain {
 	char *id;
 	int flag;
 	struct token_chain *left;
 	struct token_chain *right;
 } Token;
-#endif
 
 /*
  * LE_token_init: Initalise and load the hash map and its tokens.
@@ -33,3 +31,4 @@ int LE_check_token(char *token);
  */
 int LE_token_free(void);
 
+#endif

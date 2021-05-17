@@ -1,11 +1,12 @@
+#ifndef GE_HASHTABLE
+#define GE_HASHTABLE
+
 #include <stdio.h>
 
 #define MAP_LEN 256
 #define UTF8_LEN 5
 #define BIN_MAX 128	/* Max depth of ordered binary tree, binary string */
 
-#ifndef data_
-#define data_
 typedef struct data {
 	char utf8_char[UTF8_LEN];
 	char binary[BIN_MAX];
@@ -15,7 +16,6 @@ typedef struct data {
 	size_t frq;
 	struct data *next;
 } Data;
-#endif
 
 /* GE_data_init: Returns a data struct with all values set to 0 */
 Data GE_data_init(void);
@@ -49,3 +49,4 @@ Data GE_hashtable_lookup_binary(Data *map, char *str);
 /* GE_hashtable_clear: Reset the map to empty */
 void GE_hashtable_clear(Data *map);
 
+#endif
