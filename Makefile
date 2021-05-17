@@ -18,9 +18,9 @@ CFLAGS += -I./include
 
 .PHONY: clean distclean
 
-ifndef VERBOSE
-.SILENT:
-endif
+# ifndef VERBOSE
+# .SILENT:
+# endif
 
 compress: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
